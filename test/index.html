@@ -194,6 +194,19 @@ textarea.said:focus{border-color:var(--blue)}
 .speech .k{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
 .scene{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--blue-100);background:var(--blue-50);border-radius:18px;padding:14px;margin:6px 0 12px}
 .scene .who{font-weight:800;font-size:17px}
+.mock{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px;font-size:14px;line-height:1.45;color:var(--ink);pointer-events:none;user-select:none}
+.mock .mk-stamp{position:absolute;top:8px;right:10px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--err);border:1.5px solid var(--err);border-radius:4px;padding:1px 6px;transform:rotate(3deg)}
+.mock .mk-ext{background:var(--gold-50);color:var(--ink-2);font-size:12px;border-radius:6px;padding:5px 8px;margin:0 0 8px;max-width:80%}
+.mock .mk-head b{display:block;font-size:15px}.mock .mk-head small{color:var(--ink-2);font-size:12.5px;overflow-wrap:anywhere}
+.mock .mk-subj{font-weight:700;margin:6px 0 4px}
+.mock .mk-body p{margin:6px 0}
+.mock .mk-link u{color:var(--blue)}.mock .mk-link small{display:block;font-size:12px;color:var(--ink-2);overflow-wrap:anywhere}
+.mock .mk-att{display:inline-block;margin-top:6px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:13px}
+.mock .mk-bubble{background:var(--stone);border-radius:14px;padding:10px 12px;margin-top:8px;max-width:90%}
+.mock .mk-url{font-size:12.5px;color:var(--ink-2);background:var(--stone);border-radius:6px;padding:6px 8px;margin:0 0 10px;overflow-wrap:anywhere;max-width:85%}
+.mock .mk-page{text-align:center;padding:4px 10px}.mock .mk-page p{margin:4px 0;color:var(--ink-2)}
+.mock .mk-field{border:1px solid var(--line);border-radius:6px;padding:8px;margin:8px 0;text-align:left;color:var(--faint)}
+.mock .mk-btn{display:inline-block;background:var(--blue);color:#fff;border-radius:6px;padding:7px 18px;margin-top:6px;font-weight:700}
 .scene .cardnote{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-2)}
 .facts{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
 .facts li{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink-2);font-weight:500}
@@ -821,76 +834,17 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 
 <script>
 // Illustrations for the Sales Coach, drawn in My Yield blue and white.
-// Yellow (#F6CF3D) appears only on win moments (the cheering coach's sparkles).
+// Yellow (#F6CF3D) appears only on win moments.
 (function () {
   const BLUE = "#1A5690", BLUE_D = "#144677", BLUE_L = "#C9DAEC", BLUE_XL = "#E6EEF7", INK = "#1B1F27", WIN = "#F9CD37";
 
-  // Coach mascot: an ear of corn, drawn in a Duolingo-like style (flat color, no outlines, chunky rounded shapes,
-  // calm, friendly face for a work tool). Kernel rows on the cob, husk leaves peeling open at the bottom, and a My Yield cap (blue, gold brim and wheat mark) with a little silk peeking out.
-  // Moods: happy, think, oops, cheer.
+  // Coach icon (by Hailee, Oct 8 2026): a rep in a cap with a blue chat bubble, in a white circle with a thin ring.
+  // Same look for every mood; the mood argument is kept so callers stay unchanged.
   let mascotN = 0;
+  const COACH = '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M316 555L379 607L442 555 M219 1038L228 763 M322 546V496 M435 546V495 M270 317V391C270 450 318 498 377 498C437 498 485 450 485 391V317 M245 310C245 310 268 307 281 305C344 295 409 295 472 305C485 306 507 311 507 311 M261 308L261 257C262 222 286 192 320 184C340 180 362 176 377 176C393 176 414 180 434 184C469 192 493 222 493 257L494 308 M379 614V658 M683 1045L660 727C660 715 657 703 655 695C643 653 602 607 551 591L441 555 M529 763L538 1038 M316 555L206 591C155 607 114 653 102 695C100 703 97 715 97 727L74 1045" stroke="#6C727E" stroke-width="34"/><path d="M912 211V318C912 350 889 377 861 377H721L645 425V377H626C598 377 575 350 575 318V211C575 179 598 152 626 152H861C889 152 912 179 912 211Z" fill="#0017CA" stroke="#0017CA" stroke-width="31"/><path d="M836 269H820 M751 269H735 M666 269H650" stroke="#fff" stroke-width="31"/></g>';
   function mascot(mood = "happy", size = 72) {
     const id = "kn" + (++mascotN);
-    const COB = "#F3BE24", KERN = "#FFD445", KERN_L = "#FFE27E", SHADE = "#D99A0B";
-    const LEAF = "#4E8F3A", LEAF_D = "#3A6E2C", VEIN = "#73AE5C", SILK = "#E9D3A0", SILK_D = "#CFAF6E";
-    const CHEEK = "#F2A07A", MOUTH = INK;
-    const cob = "M50 7 C64 7 72 24 72 47 C72 72 63 90 50 90 C37 90 28 72 28 47 C28 24 36 7 50 7Z";
-    // Kernels: staggered rows of rounded kernels over a darker cob.
-    let kernels = "";
-    for (let r = 0; r < 9; r++) {
-      const y = 8 + r * 9.2, off = r % 2 ? 4.4 : 0;
-      for (let c = -1; c < 6; c++) {
-        const x = 26 + c * 8.8 + off;
-        kernels += `<rect x="${x}" y="${y}" width="8" height="8.4" rx="3.8" fill="${c <= 0 ? KERN_L : KERN}"/>`;
-      }
-    }
-    const look = { happy: [0, 1], think: [2, -2.2], oops: [-0.4, 2], cheer: [0, 0] }[mood] || [0, 1];
-    const eye = (cx) => `<ellipse cx="${cx + look[0] * 0.6}" cy="${42 + look[1] * 0.6}" rx="3.6" ry="4.6" fill="${INK}"/><circle cx="${cx + look[0] * 0.6 + 1.2}" cy="${40.4 + look[1] * 0.6}" r="1.2" fill="#fff"/>`;
-    const eyes = mood === "cheer"
-      ? `<path d="M38 43.5 q4 -5 8 0" stroke="${INK}" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M54 43.5 q4 -5 8 0" stroke="${INK}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`
-      : eye(41) + eye(59);
-    const brows = {
-      oops: `<path d="M37 34.5 q3.5 -2.5 8 -1.5" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M63 34.5 q-3.5 -2.5 -8 -1.5" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
-      think: `<path d="M55 33 q4 -3 8 -1" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
-    }[mood] || "";
-    const mouth = {
-      happy: `<path d="M44 55 q6 5 12 0" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-      cheer: `<path d="M42.5 54 q7.5 7 15 0" stroke="${MOUTH}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`,
-      oops: `<path d="M45.5 57.5 q4.5 -2.5 9 0" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-      think: `<path d="M45.5 56.5 h9" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    }[mood];
-    // Husk: a back leaf, then two front leaves peeling open from the base. Cheering flings them wider.
-    const up = mood === "cheer";
-    const leaf = (side) => {
-      const m = side < 0 ? (x) => x : (x) => 100 - x;
-      const tipX = up ? 11 : 14, tipY = up ? 38 : 46;
-      return `<path d="M${m(50)} 96 C${m(36)} 96 ${m(tipX + 6)} ${tipY + 26} ${m(tipX)} ${tipY} C${m(tipX + 16)} ${tipY + 12} ${m(38)} ${tipY + 30} ${m(52)} 92Z" fill="${LEAF}"/>
-        <path d="M${m(47)} 93 C${m(36)} 86 ${m(tipX + 10)} ${tipY + 22} ${m(tipX + 2)} ${tipY + 3}" stroke="${VEIN}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>`;
-    };
-    const sparkles = up
-      ? `<g fill="${WIN}"><path d="M86 10 l1.8 4.4 4.4 1.8 -4.4 1.8 -1.8 4.4 -1.8 -4.4 -4.4 -1.8 4.4 -1.8z"/></g>` : "";
-    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
-      <defs><clipPath id="${id}"><path d="${cob}"/></clipPath></defs>
-      ${sparkles}
-      <ellipse cx="50" cy="96.5" rx="22" ry="3" fill="${INK}" opacity=".10"/>
-      <path d="M50 96 C40 94 34 82 36 66 C42 74 46 84 50 90 C54 84 58 74 64 66 C66 82 60 94 50 96Z" fill="${LEAF_D}"/>
-      <path d="M33 22 C27 22 23 26 22 30 C26 27 30 26 34 27Z" fill="${SILK_D}"/><path d="M67 22 C73 22 77 26 78 30 C74 27 70 26 66 27Z" fill="${SILK}"/>
-      <path d="${cob}" fill="${COB}"/>
-      <g clip-path="url(#${id})">${kernels}
-        <path d="M60 4 C76 20 76 70 58 94 L80 94 L80 4Z" fill="${SHADE}" opacity=".28"/>
-      </g>
-      ${leaf(-1)}${leaf(1)}
-      <path d="M30 24 C30 11 39 4 50 4 C61 4 70 11 70 24 C63 21.5 37 21.5 30 24Z" fill="${BLUE}"/>
-      <path d="M50 4 C61 4 70 11 70 24 C66 22.6 61 22 56 21.8 C57 14 55 8 50 4Z" fill="${BLUE_D}"/>
-      <path d="M50 4.6 C47 9 46 15 46.6 21.8" stroke="${BLUE_D}" stroke-width="1" fill="none" opacity=".7"/>
-      <circle cx="50" cy="4.6" r="2.2" fill="${BLUE_D}"/>
-      <path d="M26 24.5 C36 20.5 64 20.5 74 24.5 C76 25.4 75.5 28 73 28.6 C62 26 38 26 27 28.6 C24.5 28 24 25.4 26 24.5Z" fill="${WIN}"/>
-      <path d="M27 28.6 C38 26 62 26 73 28.6 C70 29.8 66 30.2 62 29.8 C55 28.8 45 28.8 38 29.8 C34 30.2 30 29.8 27 28.6Z" fill="#D9A915"/>
-      <g fill="${WIN}"><rect x="49.3" y="9.5" width="1.4" height="10" rx=".7"/><ellipse cx="47.6" cy="12.6" rx="1.5" ry="2.6" transform="rotate(-30 47.6 12.6)"/><ellipse cx="52.4" cy="12.6" rx="1.5" ry="2.6" transform="rotate(30 52.4 12.6)"/><ellipse cx="47.6" cy="16.4" rx="1.5" ry="2.6" transform="rotate(-30 47.6 16.4)"/><ellipse cx="52.4" cy="16.4" rx="1.5" ry="2.6" transform="rotate(30 52.4 16.4)"/><ellipse cx="50" cy="9.4" rx="1.3" ry="2.3"/></g>
-      ${eyes}${brows}
-      <ellipse cx="33.5" cy="53" rx="4.2" ry="2.6" fill="${CHEEK}" opacity=".28"/><ellipse cx="66.5" cy="53" rx="4.2" ry="2.6" fill="${CHEEK}" opacity=".28"/>
-      ${mouth}
-    </svg>`;
+    return `<svg viewBox="-90 -90 1137 1137" width="${size}" height="${size}" aria-hidden="true"><circle cx="478.5" cy="478.5" r="558" fill="#fff" stroke="${BLUE_L}" stroke-width="20"/><defs><clipPath id="${id}"><circle cx="478.5" cy="478.5" r="548"/></clipPath></defs><g clip-path="url(#${id})">${COACH}</g></svg>`;
   }
 
   // Farmer portraits: deterministic from the name so the same grower always looks the same.
@@ -972,7 +926,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v458933340e"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v96c1f0f7ae"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1829,7 +1783,7 @@ function renderExerciseBody(){
   if (ex.type === "choice"){
     // Shuffle the options so the right answer isn't always in the same spot. data-k keeps the original index.
     const order = ex.options.map((o,k)=>k).sort(()=>Math.random()-.5);
-    box.innerHTML = `<div class="coachrow">${Art.mascot("think", 76)}<div class="speech"><span class="k">Pick the best answer</span>${esc(ex.prompt)}</div></div><div class="opts">${order.map((k)=>`<button class="opt" data-k="${k}">${esc(ex.options[k])}</button>`).join("")}</div>`;
+    box.innerHTML = `${ex.mock ? mockCard(ex.mock) : ""}<div class="coachrow">${Art.mascot("think", 76)}<div class="speech"><span class="k">Pick the best answer</span>${esc(ex.prompt)}</div></div><div class="opts">${order.map((k)=>`<button class="opt" data-k="${k}">${esc(ex.options[k])}</button>`).join("")}</div>`;
     for (const b of box.querySelectorAll(".opt")) b.onclick = () => { if (L.checked) return; L.chosen = +b.dataset.k;
       for (const c of box.querySelectorAll(".opt")) c.setAttribute("aria-pressed", String(c===b)); setCheck("Check", true); };
     setCheck("Check", false);
@@ -1865,6 +1819,22 @@ function renderExerciseBody(){
   }
 }
 
+// Training examples (phishing emails, texts, sign-in pages) drawn as flat cards: nothing in them can be clicked or typed into.
+function mockCard(m){
+  const lines = (xs) => (xs || []).map((t) => `<p>${esc(t)}</p>`).join("");
+  let inner = "";
+  if (m.kind === "text") {
+    inner = `<div class="mk-head"><b>${esc(m.fromName || "Unknown")}</b><small>${esc(m.number || "")}</small></div><div class="mk-bubble">${esc(m.body || "")}</div>`;
+  } else if (m.kind === "page") {
+    inner = `<div class="mk-url"><span aria-hidden="true">🔒</span>${esc(m.url || "")}</div><div class="mk-page"><b>${esc(m.title || "")}</b>${lines(m.lines)}${(m.fields || []).map((f) => `<div class="mk-field">${esc(f)}</div>`).join("")}${m.button ? `<div class="mk-btn">${esc(m.button)}</div>` : ""}</div>`;
+  } else {
+    inner = `${m.external ? `<div class="mk-ext">External sender: be careful with links and attachments</div>` : ""}<div class="mk-head"><b>${esc(m.fromName || "")}</b><small>&lt;${esc(m.fromAddr || "")}&gt;${m.time ? " · " + esc(m.time) : ""}</small></div>
+      <div class="mk-subj">${esc(m.subject || "")}</div><div class="mk-body">${lines(m.body)}
+      ${m.link ? `<div class="mk-link"><u>${esc(m.link.text)}</u><small>Link goes to: ${esc(m.link.url)}</small></div>` : ""}
+      ${m.attachment ? `<div class="mk-att">📎 ${esc(m.attachment)}</div>` : ""}</div>`;
+  }
+  return `<div class="mock mk-${esc(m.kind || "email")}" aria-label="Training example"><span class="mk-stamp">Training example</span>${inner}</div>`;
+}
 function sceneCard(sc, big){
   if (!sc) return "";
   const f = (ic, t) => `<li>${icon(ic)}<span>${esc(t)}</span></li>`;
