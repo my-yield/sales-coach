@@ -968,7 +968,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vedb08b1b8c"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vbcc4c5be7a"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1456,7 +1456,7 @@ function renderUnit(k){
       <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
       <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    ${heard ? "" : `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>New to this unit? Start here.</b><small>Watch the ${guideMinutes(u)}-minute narrated slideshow: the big ideas and how to use them on a call.</small></span></button>`}
+    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Watch the unit overview again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute narrated slideshow with the big ideas.` : `Watch the ${guideMinutes(u)}-minute narrated slideshow: the big ideas and how to use them on a call.`}</small></span></button>
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
   $("unit-guide").onclick = () => openGuide(k);
