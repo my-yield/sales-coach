@@ -88,7 +88,7 @@ main.home{padding-bottom:110px}
 .unit .prog span{display:block;height:100%;background:#fff;border-radius:99px;transition:width .5s}
 
 /* Path */
-.path{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 30px}
+.path{position:relative;display:flex;flex-direction:column;align-items:center;gap:28px;padding:32px 0 40px}
 .node{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
 .bubble{width:76px;height:72px;border-radius:50%;display:grid;place-items:center;transition:transform .08s}
 .bubble svg.i{width:34px;height:34px}
@@ -194,6 +194,7 @@ textarea.said:focus{border-color:var(--blue)}
 .speech .k{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
 .scene{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--blue-100);background:var(--blue-50);border-radius:18px;padding:14px;margin:6px 0 12px}
 .scene .who{font-weight:800;font-size:17px}
+.scene .cardnote{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-2)}
 .facts{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
 .facts li{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink-2);font-weight:500}
 .facts svg.i{width:17px;height:17px;color:var(--blue);margin-top:1px}
@@ -225,33 +226,38 @@ textarea.said:focus{border-color:var(--blue)}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.9}}
 
 /* Units page and pinned unit header (Duolingo-style) */
-.ucard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
-.ucard.here{border:2px solid var(--char)}
-.uic{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--stone);color:var(--blue);border:2px solid var(--blue)}
-.uic svg.i{width:26px;height:26px}
+.ucard{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:#fff;border:0;border-radius:16px;padding:20px 16px 20px 20px;margin:12px 0;box-shadow:0 1px 2px rgba(20,24,32,.04),0 8px 24px -14px rgba(20,24,32,.14)}
+.ucard.here{box-shadow:inset 0 0 0 2px var(--char),0 8px 24px -14px rgba(20,24,32,.14)}
+.uic{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--stone);color:var(--blue);border:1.5px solid var(--blue)}
+.uic svg.i{width:22px;height:22px}
 .ucard.here .uic{background:var(--char);color:var(--gold);border-color:var(--gold)}
 .ucard.fin .uic{background:var(--ok-50);color:var(--ok-d);border-color:var(--ok)}
-.ubody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.ueye{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+.ubody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ueye{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .uhere{font-style:normal;background:var(--gold);color:var(--char);border-radius:4px;padding:1px 6px;margin-left:4px;letter-spacing:.04em}
-.utitle{font-weight:800;font-size:16px;color:var(--char);line-height:1.25}
-.ubar{height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;margin-top:4px}
+.utitle{font-weight:800;font-size:18px;color:var(--char);line-height:1.2;letter-spacing:-.01em}
+.udesc{font-size:14px;font-weight:500;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.umeta{display:flex;align-items:center;gap:10px;margin-top:8px}
+.ubar{flex:1;height:4px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .ubar span{display:block;height:100%;background:var(--blue);border-radius:99px}
-.ucount{font-size:12px;color:var(--muted);font-weight:600}
-.ucta{flex:none;font-weight:700;font-size:14px;color:#fff;background:var(--char);border-radius:6px;padding:9px 12px}
-.ucard.fin .ucta{background:transparent;color:var(--char);border:1.5px solid var(--char)}
-.unithead{position:sticky;top:61px;z-index:4;padding-top:10px;background:var(--bg)}
-.unithead .unit{margin:0;padding:12px 14px}
-.unithead .unit h2{font-size:18px;margin:2px 0 8px;line-height:1.25}
+.ucount{flex:none;font-size:12px;color:var(--muted);font-weight:600}
+.ucta{flex:none;display:flex;align-items:center;color:var(--faint)}
+.ucta svg.i{width:20px;height:20px}
+.ucard.here .ucta{color:var(--char)}
+.ucard.fin .ucta{color:var(--ok-d)}
+.unithead{position:sticky;top:61px;z-index:4;padding-top:8px;padding-bottom:4px;background:var(--bg)}
+.unithead .unit{margin:0;padding:18px 20px 20px;border-radius:16px}
+.unithead .unit h2{font-size:22px;margin:4px 0 2px;line-height:1.2}
+.unithead .unit .udesc{color:rgba(255,255,255,.78);margin:0 0 14px;max-width:72%;position:relative;z-index:1}
 .unithead .art svg{width:54px;height:54px}
 .unithead .unit .prog{margin-top:0}
-.uback{display:inline-flex;align-items:center;gap:6px;color:var(--char);font-weight:800;font-size:15px;background:#fff;border:1.5px solid var(--char);border-radius:6px;padding:8px 14px 8px 10px;margin-bottom:10px}
+.uback{display:inline-flex;align-items:center;gap:6px;color:var(--char);font-weight:700;font-size:15px;background:none;border:0;border-radius:8px;padding:8px 6px;margin:0 -6px 6px}
 .uback svg.i{width:20px;height:20px}
-.uback:active{background:var(--char);color:#fff}
+.uback:active{background:var(--line-2)}
 
 /* Unit guide and lesson cards */
 .uheadrow{display:flex;justify-content:space-between;gap:8px}
-.guidecard{display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin:12px 0 0;padding:14px;border-radius:12px;background:var(--gold-50);border:1.5px solid var(--gold)}
+.guidecard{display:flex;gap:16px;align-items:center;width:100%;text-align:left;margin:20px 0 0;padding:18px 20px;border-radius:16px;background:var(--gold-50);border:0}
 .guidecard .gic{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--char);color:var(--gold)}
 .guidecard b{display:block;color:var(--char);font-size:15px}
 .guidecard small{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
@@ -264,6 +270,12 @@ textarea.said:focus{border-color:var(--blue)}
 .qrow[disabled]{opacity:.5}
 .qn{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;background:var(--line-2);color:var(--char)}
 .qrow.ok .qn{background:var(--ok-50);color:var(--ok-d)}
+.qrow.ok:not(.next){background:var(--bg);border-color:transparent} .qrow.ok .qt{color:var(--ink-2);font-weight:500}
+.qrow.next{border:2px solid var(--char);box-shadow:0 0 0 4px var(--gold-50);align-items:center}
+.qrow.next .qn{background:var(--char);color:var(--gold)} .qrow.next .qt small{color:var(--gold-d)}
+.qgo{margin-left:auto;flex:none;transform:rotate(180deg);display:grid;place-items:center;color:var(--char)} .qgo svg{width:18px;height:18px}
+.qprog{display:flex;align-items:center;gap:10px;margin:8px 0 0;font-size:13px;color:var(--ink-2)} .qprog b{white-space:nowrap}
+.qbar{flex:1;height:8px;border-radius:4px;background:var(--line-2);overflow:hidden} .qbar span{display:block;height:100%;background:var(--ok)}
 .qn svg.i{width:16px;height:16px}
 .qt{font-size:14px;font-weight:600;color:var(--char);line-height:1.35}
 .qt small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
@@ -398,6 +410,82 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 /* Choices, tiles, pills = the site's chips and tags */
 .pill{border-radius:6px;border:1.5px solid #CFCAC0;box-shadow:none;font-weight:700}
 .pill[aria-pressed="true"]{background:var(--char);border-color:var(--char);color:#fff;box-shadow:none}
+/* Today card: workday streak strip and daily quests */
+.today{padding:14px 16px}
+.today .trow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.today .tstreak{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--char);flex-wrap:wrap}
+.today .tstreak small{flex-basis:100%;font-weight:600;color:var(--ink-2);font-size:12.5px;margin:-4px 0 0 32px}
+.qhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap} .qhead b{color:var(--char)}
+.today .tstreak svg{color:var(--gold-d)}
+.wkstrip{display:flex;justify-content:space-between;margin:12px 4px 0}
+.wkday{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--faint)}
+.wkday i{width:32px;height:32px;border-radius:50%;background:var(--line-2);display:grid;place-items:center;color:#fff;font-style:normal}
+.wkday.done i{background:var(--gold);color:var(--char)} .wkday.now{color:var(--char)} .wkday.now i{box-shadow:0 0 0 2px var(--char)}
+.wkday i svg{width:14px;height:14px}
+.quests{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.quest{display:flex;align-items:center;gap:10px;margin:6px 0;font-weight:700;color:var(--char)}
+.quest .qb{flex:1;height:8px;border-radius:4px;background:var(--line-2);overflow:hidden} .quest .qb span{display:block;height:100%;background:var(--gold)}
+.quest.done{color:var(--ok)} .quest .qn{font-size:13px;color:var(--ink-2);min-width:30px;text-align:right}
+.quests small{color:var(--ink-2);font-weight:600}
+/* Lesson: review round, combo, flag */
+.retag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-d);margin:0 0 6px}
+.retag svg{width:16px;height:16px}
+.combo{position:absolute;left:58px;top:4px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--gold-d)}
+.lessontop{position:relative}
+.bar.hot span{background:var(--gold)!important}
+.flagbtn{background:none;border:0;color:var(--ink-2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:flex-start;gap:6px;width:100%;text-align:left;padding:6px 0 0;margin:0;cursor:pointer;text-decoration:underline;min-height:0;box-shadow:none}
+.flagbtn svg{width:14px;height:14px}
+.flagform textarea{width:100%;min-height:70px;margin:6px 0;padding:8px;border-radius:6px;border:1.5px solid #CFCAC0;font:inherit;font-size:14px;box-sizing:border-box}
+.lockcard{text-align:center;padding:22px 16px}
+.callbar-r{display:flex;align-items:center;gap:10px}
+.reportbtn{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.reportbtn svg{width:14px;height:14px}
+.reportnote{width:100%;min-height:110px;margin:6px 0 14px;padding:10px;border-radius:6px;border:1.5px solid #CFCAC0;font:inherit;font-size:15px;box-sizing:border-box}
+.personas{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
+.persona{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1.5px solid #CFCAC0;border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--char);font:inherit}
+.persona:hover{border-color:var(--char)}
+.persona .pe{font-size:26px;line-height:1;width:40px;height:40px;flex:none;display:grid;place-items:center;background:var(--bg);border-radius:10px}
+.persona .pt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.persona b{font-size:15.5px} .persona i{font-size:13px;color:var(--ink-2)} .persona small{font-size:12px;color:var(--blue);font-weight:600;margin-top:2px}
+.persona .pc{margin-left:auto;flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #CFCAC0;display:grid;place-items:center;color:transparent}
+.persona .pc svg{width:14px;height:14px}
+.persona[aria-pressed="true"]{border:2px solid var(--char);background:var(--gold-50);padding:9.5px 11.5px}
+.persona[aria-pressed="true"] .pc{background:var(--char);border-color:var(--char);color:var(--gold)}
+/* Desktop: like Duolingo, the tabs become a left sidebar and streak, quests and the leaderboard sit in a right column. */
+.rail{display:none} .sideunits{display:none}
+.sideunits .sh{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--blue);margin:18px 8px 6px}
+.su{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--char)}
+.su:hover{background:var(--bg)} .su.here{background:var(--gold-50)}
+.su small{font-size:11px;font-weight:700;color:var(--ink-2);letter-spacing:.04em} .su b{font-size:13.5px;line-height:1.3}
+.su .sb{height:5px;border-radius:3px;background:var(--line-2);overflow:hidden} .su .sb span{display:block;height:100%;background:var(--gold)}
+.railboard .rbhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.railboard .rbhead b{color:var(--char)} .railboard .rbhead button{background:none;border:0;color:var(--blue);font-weight:800;font-size:13px;cursor:pointer;letter-spacing:.04em}
+.rbrow{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:8px;font-size:14px;font-weight:700;color:var(--char)}
+.rbrow.you{background:var(--blue-50)} .rbrow .rn{width:18px;text-align:center;color:var(--ink-2)} .rbrow .rv{margin-left:auto;color:var(--ink-2);font-weight:600}
+.rbrow .av{width:28px;height:28px;font-size:11px}
+@media (min-width:1080px){
+  #s-home .topbar .wrap{max-width:none;padding:0 28px}
+  #s-home .tabs{top:61px;bottom:0;right:auto;width:228px;border-top:0;border-right:1px solid var(--line);padding:18px 12px;background:#fff}
+  #s-home .tabs .wrap{flex-direction:column;justify-content:flex-start;gap:6px;max-width:none;padding:0}
+  #s-home .tab{flex:none;flex-direction:row;gap:10px;padding:6px 8px;font-size:15px;color:var(--ink-2);border-radius:10px;letter-spacing:0;cursor:pointer}
+  #s-home .tab .tabicon{padding:4px 6px}
+  #s-home .tab svg.i{width:24px;height:24px}
+  #s-home .tab:hover{background:var(--bg)}
+  #s-home .tab[aria-current="page"]{background:var(--blue-50);color:var(--char)}
+  #s-home .tab[aria-current="page"] .tabicon{background:transparent}
+  #s-home .tabs{overflow-y:auto}
+  .sideunits{display:block;border-top:1px solid var(--line);margin-top:10px}
+  main.home{margin-left:228px;padding:4px 28px 48px;display:grid;grid-template-columns:minmax(0,600px) 340px;column-gap:36px;justify-content:center;align-items:start}
+  main.home > *:not(.rail){grid-column:1;min-width:0}
+  .rail{display:block;grid-column:2;grid-row:1 / span 40;position:sticky;top:76px;padding-top:14px}
+  .rail .card{margin:0 0 16px}
+}
+#busy{position:fixed;inset:0 0 auto 0;z-index:200;pointer-events:none}
+.busybar{height:4px;background:linear-gradient(90deg,transparent,var(--gold),transparent);background-size:50% 100%;background-repeat:no-repeat;animation:busy 1s linear infinite}
+@keyframes busy{0%{background-position:-50% 0}100%{background-position:150% 0}}
+.busypill{position:absolute;top:70px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:var(--char);color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:20px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:var(--gold);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .opt,.tile{border-radius:10px;border:1.5px solid var(--line);box-shadow:none}
 .opt[aria-pressed="true"]{border-color:var(--char);background:#fff;box-shadow:0 0 0 2px var(--char) inset}
 .opt.right{border-color:var(--ok);background:var(--ok-50);box-shadow:none} .opt.wrong{border-color:var(--err);background:var(--err-50);box-shadow:none}
@@ -437,6 +525,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 </style>
 </head>
 <body>
+<div id="busy" hidden><div class="busybar"></div><div class="busypill"><span class="spin"></span>Loading…</div></div>
 
 <!-- ICONS -->
 <svg width="0" height="0" style="position:absolute">
@@ -465,6 +554,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     <symbol id="i-grid" viewBox="6 6 52 52"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M22 52V16M22 42c-3.8 -0.4 -6.4 -2.6 -6.8 -6.0c3.4 0.2 6.1 2.1 6.8 6.0zM22 34c3.8 -0.4 6.4 -2.6 6.8 -6.0c-3.4 0.2 -6.1 2.1 -6.8 6.0zM22 26c-3.8 -0.4 -6.4 -2.6 -6.8 -6.0c3.4 0.2 6.1 2.1 6.8 6.0zM22 16c-2-2-2-5 0-7c2 2 2 5 0 7zM42 52V16M42 42c-3.8 -0.4 -6.4 -2.6 -6.8 -6.0c3.4 0.2 6.1 2.1 6.8 6.0zM42 34c3.8 -0.4 6.4 -2.6 6.8 -6.0c-3.4 0.2 -6.1 2.1 -6.8 6.0zM42 26c-3.8 -0.4 -6.4 -2.6 -6.8 -6.0c3.4 0.2 6.1 2.1 6.8 6.0zM42 16c-2-2-2-5 0-7c2 2 2 5 0 7zM10 52h44"/></symbol>
     <symbol id="i-mega" viewBox="6 6 52 52"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M22 20m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M42 20m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M10 50c0-9 5-16 12-16s12 7 12 16M30 50c0-9 5-16 12-16s12 7 12 16"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></symbol>
     <symbol id="i-cc" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM8 9h8M8 13h5"/></symbol>
     <symbol id="i-keys" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 13h.01M12 13h.01M16 13h.01M7 16h10"/></symbol>
     <symbol id="i-micoff" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M2 2l20 20M9 9v3a3 3 0 0 0 5.1 2.1M15 9.3V5a3 3 0 0 0-5.9-.6M17 16.9A7 7 0 0 1 5 12v-2M19 10v2c0 .8-.1 1.5-.4 2.2M12 19v3M8 22h8"/></symbol>
@@ -483,7 +573,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   </div>
   <div class="wrap form">
     <div class="field"><label for="name">Your name</label><input id="name" autocomplete="name" placeholder="First and last name"></div>
-    <div class="field"><label for="code">Pilot code</label><input id="code" type="password" autocomplete="current-password"></div>
+    <div class="field"><label for="code">Access code</label><input id="code" type="password" autocomplete="current-password"></div>
     <div class="err" id="signin-err"></div>
     <button class="btn btn-primary" id="signin-btn">Get started</button>
   </div>
@@ -516,6 +606,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   </div></header>
 
   <main class="home">
+    <aside class="rail" id="rail" aria-label="Your progress"><div id="rail-today"></div><div class="card railboard" id="rail-board"></div></aside>
     <div class="wrap" id="home-err" hidden><div class="card" style="border-color:var(--err)">
       <p style="margin:0 0 10px;font-weight:700">Couldn't load your Sales Coach.</p>
       <p class="muted" id="home-err-msg" style="margin:0 0 12px"></p>
@@ -527,6 +618,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <button class="btn" id="pending-grade">Grade it now</button> <button class="btn ghost" id="pending-drop">Discard</button>
     </div></div>
     <div class="wrap" id="tab-learn">
+      <div id="today"></div>
       <div id="learn"></div>
     </div>
 
@@ -540,7 +632,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
         <div class="pills" id="farmers"></div>
         <div style="font-weight:800;margin-top:16px">How tough?</div>
         <div class="pills" id="tough"></div>
-        <label class="toggle" style="margin-top:16px"><span><b style="color:var(--char)">Live voice</b> (new): talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
+        <label class="toggle" style="margin-top:16px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
         <div class="err" id="setup-err" style="margin-top:12px"></div>
         <button class="btn btn-primary" id="setup-btn">Get my briefing</button>
       </div>
@@ -570,7 +662,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <div class="card" style="padding:4px 14px" id="me-hist"></div>
       <h3 class="section">Badges</h3>
       <div class="badgegrid" id="me-badges"></div>
-      <div style="margin:28px 0"><button class="btn btn-ghost" id="signout">Sign out</button></div>
+      <div style="margin:28px 0;display:flex;flex-direction:column;gap:10px"><button class="btn btn-ghost" id="me-report" type="button">Report a problem or idea</button><button class="btn btn-ghost" id="signout">Sign out</button></div>
     </div>
   </main>
 
@@ -579,12 +671,13 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     <button class="tab" data-tab="practice"><span class="tabicon"><svg class="i"><use href="#i-phone"/></svg></span>Practice</button>
     <button class="tab" data-tab="board"><span class="tabicon"><svg class="i"><use href="#i-trophy"/></svg></span>Leaders</button>
     <button class="tab" data-tab="me"><span class="tabicon"><svg class="i"><use href="#i-user"/></svg></span>Profile</button>
+    <div class="sideunits" id="side-units"></div>
   </div></nav>
 </section>
 
 <!-- LESSON -->
 <section class="screen" id="s-lesson" hidden>
-  <div class="wrap lessontop"><button class="x" id="lesson-x" aria-label="Quit lesson"><svg class="i"><use href="#i-x"/></svg></button><div class="bar"><span id="lesson-bar"></span></div></div>
+  <div class="wrap lessontop"><button class="x" id="lesson-x" aria-label="Quit lesson"><svg class="i"><use href="#i-x"/></svg></button><div class="bar" id="lesson-barwrap"><span id="lesson-bar"></span></div><span class="combo" id="lesson-combo" hidden></span></div>
   <div class="wrap ex" id="ex"></div>
   <div class="dock" id="lesson-dock"><div class="wrap">
     <div class="fb" id="fb" hidden></div>
@@ -634,7 +727,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 
 <!-- CALL -->
 <section class="screen call" id="s-call" hidden>
-  <div class="wrap callbar"><span class="calltag" id="call-sub">Practice call</span><span class="timer" id="call-timer">0:00</span></div>
+  <div class="wrap callbar"><span class="calltag" id="call-sub">Practice call</span><span class="callbar-r"><span class="timer" id="call-timer">0:00</span><button class="reportbtn" id="call-report" type="button" aria-label="Report a problem"><svg class="i"><use href="#i-flag"/></svg><span>Report</span></button></span></div>
   <div class="stage">
     <button class="portrait" id="portrait" aria-label="Cut in"><span class="rings"><i></i><i></i><i></i></span><span id="call-av"></span></button>
     <h2 id="call-name"></h2>
@@ -666,7 +759,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   <div class="wrap" style="padding-bottom:140px">
     <div class="kicker" id="guide-title"></div>
     <h2 style="margin:4px 0 6px;font-size:24px" id="guide-sub"></h2>
-    <p class="sub">Listen, read, or both. Then start the first lesson.</p>
+    <p class="sub">Listen, read, or both. Then jump into the lessons.</p>
     <div id="guide-body"></div>
   </div>
   <div class="dock"><div class="wrap"><button class="btn btn-primary" id="guide-play"></button></div></div>
@@ -683,6 +776,13 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   <p class="sub" id="end-sub">Only end when you're done. You'll get your score right after.</p>
   <div class="row2"><button class="btn btn-ghost" id="end-no">Keep talking</button><button class="btn btn-err" id="end-yes">End &amp; grade</button></div>
   <p style="margin:14px 0 0"><button class="link" id="end-cancel">Cancel call without a score</button></p>
+</div></div>
+
+<div class="scrim" id="report-sheet" hidden><div class="sheet">
+  <h3 style="margin-top:0">Report a problem</h3>
+  <p class="sub" id="report-sub">What went wrong, or what would make this better? We'll attach the details from this screen.</p>
+  <textarea id="report-note" class="reportnote" placeholder="For example: the mic stopped, he cut me off, the score seemed wrong…"></textarea>
+  <div class="row2"><button class="btn btn-ghost" id="report-cancel" type="button">Cancel</button><button class="btn btn-primary" id="report-send" type="button">Send</button></div>
 </div></div>
 
 <div class="grading" id="grading" hidden><div id="grading-art"></div><b>Grading your call…</b><span class="sub">This takes a few seconds.</span></div>
@@ -709,6 +809,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     </div>
     <div class="card" id="res-scene-card" hidden></div>
     <div class="card"><div style="font-weight:800;font-size:18px">Transcript</div><div class="log" id="res-log"></div></div>
+    <p style="text-align:center;margin:4px 0 18px"><button class="link" id="res-report" type="button">Something not right? Report a problem</button></p>
   </div>
   <div class="dock"><div class="wrap" style="display:flex;gap:10px">
     <button class="btn btn-ghost" id="again-btn">Run it back</button>
@@ -724,46 +825,71 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 (function () {
   const BLUE = "#1A5690", BLUE_D = "#144677", BLUE_L = "#C9DAEC", BLUE_XL = "#E6EEF7", INK = "#1B1F27", WIN = "#F9CD37";
 
-  // Coach mascot: a friendly ear of corn in My Yield gold, wrapped in its husk.
-  const KERNEL = "#E0B41F", COB_LINE = "#B98C0A", HUSK = "#5E8C3A", HUSK_D = "#3F6B2A", SILK = "#D9B86A";
+  // Coach mascot: an ear of corn, drawn in a Duolingo-like style (flat color, no outlines, chunky rounded shapes,
+  // calm, friendly face for a work tool). Kernel rows on the cob, husk leaves peeling open at the bottom, and a My Yield cap (blue, gold brim and wheat mark) with a little silk peeking out.
+  // Moods: happy, think, oops, cheer.
+  let mascotN = 0;
   function mascot(mood = "happy", size = 72) {
-    const eye = (cx, dx = 0, dy = 0) => `<ellipse cx="${cx}" cy="42" rx="7" ry="8.5" fill="#fff" stroke="${COB_LINE}" stroke-width="1.2"/><circle cx="${cx + dx}" cy="${43 + dy}" r="4.2" fill="${INK}"/><circle cx="${cx + dx + 1.5}" cy="${41 + dy}" r="1.5" fill="#fff"/>`;
-    const eyes = {
-      happy: eye(41) + eye(59),
-      cheer: `<path d="M34 44 q7 -8 14 0" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M52 44 q7 -8 14 0" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
-      oops: eye(41, 0, 1) + eye(59, 0, 1) + `<path d="M34 31 q5 -4 11 -1" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M66 31 q-5 -4 -11 -1" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-      think: eye(41, 2, -2) + eye(59, 2, -2),
-    }[mood];
-    const mouth = {
-      happy: `<path d="M43 57 q7 7 14 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-      cheer: `<path d="M41 55 q9 13 18 0 z" fill="${INK}"/><path d="M45 61 q5 3 10 0" fill="#E86A6A"/>`,
-      oops: `<path d="M44 61 q6 -5 12 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-      think: `<path d="M45 59 q4 -2 10 1" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-    }[mood];
-    const arms =
-      mood === "cheer"
-        ? `<path d="M27 62 q-14 -8 -14 -28" stroke="${HUSK}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M73 62 q14 -8 14 -28" stroke="${HUSK}" stroke-width="7" fill="none" stroke-linecap="round"/>
-           <g fill="${WIN}" stroke="${COB_LINE}" stroke-width=".6"><path d="M8 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/><path d="M92 10 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z"/><path d="M90 34 l1.2 3 3 1.2 -3 1.2 -1.2 3 -1.2 -3 -3 -1.2 3 -1.2z"/></g>`
-        : `<path d="M28 66 q-9 4 -10 13" stroke="${HUSK}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M72 66 q9 4 10 13" stroke="${HUSK}" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+    const id = "kn" + (++mascotN);
+    const COB = "#F3BE24", KERN = "#FFD445", KERN_L = "#FFE27E", SHADE = "#D99A0B";
+    const LEAF = "#4E8F3A", LEAF_D = "#3A6E2C", VEIN = "#73AE5C", SILK = "#E9D3A0", SILK_D = "#CFAF6E";
+    const CHEEK = "#F2A07A", MOUTH = INK;
+    const cob = "M50 7 C64 7 72 24 72 47 C72 72 63 90 50 90 C37 90 28 72 28 47 C28 24 36 7 50 7Z";
+    // Kernels: staggered rows of rounded kernels over a darker cob.
     let kernels = "";
-    for (let r = 0; r < 9; r++) for (let c = 0; c < 6; c++) {
-      const x = 30 + c * 7 + (r % 2 ? 3.5 : 0), y = 14 + r * 8.5;
-      kernels += `<rect x="${x}" y="${y}" width="6" height="7" rx="2.6" fill="${KERNEL}"/>`;
+    for (let r = 0; r < 9; r++) {
+      const y = 8 + r * 9.2, off = r % 2 ? 4.4 : 0;
+      for (let c = -1; c < 6; c++) {
+        const x = 26 + c * 8.8 + off;
+        kernels += `<rect x="${x}" y="${y}" width="8" height="8.4" rx="3.8" fill="${c <= 0 ? KERN_L : KERN}"/>`;
+      }
     }
-    const id = "cob" + mood + size;
+    const look = { happy: [0, 1], think: [2, -2.2], oops: [-0.4, 2], cheer: [0, 0] }[mood] || [0, 1];
+    const eye = (cx) => `<ellipse cx="${cx + look[0] * 0.6}" cy="${42 + look[1] * 0.6}" rx="3.6" ry="4.6" fill="${INK}"/><circle cx="${cx + look[0] * 0.6 + 1.2}" cy="${40.4 + look[1] * 0.6}" r="1.2" fill="#fff"/>`;
+    const eyes = mood === "cheer"
+      ? `<path d="M38 43.5 q4 -5 8 0" stroke="${INK}" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M54 43.5 q4 -5 8 0" stroke="${INK}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`
+      : eye(41) + eye(59);
+    const brows = {
+      oops: `<path d="M37 34.5 q3.5 -2.5 8 -1.5" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M63 34.5 q-3.5 -2.5 -8 -1.5" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+      think: `<path d="M55 33 q4 -3 8 -1" stroke="${INK}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+    }[mood] || "";
+    const mouth = {
+      happy: `<path d="M44 55 q6 5 12 0" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+      cheer: `<path d="M42.5 54 q7.5 7 15 0" stroke="${MOUTH}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`,
+      oops: `<path d="M45.5 57.5 q4.5 -2.5 9 0" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+      think: `<path d="M45.5 56.5 h9" stroke="${MOUTH}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+    }[mood];
+    // Husk: a back leaf, then two front leaves peeling open from the base. Cheering flings them wider.
+    const up = mood === "cheer";
+    const leaf = (side) => {
+      const m = side < 0 ? (x) => x : (x) => 100 - x;
+      const tipX = up ? 11 : 14, tipY = up ? 38 : 46;
+      return `<path d="M${m(50)} 96 C${m(36)} 96 ${m(tipX + 6)} ${tipY + 26} ${m(tipX)} ${tipY} C${m(tipX + 16)} ${tipY + 12} ${m(38)} ${tipY + 30} ${m(52)} 92Z" fill="${LEAF}"/>
+        <path d="M${m(47)} 93 C${m(36)} 86 ${m(tipX + 10)} ${tipY + 22} ${m(tipX + 2)} ${tipY + 3}" stroke="${VEIN}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>`;
+    };
+    const sparkles = up
+      ? `<g fill="${WIN}"><path d="M86 10 l1.8 4.4 4.4 1.8 -4.4 1.8 -1.8 4.4 -1.8 -4.4 -4.4 -1.8 4.4 -1.8z"/></g>` : "";
     return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
-      ${arms}
-      <path d="M50 13 q-7 -8 -14 -8 M50 13 q-1 -9 3 -12 M50 13 q7 -7 13 -6" stroke="${SILK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <clipPath id="${id}"><path d="M50 10 C67 10 73 30 73 52 C73 74 65 92 50 92 C35 92 27 74 27 52 C27 30 33 10 50 10z"/></clipPath>
-      <path d="M50 10 C67 10 73 30 73 52 C73 74 65 92 50 92 C35 92 27 74 27 52 C27 30 33 10 50 10z" fill="${WIN}"/>
-      <g clip-path="url(#${id})" opacity=".75">${kernels}</g>
-      <ellipse cx="50" cy="48" rx="19" ry="17" fill="${WIN}"/>
-      <path d="M50 10 C67 10 73 30 73 52 C73 74 65 92 50 92 C35 92 27 74 27 52 C27 30 33 10 50 10z" fill="none" stroke="${COB_LINE}" stroke-width="2.4"/>
-      <path d="M30 95 C13 80 14 52 25 38 C28 58 35 76 52 95z" fill="${HUSK}" stroke="${HUSK_D}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M70 95 C87 80 86 52 75 38 C72 58 65 76 48 95z" fill="${HUSK}" stroke="${HUSK_D}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M26 46 C30 64 36 78 44 88 M74 46 C70 64 64 78 56 88" stroke="${HUSK_D}" stroke-width="1.2" fill="none" opacity=".6"/>
-      ${eyes}${mouth}
-      <ellipse cx="33" cy="53" rx="4.5" ry="2.8" fill="#F2A07A" opacity=".55"/><ellipse cx="67" cy="53" rx="4.5" ry="2.8" fill="#F2A07A" opacity=".55"/>
+      <defs><clipPath id="${id}"><path d="${cob}"/></clipPath></defs>
+      ${sparkles}
+      <ellipse cx="50" cy="96.5" rx="22" ry="3" fill="${INK}" opacity=".10"/>
+      <path d="M50 96 C40 94 34 82 36 66 C42 74 46 84 50 90 C54 84 58 74 64 66 C66 82 60 94 50 96Z" fill="${LEAF_D}"/>
+      <path d="M33 22 C27 22 23 26 22 30 C26 27 30 26 34 27Z" fill="${SILK_D}"/><path d="M67 22 C73 22 77 26 78 30 C74 27 70 26 66 27Z" fill="${SILK}"/>
+      <path d="${cob}" fill="${COB}"/>
+      <g clip-path="url(#${id})">${kernels}
+        <path d="M60 4 C76 20 76 70 58 94 L80 94 L80 4Z" fill="${SHADE}" opacity=".28"/>
+      </g>
+      ${leaf(-1)}${leaf(1)}
+      <path d="M30 24 C30 11 39 4 50 4 C61 4 70 11 70 24 C63 21.5 37 21.5 30 24Z" fill="${BLUE}"/>
+      <path d="M50 4 C61 4 70 11 70 24 C66 22.6 61 22 56 21.8 C57 14 55 8 50 4Z" fill="${BLUE_D}"/>
+      <path d="M50 4.6 C47 9 46 15 46.6 21.8" stroke="${BLUE_D}" stroke-width="1" fill="none" opacity=".7"/>
+      <circle cx="50" cy="4.6" r="2.2" fill="${BLUE_D}"/>
+      <path d="M26 24.5 C36 20.5 64 20.5 74 24.5 C76 25.4 75.5 28 73 28.6 C62 26 38 26 27 28.6 C24.5 28 24 25.4 26 24.5Z" fill="${WIN}"/>
+      <path d="M27 28.6 C38 26 62 26 73 28.6 C70 29.8 66 30.2 62 29.8 C55 28.8 45 28.8 38 29.8 C34 30.2 30 29.8 27 28.6Z" fill="#D9A915"/>
+      <g fill="${WIN}"><rect x="49.3" y="9.5" width="1.4" height="10" rx=".7"/><ellipse cx="47.6" cy="12.6" rx="1.5" ry="2.6" transform="rotate(-30 47.6 12.6)"/><ellipse cx="52.4" cy="12.6" rx="1.5" ry="2.6" transform="rotate(30 52.4 12.6)"/><ellipse cx="47.6" cy="16.4" rx="1.5" ry="2.6" transform="rotate(-30 47.6 16.4)"/><ellipse cx="52.4" cy="16.4" rx="1.5" ry="2.6" transform="rotate(30 52.4 16.4)"/><ellipse cx="50" cy="9.4" rx="1.3" ry="2.3"/></g>
+      ${eyes}${brows}
+      <ellipse cx="33.5" cy="53" rx="4.2" ry="2.6" fill="${CHEEK}" opacity=".28"/><ellipse cx="66.5" cy="53" rx="4.2" ry="2.6" fill="${CHEEK}" opacity=".28"/>
+      ${mouth}
     </svg>`;
   }
 
@@ -846,10 +972,10 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "202610051828"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v8646bfa552"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
-const VOICE_PAGE = "https://bryantholt.github.io/myyield-sales-coach/test/?relay=1&v=" + APP_VERSION;
-const VOICE_ORIGIN = "https://bryantholt.github.io";
+const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
+const VOICE_ORIGIN = "https://my-yield.github.io";
 const GAS_PEER = /^https:\/\/n-[a-z0-9-]+-script\.googleusercontent\.com$/;
 let relayPeer = null, relaySeq = 0, relayAcks = false, relayVersion = "";
 // google.script.run failures are not network problems most of the time. Say what actually went wrong.
@@ -857,7 +983,7 @@ function serverErrorText(err){
   const m = String((err && (err.message || err)) || "");
   if (/PERMISSION_DENIED|unable to open|signed in to (more than one|multiple)|authuser|ScriptError.*(permission|authoriz)/i.test(m))
     return "Google got confused about which account you're using. Open your Sales Coach link in a window signed in only to your My Yield work account (or a private/incognito window).";
-  if (/authoriz/i.test(m)) return "The Sales Coach needs to be re-approved by Bryant. Tell him you saw this.";
+  if (/authoriz/i.test(m)) return "The Sales Coach needs to be re-approved by an admin. Let your admin know you saw this.";
   if (/too many times|quota|invoked too many/i.test(m)) return "Practice is paused for a bit (too much at once). Try again in a few minutes.";
   if (/timed out|exceeded maximum execution time/i.test(m)) return "The coach took too long. Try again.";
   if (/NetworkError|network|Failed to fetch|disconnected/i.test(m)) return "Couldn't reach the coach. Check your connection and try again.";
@@ -907,7 +1033,21 @@ if (GAS) window.addEventListener("message", (e) => {
   google.script.run.withSuccessHandler(reply).withFailureHandler((err) => reply(JSON.stringify({ ok: false, error: serverErrorText(err) })))
     .api(e.data.route, e.data.data === undefined ? null : e.data.data);
 });
+// Anything that takes a moment shows a loading bar, so a tap never looks ignored.
+// Calls and grading have their own "thinking" states, and logging runs in the background, so they're left out.
+const QUIET = /^\/api\/(turn|tts|say|grade|live|clientlog|flag|problem|transcribe)\b/;
+let busyN = 0, busyT = null;
+function busy(on){
+  busyN = Math.max(0, busyN + (on ? 1 : -1));
+  clearTimeout(busyT);
+  if (busyN) busyT = setTimeout(() => { $("busy").hidden = false; }, 250); else $("busy").hidden = true;
+}
 async function api(path, data){
+  if (QUIET.test(path)) return apiRaw(path, data);
+  busy(true);
+  try { return await apiRaw(path, data); } finally { busy(false); }
+}
+async function apiRaw(path, data){
   if (GAS || RELAY){
     const raw = RELAY ? await relayCall(path, data === undefined ? null : data)
       : await new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve)
@@ -926,7 +1066,7 @@ async function api(path, data){
 }
 function signOut(){ store.del("sc_token"); store.del("sc_name"); state.token=null; state.name=null; show("s-signin"); }
 
-function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
+function toast(msg, ms){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms || 3500); }
 function confetti(){
   const box = $("confetti"); box.innerHTML = "";
   const colors = ["#F9CD37","#1A5690","#5B9BD5","#F9CD37","#1A5690"];
@@ -1006,8 +1146,20 @@ async function say(text, role, audio){
 // done(text) fires only when the rep stops: tapping the mic or "Done", or, in a call, a real pause.
 let recog = null, listening = false, micBtn = null, onHeard = null, onInterim = null, onMicOn = null;
 let heardBase = "", heardNow = "", wantOn = false, sendOnEnd = false, endAfter = 0, quietT = null;
-const heardText = () => (heardBase + " " + heardNow).replace(/\s+/g, " ").trim();
-let micWatch = null, deafRetries = 0;
+// Safety net: if the words already kept also start the new stretch (any browser restarting or re-sending its
+// list), drop the overlap so nothing is ever written down twice.
+function joinHeard(a, b){
+  const A = a.trim().split(/\s+/).filter(Boolean), B = b.trim().split(/\s+/).filter(Boolean);
+  if (!A.length) return B.join(" "); if (!B.length) return A.join(" ");
+  const norm = (w) => w.toLowerCase().replace(/[^a-z0-9']/g, "");
+  for (let n = Math.min(A.length, B.length); n >= 3; n--){
+    let same = true; for (let i = 0; i < n; i++) if (norm(A[A.length - n + i]) !== norm(B[i])) { same = false; break; }
+    if (same) return A.concat(B.slice(n)).join(" ");
+  }
+  return A.concat(B).join(" ");
+}
+const heardText = () => joinHeard(heardBase, heardNow);
+let micWatch = null;
 const IOS = /iPhone|iPad/.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
 function startListening(btn, done, interim, silenceMs, keep){
   if (!Recog) return false;
@@ -1023,9 +1175,9 @@ function startListening(btn, done, interim, silenceMs, keep){
   micBtn = btn; onHeard = done; onInterim = interim; endAfter = silenceMs || 0;
   if (!keep) heardBase = "";
   heardNow = ""; wantOn = true; sendOnEnd = false;
-  listening = true; btn && btn.classList.add("on"); deafRetries = 1;
-  // iPhones switch the audio over to "record" a moment after we ask; a mic opened before that is deaf.
-  if (IOS) setTimeout(() => { if (wantOn && listening && !recog) openRecog(); }, 300); else openRecog();
+  listening = true; btn && btn.classList.add("on");
+  // Must run inside the tap: on iPhones a mic started later (from a timer) says it's listening but hears nothing.
+  openRecog();
   return true;
 }
 // If the mic hasn't actually started, say so instead of sitting there. The first time, the phone shows
@@ -1049,14 +1201,17 @@ function openRecog(){
     // iPhones (and some Chrome builds) quietly start a fresh results list after a pause in the middle of one mic session.
     // Without this, everything said before the pause vanishes ("it recorded some of it, but not all").
     const first = e.results.length ? e.results[0][0].transcript.trim().toLowerCase() : "";
-    const reset = r._len && (e.results.length < r._len || (r._final0 && first && !first.startsWith(r._first.slice(0, Math.min(12, r._first.length)))));
+    // Only on iPhones, and only when the first finished phrase itself changes. (Chrome on computers briefly shrinks
+    // the list while it finalizes a phrase; treating that as a fresh list wrote every answer down twice.)
+    const reset = IOS && r._len && r._final0 && first && !first.startsWith(r._first.slice(0, Math.min(12, r._first.length)));
     if (reset){ heardBase = heardText(); heardNow = ""; }
     r._len = e.results.length; r._first = first; r._final0 = !!(e.results.length && e.results[0].isFinal);
     heardNow = t; onInterim && onInterim(heardText());
     if (endAfter){ clearTimeout(quietT); if (heardText().split(" ").length >= 3) quietT = setTimeout(()=>stopListening(true), endAfter); } };
-  r.onstart = () => { r._started = true; store.set("sc_mic_ok", "1"); if (r === recog && onMicOn) onMicOn();
-    // The mic says it's on but hears nothing (seen on iPhones on the first tap): quietly reopen it once.
-    setTimeout(() => { if (r === recog && listening && wantOn && !r._heard && deafRetries > 0){ deafRetries--; try { r.abort(); } catch {} } }, 5000); };
+  r.onstart = () => { r._started = true; r._t0 = Date.now(); store.set("sc_mic_ok", "1"); if (r === recog && onMicOn) onMicOn();
+    // iPhones sometimes open a mic that hears nothing. Say so, and let a fresh tap (which does work) start it again.
+    if (IOS) setTimeout(() => { if (r === recog && listening && !r._heard){ micLog(r, "no words in 7s");
+      stopListening("pause"); onInterim && onInterim(heardText(), "I didn't catch anything. Tap the mic and talk again."); } }, 7000); };
   r.onerror = (e) => {
     if (document.hidden) return; // the phone locked or switched apps; handled when the rep comes back
     if (e.error === "not-allowed" || e.error === "service-not-allowed"){ wantOn = false; micBlockedWhy().then((why) => onInterim && onInterim(heardText(), "The mic is blocked here (" + why + "). " + KEYBOARD_TIP)); }
@@ -1065,11 +1220,78 @@ function openRecog(){
   };
   r.onend = () => { if (r !== recog) return;
     heardBase = heardText(); heardNow = "";
+    if (wantOn && IOS){
+      // The iPhone ended the mic on its own. Restarting it from here would be deaf, so: in a call, send what was said;
+      // in a lesson, keep the words and ask for a tap.
+      micLog(r, "ended by phone");
+      if (endAfter && heardBase.split(" ").length >= 3){ wantOn = false; sendOnEnd = true; return finishListening(); }
+      wantOn = false; listening = false; recog = null; clearTimeout(quietT); micBtn && micBtn.classList.remove("on"); audioMode("playback");
+      onInterim && onInterim(heardText(), "The mic stopped. Tap it to keep going.");
+      return;
+    }
     if (wantOn){ setTimeout(()=>{ if (wantOn && r === recog) { try { openRecog(); } catch { finishListening(); } } }, 120); return; }
     finishListening(); };
   try { r.start(); } catch { setTimeout(()=>{ if (wantOn && r === recog) try { r.start(); } catch {
     wantOn = false; onInterim && onInterim(heardText(), "The mic is blocked here. " + KEYBOARD_TIP); finishListening(); } }, 250); }
 }
+// iPhones: the browser's speech-to-text often starts but hears nothing, so on an iPhone a lesson answer is
+// recorded (like the live calls, which work) and the coach writes it down.
+const REC_ANSWERS = (IOS || /[?&]rec=1/.test(location.search)) && !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+let rec = null; // { mr, stream, chunks, t0, timer }
+function recStart(onTick){
+  stopSpeaking(); try { player.removeAttribute("src"); player.load(); } catch {}
+  audioMode("play-and-record");
+  // getUserMedia is called right inside the tap, as iPhones expect.
+  return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then((stream) => {
+    const mime = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg"].find((m) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || "";
+    const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    rec = { mr, stream, chunks: [], t0: Date.now() };
+    mr.ondataavailable = (e) => { if (rec && e.data && e.data.size) rec.chunks.push(e.data); };
+    mr.start(250);
+    rec.timer = setInterval(() => onTick && rec && onTick(Math.round((Date.now() - rec.t0) / 1000)), 500);
+  });
+}
+function recStop(){
+  return new Promise((resolve) => {
+    const r = rec; rec = null;
+    if (!r) return resolve(null);
+    clearInterval(r.timer);
+    const done = () => { try { r.stream.getTracks().forEach((t) => t.stop()); } catch {} audioMode("playback"); resolve({ blob: new Blob(r.chunks, { type: (r.mr.mimeType || "audio/mp4") }), ms: Date.now() - r.t0 }); };
+    r.mr.onstop = done;
+    try { r.mr.state !== "inactive" ? r.mr.stop() : done(); } catch { done(); }
+  });
+}
+const blobB64 = (b) => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1] || ""); fr.onerror = () => no(new Error("Couldn't read the recording.")); fr.readAsDataURL(b); });
+async function sayRecord(ta){
+  const btn = $("say-mic"), hint = $("say-hint");
+  if (rec){ // second tap: stop and write it down
+    btn.classList.remove("on"); btn.disabled = true; hint.textContent = "Writing down what you said…";
+    const r = await recStop();
+    try {
+      if (!r || r.ms < 800 || r.blob.size < 800){ hint.textContent = "That was too short. Tap the mic, say your answer, then tap again."; return; }
+      const out = await api("/api/transcribe", { audio: await blobB64(r.blob), mime: r.blob.type });
+      if (!out.text){ hint.textContent = "I didn't hear anything. Tap the mic and try again, or type."; return; }
+      const prior = ta.value.trim(); ta.value = prior ? prior + " " + out.text : out.text; ta.oninput();
+      hint.textContent = "Got it. Edit if you need to, then check.";
+    } catch (e) { hint.textContent = e.message; }
+    finally { btn.disabled = false; }
+    return;
+  }
+  hint.textContent = "Starting the mic…";
+  try {
+    await recStart((sec) => {
+      if (!rec) return;
+      hint.textContent = `Recording ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} · tap again when you're done`;
+      if (sec >= 90) sayRecord(ta);
+    });
+    btn.classList.add("on"); hint.textContent = "Recording… tap again when you're done";
+  } catch (e) {
+    rec = null; audioMode("playback");
+    hint.textContent = "The mic is blocked here (" + String((e && (e.message || e.name)) || "not allowed") + "). " + KEYBOARD_TIP; ta.focus();
+  }
+}
+// iPhone mic trouble goes to the setup check (?page=check), so we can see what really happened on a phone.
+function micLog(r, how){ try { liveLog(`mic ${how}: ${r._t0 ? Date.now() - r._t0 : "?"}ms, ${heardText().split(" ").filter(Boolean).length} words`); } catch {} }
 // Ask the browser directly so the rep sees its own reason, e.g. "microphone is not allowed in this document".
 async function micBlockedWhy(){
   try { const st = await navigator.mediaDevices.getUserMedia({ audio: true }); st.getTracks().forEach((t) => t.stop());
@@ -1102,9 +1324,18 @@ function stopListening(mode){
 
 // Locking the phone or switching apps ends the mic. Pause instead of flipping into "mic blocked",
 // and when the rep comes back, show "Tap to talk".
+// Coming back from an iPhone banner, the notification shade or a phone call: pick the farmer's voice back up.
+function backFromInterruption(){
+  pageBackAt = Date.now();
+  if (state.ended || $("s-call").hidden) return;
+  if (live.on) return liveCheckAudio();
+  if (state.phase === "farmer" && player.getAttribute("src") && player.paused && !player.ended) player.play().catch(() => {});
+}
+window.addEventListener("focus", backFromInterruption);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden){ if (listening) stopListening("pause"); return; }
-  if (live.ctx && live.on && !state.ended) return liveCheckAudio();
+  backFromInterruption();
+  if (live.on) return;
   if (!$("s-call").hidden && !state.ended && !state.busy && state.phase !== "farmer" && !listening && !state.typing && !state.muted){
     phase("ready"); $("done-talk").innerHTML = icon("mic") + "Tap to talk"; setStatus("Your turn. Tap to talk.", "you");
   }
@@ -1125,7 +1356,7 @@ async function loadHome(){
   try {
     const [me, path, opts] = await Promise.all([api("/api/me"), api("/api/path"), api("/api/start")]);
     state.me = me.stats; state.board = me.leaderboard; state.path = path;
-    renderChips(); renderPath(); renderPractice(opts); renderBoard(); renderMe();
+    renderChips(); renderToday(); renderPath(); renderPractice(opts); renderBoard(); renderRailBoard(); renderSideUnits(); renderMe(); placeToday();
     offerPendingCall();
   } catch (e) {
     if (/Tell us your name/.test(e.message)) return; // the sign-in screen is already showing
@@ -1139,6 +1370,50 @@ function renderChips(){
   $("chip-streak").classList.toggle("off", !s.streak || !s.practicedToday);
   $("chip-streak").querySelector("span").textContent = s.streak;
   $("chip-xp").querySelector("span").textContent = s.points;
+}
+
+// Workday streak (weekends don't break it) and today's two quests: one lesson, one practice call.
+function renderToday(){
+  const s = state.me, box = $("today");
+  if (!s || !s.weekDays){ box.innerHTML = ""; return; }
+  const q = s.quests || { lessons: 0, calls: 0 }, both = q.lessons > 0 && q.calls > 0;
+  const quest = (done, label) => `<div class="quest ${done ? "done" : ""}">${icon(done ? "check" : label === "lesson" ? "book" : "phone")}<span>${label === "lesson" ? "Finish 1 lesson" : "Do 1 practice call"}</span><span class="qb"><span style="width:${done ? 100 : 0}%"></span></span><span class="qn">${done ? 1 : 0}/1</span></div>`;
+  box.innerHTML = `<div class="card today">
+    <div class="tstreak">${icon("flame")}<span>${s.streak ? `${s.streak}-day streak` : "Start a streak today"}</span><small>Weekends don't count against you</small></div>
+    <div class="wkstrip">${s.weekDays.map((d) => `<div class="wkday ${d.done ? "done" : ""} ${d.today ? "now" : ""}"><i>${d.done ? icon("check") : ""}</i>${d.day}</div>`).join("")}</div>
+    <div class="quests"><div class="qhead"><b>Today's quests</b><small>${both ? "Done! +10 bonus points" : "Do both for +10 bonus points"}</small></div>
+      ${quest(q.lessons > 0, "lesson")}${quest(q.calls > 0, "call")}</div></div>`;
+}
+const BOARD_UNLOCK = 3;
+const DESK = () => matchMedia("(min-width:1080px)").matches;
+// On desktop the Today card lives in the right column (on every tab); on phones it sits at the top of Learn.
+function placeToday(){
+  const t = $("today"), desk = DESK();
+  if (desk && t.parentNode !== $("rail-today")) $("rail-today").appendChild(t);
+  if (!desk && t.parentNode !== $("tab-learn")) $("tab-learn").insertBefore(t, $("learn"));
+  t.hidden = !desk && state.learnView === "unit";
+}
+matchMedia("(min-width:1080px)").addEventListener("change", placeToday);
+// Right column: this week's top five (or how far until the board unlocks).
+// Desktop sidebar: every unit with its progress, one click to jump in.
+function renderSideUnits(){
+  const box = $("side-units"); if (!box || !state.path) return;
+  const units = state.path.units, here = store.get("sc_unit");
+  box.innerHTML = `<div class="sh">UNITS</div>` + units.map((u, k) => { const p = unitProgress(u);
+    return `<button class="su ${u.id === here && state.learnView === "unit" ? "here" : ""}" data-k="${k}"><small>${unitKicker(u, k).toUpperCase()}</small><b>${esc(u.short || u.title)}</b><span class="sb"><span style="width:${p.done / p.total * 100}%"></span></span></button>`; }).join("");
+  for (const b of box.querySelectorAll(".su")) b.onclick = () => { const k = +b.dataset.k; store.set("sc_unit", units[k].id); setTab("learn"); renderUnit(k); window.scrollTo(0, 0); };
+}
+function renderRailBoard(){
+  const box = $("rail-board"); if (!box) return;
+  const me = state.me, doneN = me ? (me.lessonsDone || 0) + (me.calls || 0) : 0;
+  const head = `<div class="rbhead"><b>This week</b><button type="button" id="rb-all">VIEW ALL</button></div>`;
+  if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN; box.innerHTML = head + `<p class="sub" style="margin:4px 0 0">${icon("lock")} Finish ${left} more lesson${left === 1 ? "" : "s"} or call${left === 1 ? "" : "s"} to join the leaderboard.</p>`; }
+  else {
+    const rows = ((state.board && state.board.week) || []).slice(0, 5);
+    box.innerHTML = head + (rows.length ? rows.map((r) => `<div class="rbrow ${r.you ? "you" : ""}"><span class="rn">${r.rank}</span><div class="av" style="background:${avColor(r.rep)}">${esc(initials(r.rep))}</div><span>${esc(r.rep)}${r.you ? " (you)" : ""}</span><span class="rv">${r.weekPoints} pts</span></div>`).join("")
+      : `<p class="sub" style="margin:4px 0 0">No one has practiced this week yet. Your next lesson takes the top spot.</p>`);
+  }
+  $("rb-all").onclick = () => setTab("board");
 }
 
 const OFFSETS = [0, 56, 84, 56, 0, -56, -84, -56];
@@ -1155,8 +1430,10 @@ function renderPath(){
   const k = units.findIndex((u) => u.id === saved);
   if (state.learnView === "units" || k < 0) renderUnitList(); else renderUnit(k);
 }
+// "Unit 4 · Play 1" for plays; just "Unit 1" when the short name already says it.
+function unitKicker(u, k){ return `Unit ${k + 1}` + (u.short && u.short !== u.title ? ` · ${esc(u.title)}` : ""); }
 function renderUnitList(){
-  state.learnView = "units";
+  state.learnView = "units"; $("today").hidden = false; renderSideUnits();
   const units = state.path.units, here = store.get("sc_unit");
   const box = $("learn");
   box.innerHTML = `<h3 class="section" style="margin-top:18px">Units</h3><p class="sub">Start any unit. Inside a unit, each lesson unlocks the next.</p>` +
@@ -1165,24 +1442,25 @@ function renderUnitList(){
       const cta = p.finished ? "Review" : p.started || isHere ? "Continue" : "Start";
       return `<button class="ucard ${p.finished ? "fin" : ""} ${isHere ? "here" : ""}" data-k="${k}">
         <span class="uic">${icon(p.finished ? "check" : u.icon || "book")}</span>
-        <span class="ubody"><span class="ueye">Unit ${k + 1} · ${esc(u.title)}${isHere ? ' <i class="uhere">You\'re here</i>' : ""}</span>
-          <span class="utitle">${esc(u.subtitle)}</span>
-          <span class="ubar"><span style="width:${(p.done / p.total) * 100}%"></span></span>
-          <span class="ucount">${p.done} of ${p.total} done</span></span>
-        <span class="ucta">${cta}</span></button>`;
+        <span class="ubody"><span class="ueye">${unitKicker(u, k)}${isHere ? ' <i class="uhere">You\'re here</i>' : ""}</span>
+          <span class="utitle">${esc(u.short || u.title)}</span>
+          <span class="udesc">${esc(u.subtitle)}</span>
+          <span class="umeta"><span class="ubar"><span style="width:${(p.done / p.total) * 100}%"></span></span>
+          <span class="ucount">${p.done}/${p.total}</span></span></span>
+        <span class="ucta" aria-label="${cta}">${icon("next")}</span></button>`;
     }).join("");
   for (const b of box.querySelectorAll(".ucard")) b.onclick = () => { store.set("sc_unit", units[+b.dataset.k].id); state.learnView = "unit"; renderUnit(+b.dataset.k); window.scrollTo(0, 0); };
 }
 function renderUnit(k){
-  state.learnView = "unit";
+  state.learnView = "unit"; $("today").hidden = !DESK(); renderSideUnits();
   const u = state.path.units[k], p = unitProgress(u);
   const box = $("learn");
   const heard = store.get("sc_guide_" + u.id);
   box.innerHTML = `<div class="unithead"><div class="uheadrow"><button class="uback" id="all-units">${icon("back")}<span>All units</span></button>
       <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
-      <div class="eyebrow">Unit ${k + 1} · ${esc(u.title)}</div><h2>${esc(u.subtitle)}</h2>
+      <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    ${heard ? "" : `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>New to this play? Start here.</b><small>Listen to the ${guideMinutes(u)}-minute unit guide: what it is, who it's for, and how to pitch it.</small></span></button>`}
+    ${heard ? "" : `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>New to this unit? Start here.</b><small>Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.</small></span></button>`}
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
   $("unit-guide").onclick = () => openGuide(k);
@@ -1205,11 +1483,14 @@ function showNodeCard(n, u, i){
     const rows = n.questions.map((q, k) => {
       const answered = n.state === "done" || k < at;
       const open = n.state === "done" || k <= at;
+      const next = n.state === "current" && k === at;
       const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : "Pick one";
-      return `<button class="qrow ${answered ? "ok" : ""}" data-k="${k}" ${open && n.state !== "locked" ? "" : "disabled"}>
-        <span class="qn">${answered ? icon("check") : k + 1}</span><span class="qt"><small>${tag}</small>${esc(q.prompt)}</span></button>`;
+      return `<button class="qrow ${answered ? "ok" : ""} ${next ? "next" : ""}" data-k="${k}" ${open && n.state !== "locked" ? "" : "disabled"}>
+        <span class="qn">${answered ? icon("check") : k + 1}</span><span class="qt"><small>${next ? "Up next · " : answered && n.state !== "done" ? "Done · " : ""}${tag}</small>${esc(q.prompt)}</span>${next ? `<span class="qgo">${icon("back")}</span>` : ""}</button>`;
     }).join("");
+    const doneN = n.state === "done" ? n.questions.length : at;
     html = `<div class="kicker">Lesson ${i + 1} of ${lessonsIn}</div><h3>${esc(n.title)}</h3>` +
+      (n.state === "locked" ? "" : `<div class="qprog"><span class="qbar"><span style="width:${doneN / n.questions.length * 100}%"></span></span><b>${n.state === "done" ? "All done" : `${doneN} of ${n.questions.length} done`}</b></div>`) +
       (n.state === "locked" ? `<p class="lockmsg">${icon("lock")} Finish “${esc(u.lessons[i - 1] ? u.lessons[i - 1].title : "the lesson before")}” first to unlock this.</p>` : "") +
       `<div class="qlist">${rows}</div>` +
       (n.state === "locked" ? "" : n.state === "done"
@@ -1301,7 +1582,7 @@ function renderUnitPath(box, u, k){
     el.className = `node ${n.state} ${n.kind==="checkpoint"?"checkpoint":""}`;
     el.style.transform = `translateX(${OFFSETS[i % OFFSETS.length]}px)`;
     const ic = n.state==="locked" ? "lock" : n.state==="done" && n.kind!=="checkpoint" ? "check" : n.icon;
-    el.innerHTML = `${n.state==="current" ? `<div class="start">${n.kind==="checkpoint"?"CHECKPOINT":"START"}</div>` : ""}
+    el.innerHTML = `${n.state==="current" ? `<div class="start">${n.kind==="checkpoint"?"CHECKPOINT":(() => { try { const p = JSON.parse(store.get(progressKey(n.id)) || "null"); return p && p.i > 0 && Date.now() - p.at < 864e5 ? `CONTINUE · ${p.i}/${n.questions.length}` : "START"; } catch { return "START"; } })()}</div>` : ""}
       <button class="bubble" aria-label="${esc(n.title)}">${icon(ic)}</button>
       ${n.kind==="lesson" && n.state==="done" ? `<div class="stars">${[1,2,3].map((k)=>`<span style="color:${k<=n.stars?"var(--gold-d)":"var(--line)"}">★</span>`).join("")}</div>` : ""}
       <div class="label">${esc(n.title)}</div>`;
@@ -1319,20 +1600,44 @@ function pills(el, options, key){
     b.setAttribute("aria-pressed", String(state[key]===o.id));
     b.onclick = () => { state[key]=o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c===b)); }; el.appendChild(b); }
 }
+// "Who do you want to call?": the customer personas as stacked cards (emoji, name, quote, what wins him over).
+function personaCards(el, options, key){
+  el.className = "personas"; el.innerHTML = "";
+  if (!options.some((o) => o.id === state[key])) state[key] = options[0].id;
+  for (const o of options){
+    const b = document.createElement("button"); b.className = "persona"; b.type = "button";
+    b.innerHTML = `<span class="pe" aria-hidden="true">${esc(o.emoji || "")}</span><span class="pt"><b>${esc(o.label)}</b>${o.quote ? `<i>“${esc(o.quote)}”</i>` : ""}${o.wants ? `<small>Win him over with: ${esc(o.wants)}</small>` : ""}</span><span class="pc" aria-hidden="true">${icon("check")}</span>`;
+    b.setAttribute("aria-pressed", String(state[key] === o.id));
+    b.onclick = () => { state[key] = o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c === b)); };
+    el.appendChild(b);
+  }
+}
 function renderPractice({ farmers, toughness, plays }){
   if (!state.callPlay) state.callPlay = "play1";
-  if (plays) pills($("plays"), plays.map((p) => ({ id: p.id, label: p.short })), "callPlay");
-  pills($("farmers"), [{ id:"surprise", label:"Surprise me" }, ...farmers], "farmerId");
+  if (plays) state.plays = plays;
+  const people = () => {
+    const dealer = (state.plays || []).some((p) => p.id === state.callPlay && p.dealer);
+    const list = farmers.filter((f) => !!f.dealer === dealer);
+    personaCards($("farmers"), dealer ? list : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...list], "farmerId");
+  };
+  if (state.plays) pills($("plays"), state.plays.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  $("plays").onclick = people;
+  people();
   pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
   $("goal-n").textContent = `${Math.min(s.weekCalls, s.weeklyGoal)}/${s.weeklyGoal}`;
-  $("goal-text").textContent = s.weekCalls >= s.weeklyGoal ? "Goal hit this week. Nice work." : `${s.weeklyGoal - s.weekCalls} more lessons or calls this week.`;
+  $("goal-text").textContent = s.weekCalls >= s.weeklyGoal ? "Goal hit this week. Nice work." : `${s.weeklyGoal - s.weekCalls} more ${s.weeklyGoal - s.weekCalls === 1 ? "lesson or call" : "lessons or calls"} to hit it this week.`;
 }
 
 const MEDAL = ["#F9CD37","#AEB4BD","#C98B5B"];
 function renderBoard(){
   const box = $("lb"); box.innerHTML = "";
+  // New reps don't open the board to find themselves last: it unlocks after a few practices.
+  const doneN = state.me ? (state.me.lessonsDone || 0) + (state.me.calls || 0) : BOARD_UNLOCK;
+  $("lb-tabs").hidden = doneN < BOARD_UNLOCK;
+  if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN;
+    box.innerHTML = `<div class="lockcard">${Art.mascot("happy", 90)}<p style="font-weight:800;color:var(--char);margin:8px 0 4px">Unlock the leaderboard</p><p class="sub" style="margin:0">Finish ${left} more lesson${left === 1 ? "" : "s"} or practice call${left === 1 ? "" : "s"} to start competing.</p></div>`; return; }
   const rows = (state.board && state.board[state.boardTab]) || [];
   if (!rows.length){ box.innerHTML = `<div class="lbempty">${Art.mascot("happy", 90)}No one's on the board yet.<br>Your first lesson takes the top spot.</div>`; return; }
   for (const r of rows){
@@ -1355,7 +1660,7 @@ function badgeTiles(el, badges, fresh=[]){
 function renderMe(){
   const s = state.me;
   $("me-name").textContent = state.name;
-  $("me-sub").textContent = s.weekRank ? `#${s.weekRank} on this week's leaderboard` : "Finish a lesson to get on the board.";
+  $("me-sub").textContent = s.weekRank ? `#${s.weekRank} on this week's leaderboard` : "Practice this week to get on the leaderboard.";
   const stat = (ic, color, v, l) => `<div class="stat"><svg class="i" style="color:${color};width:28px;height:28px"><use href="#i-${ic}"/></svg><div><b>${v}</b><small>${l}</small></div></div>`;
   $("me-stats").innerHTML = stat("flame","var(--gold-d)",s.streak,"Day streak") + stat("bolt","var(--blue)",s.points,"Total points")
     + stat("book","var(--ok)",s.lessonsDone,"Lessons") + stat("phone","var(--blue)",s.calls,"Practice calls")
@@ -1421,6 +1726,32 @@ function renderReview(r){
 $("review-x").onclick = backFromReview;
 $("signout").onclick = signOut;
 
+// "Report a problem": from a call, the call's results, or Profile. Lands on the admin page and the Flags tab,
+// with what was on screen attached (call details, the last few lines, app version, device).
+let reportWhere = "general";
+function openReport(where){ reportWhere = where; $("report-note").value = ""; $("report-sheet").hidden = false; setTimeout(() => $("report-note").focus(), 50); }
+function reportDetails(){
+  const d = { where: reportWhere, v: APP_VERSION, ua: navigator.userAgent.slice(0, 200) };
+  if (reportWhere === "call" || reportWhere === "results"){
+    d.farmer = state.farmerName || ""; d.play = state.callPlayName || state.callPlay || "";
+    d.voice = reportWhere === "call" ? (live.on ? "live voice" : "standard voice") : "";
+    if (reportWhere === "results") d.score = $("res-score").textContent;
+    d.lines = (state.transcript || []).slice(-8).map((m) => (m.role === "rep" ? "REP: " : "FARMER: ") + String(m.text || "").slice(0, 300));
+  }
+  return d;
+}
+$("call-report").onclick = () => openReport("call");
+$("res-report").onclick = () => openReport("results");
+$("me-report").onclick = () => openReport("general");
+$("report-cancel").onclick = () => { $("report-sheet").hidden = true; };
+$("report-send").onclick = async () => {
+  const note = $("report-note").value.trim(); if (!note) return $("report-note").focus();
+  $("report-send").disabled = true;
+  try { await api("/api/problem", { note, ...reportDetails() }); $("report-sheet").hidden = true; toast("Thanks. Sent to the Sales Coach team."); }
+  catch (e) { toast(e.message); }
+  finally { $("report-send").disabled = false; }
+};
+
 // ---------------- Lessons ----------------
 let L = null; // { lesson, i, results, chosen, order, said, checked }
 // A lesson only counts once it's finished, but leaving partway keeps your place (on this device, for a day).
@@ -1431,13 +1762,13 @@ function saveProgress(){
 }
 async function openLesson(id, opts = {}){
   try { const lesson = await api("/api/path?lesson=" + encodeURIComponent(id));
-    L = { lesson, i:0, results:[], answers:[], practice: !!opts.practice };
+    L = { lesson, i:0, results:[], answers:[], practice: !!opts.practice, combo: 0, review: false, reviewTotal: 0, reviewDone: 0 };
     if (opts.start != null){
       // Jumping to a question: practice keeps nothing; going back in the current lesson keeps the answers before it.
       let p = null; try { p = JSON.parse(store.get(progressKey(id)) || "null"); } catch {}
       L.i = Math.min(opts.start, lesson.exercises.length - 1);
       if (!L.practice && p){ L.results = p.results.slice(0, L.i); L.answers = (p.answers || []).slice(0, L.i); }
-      if (!L.practice && L.results.length !== L.i) L.i = 0;
+      if (!L.practice && L.results.length !== L.i){ L.i = 0; L.results = []; L.answers = []; } // saved answers don't reach that question: start clean
       show("s-lesson"); renderExercise(); return;
     }
     try {
@@ -1450,12 +1781,46 @@ async function openLesson(id, opts = {}){
     show("s-lesson"); renderExercise();
   } catch (e) { toast(e.message); }
 }
-$("lesson-x").onclick = () => { stopListening(false); stopSpeaking(); loadHome(); };
+$("lesson-x").onclick = () => { if (rec) recStop(); stopListening(false); stopSpeaking(); loadHome(); };
 
 function setCheck(label, enabled, cls="btn-primary"){ const b=$("check-btn"); b.textContent=label; b.disabled=!enabled; b.className="btn "+cls; }
 function resetDock(){ $("lesson-dock").className="dock"; $("fb").hidden=true; $("fb").className="fb"; }
 
 function renderExercise(){
+  renderExerciseBody();
+  const n = L.lesson.exercises.length, extra = L.reviewTotal || 0;
+  $("lesson-bar").style.width = ((L.review ? n + L.reviewDone : L.i) / (n + extra) * 100) + "%";
+  if (L.review) $("ex").insertAdjacentHTML("afterbegin", `<div class="retag">↻ Previous mistake</div>`);
+  showCombo();
+}
+function showCombo(){
+  const c = (L && L.combo) || 0;
+  $("lesson-combo").hidden = c < 3; $("lesson-combo").textContent = c + " IN A ROW";
+  $("lesson-barwrap").classList.toggle("hot", c >= 5);
+}
+// After the last question, anything missed (pick-one and put-in-order) comes back until it's right.
+// Stars and points still use the first try.
+function startReview(){
+  L.missed = L.lesson.exercises.map((ex, k) => (ex.type !== "say" && L.results[k] === false ? k : -1)).filter((k) => k >= 0);
+  if (!L.missed.length) return finishLesson();
+  L.review = true; L.reviewQueue = L.missed.slice(); L.reviewTotal = L.missed.length; L.reviewDone = 0;
+  resetDock();
+  $("ex").innerHTML = `<div class="coachrow">${Art.mascot("happy", 76)}<div class="speech"><span class="k">Quick review</span>Let's go back over the ${L.missed.length === 1 ? "question" : `${L.missed.length} questions`} you missed. Mistakes help you learn.</div></div>`;
+  L.checked = true; setCheck("Continue", true);
+}
+function nextReview(){
+  if (!L.reviewQueue.length) return finishLesson();
+  L.i = L.reviewQueue.shift(); renderExercise();
+}
+// One answer checked. First pass: it counts. Review round: a miss goes to the back of the line.
+function record(right, answer){
+  if (L.review){ if (right) L.reviewDone += 1; else L.reviewQueue.push(L.i); }
+  else { L.results.push(right); L.answers[L.i] = answer; }
+  L.combo = right ? (L.combo || 0) + 1 : 0;
+  showCombo();
+}
+function renderExerciseBody(){
+  if (rec) recStop(); // leaving a question mid-recording
   resetDock();
   const ex = L.lesson.exercises[L.i];
   $("lesson-bar").style.width = (L.i / L.lesson.exercises.length * 100) + "%";
@@ -1484,11 +1849,15 @@ function renderExercise(){
     const ta = $("said");
     ta.oninput = () => { L.said = ta.value; setCheck("Check", ta.value.trim().split(/\s+/).length >= 4); };
     $("say-mic").onclick = () => {
+      if (REC_ANSWERS) return sayRecord(ta);
       if (listening) { stopListening(true); return; }
+      // Words already in the box (typed, or from an earlier tap) stay; new ones are added after them.
+      const prior = ta.value.trim(), join = (t) => (prior && t ? prior + " " + t : prior || t);
       onMicOn = () => { $("say-hint").textContent = "Listening… tap again when you're done"; };
-      const ok = startListening($("say-mic"), (t)=>{ if (!t){ $("say-hint").textContent = "I didn't hear anything. Tap the mic and try again, or type."; return; }
-          ta.value = t; ta.oninput(); $("say-hint").textContent = "Got it. Edit if you need to, then check."; },
-        (t, warn)=>{ if (warn){ $("say-hint").textContent = warn; ta.focus(); } else { ta.value = t; } }, false);
+      const ok = startListening($("say-mic"), (t)=>{ if (!t && !prior){ $("say-hint").textContent = "I didn't hear anything. Tap the mic and try again, or type."; return; }
+          ta.value = join(t); ta.oninput(); $("say-hint").textContent = "Got it. Edit if you need to, then check."; },
+        (t, warn)=>{ if (t) { ta.value = join(t); ta.oninput(); }
+          if (warn){ $("say-hint").textContent = warn; if (/blocked|Mic problem/.test(warn)) ta.focus(); } }, false);
       if (ok) $("say-hint").textContent = "Starting the mic…";
       else { $("say-hint").textContent = KEYBOARD_TIP; ta.focus(); }
     };
@@ -1499,38 +1868,57 @@ function renderExercise(){
 function sceneCard(sc, big){
   if (!sc) return "";
   const f = (ic, t) => `<li>${icon(ic)}<span>${esc(t)}</span></li>`;
-  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">Your grower</div><div class="who">${esc(sc.name)}</div><ul class="facts">
-    ${f("pin", sc.place)}${f("grid", sc.growers ? `Serves about ${sc.growers} growers` : Number(sc.acres).toLocaleString("en-US") + " acres")}${f("sprout", sc.crops)}${f("mega", sc.lead)}${f("home", "Talking " + sc.setting)}</ul></div></div>`;
+  // Only what the card actually knows: a cold call shows just a name and a place, a current customer shows the account.
+  const g = (ic, t) => (t ? f(ic, t) : "");
+  const size = sc.growers ? `Serves about ${sc.growers} growers` : sc.acres ? `About ${Number(sc.acres).toLocaleString("en-US")} acres` : "";
+  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
+    ${g("pin", sc.place)}${g("grid", size)}${g("sprout", sc.crops)}${g("user", sc.note)}${(sc.account || []).map((a) => g("check", a)).join("")}${g("mega", sc.lead)}${g("home", sc.setting && "Talking " + sc.setting)}</ul>${sc.lead && !sc.acres && !sc.growers && !sc.crops ? `<small class="cardnote">That's all you know. The rest is discovery.</small>` : ""}</div></div>`;
 }
 
+const CHEERS = { 3: "3 in a row!", 5: "5 in a row! You're on fire.", 8: "8 in a row!", 10: "10 in a row! That's top-rep stuff.", 15: "15 in a row!" };
 function feedback(good, title, html){
+  if (good && L && CHEERS[L.combo]) title = CHEERS[L.combo];
+  if (!good && L && L.review) title = "Not quite. Give it another try.";
   $("lesson-dock").className = "dock " + (good ? "good" : "bad");
   const fb = $("fb"); fb.hidden = false; fb.className = "fb " + (good ? "good" : "bad");
-  fb.innerHTML = `<div class="mas">${Art.mascot(good ? "happy" : "oops", 56)}</div><div><h4>${esc(title)}</h4>${html}</div>`;
+  fb.innerHTML = `<div class="mas">${Art.mascot(good ? "happy" : "oops", 56)}</div><div><h4>${esc(title)}</h4>${html}
+    <button class="flagbtn" id="flag-btn" type="button">${icon("flag")} Something wrong with this question?</button>
+    <div class="flagform" id="flag-form" hidden><textarea id="flag-note" placeholder="What's wrong? (wrong answer, confusing wording, not how we sell…)"></textarea>
+      <button class="btn btn-ghost" id="flag-send" type="button" style="min-height:40px">Send to the sales leaders</button></div></div>`;
+  $("flag-btn").onclick = () => { $("flag-form").hidden = false; $("flag-btn").hidden = true; $("flag-note").focus(); };
+  $("flag-send").onclick = async () => {
+    const note = $("flag-note").value.trim(); if (!note) return $("flag-note").focus();
+    $("flag-send").disabled = true;
+    const ex = L.lesson.exercises[L.i];
+    try { await api("/api/flag", { lessonId: L.lesson.id, index: L.i, prompt: ex.prompt, note, answer: L.answers[L.i] || null });
+      $("flag-form").innerHTML = `<p class="sub" style="margin:6px 0 0">Thanks. The sales leaders will see it.</p>`; }
+    catch (e) { $("flag-send").disabled = false; toast(e.message); }
+  };
   setCheck("Continue", true, good ? "btn-ok" : "btn-err");
 }
 
 $("check-btn").onclick = async () => {
   const ex = L.lesson.exercises[L.i];
   if (L.checked){ // continue
+    if (L.review) return nextReview();
     L.i += 1;
-    if (L.i >= L.lesson.exercises.length) return finishLesson();
+    if (L.i >= L.lesson.exercises.length) return startReview();
     saveProgress();
     return renderExercise();
   }
   if (ex.type === "choice"){
-    const right = L.chosen === ex.answer; L.checked = true; L.results.push(right); L.answers[L.i] = { chosen: L.chosen };
+    const right = L.chosen === ex.answer; L.checked = true; record(right, { chosen: L.chosen });
     const opt = (k) => $("ex").querySelector(`.opt[data-k="${k}"]`); opt(ex.answer).classList.add("right"); if (!right) opt(L.chosen).classList.add("wrong");
     feedback(right, right ? "Nice!" : "Not quite", `<p>${esc(ex.why)}</p>`);
   } else if (ex.type === "order"){
-    const right = L.order.every((k,n)=>k===n); L.checked = true; L.results.push(right); L.answers[L.i] = { order: L.order.slice() };
+    const right = L.order.every((k,n)=>k===n); L.checked = true; record(right, { order: L.order.slice() });
     feedback(right, right ? "Exactly right!" : "Close. Here's the order:", right ? `<p>${esc(ex.why)}</p>` : `<ul>${ex.items.map((t)=>`<li>${esc(t)}</li>`).join("")}</ul><p>${esc(ex.why)}</p>`);
   } else {
     stopListening(true);
     setCheck("Coach is listening…", false);
     try {
       const g = await api("/api/say", { lessonId: L.lesson.id, index: L.i, answer: $("said").value, scene: ex.scene });
-      L.checked = true; L.results.push(g.pass);
+      L.checked = true; L.results.push(g.pass); L.combo = g.pass ? (L.combo || 0) + 1 : 0; showCombo();
       L.answers[L.i] = { said: $("said").value, scene: ex.scene, score: g.score, got: g.got, missed: g.missed, feedback: g.feedback, better_line: g.better_line };
       const dots = `<div class="dots">${[1,2,3,4,5].map((k)=>`<i class="${k<=g.score?"on":""}"></i>`).join("")}</div>`;
       const got = g.got.length ? `<ul>${g.got.map((x)=>`<li>✓ ${esc(x)}</li>`).join("")}${g.missed.map((x)=>`<li>✗ ${esc(x)}</li>`).join("")}</ul>` : "";
@@ -1543,11 +1931,15 @@ $("check-btn").onclick = async () => {
 
 async function finishLesson(){
   if (L.practice){ toast("Practice done. Practice doesn't change your stars."); state.tab = "learn"; return loadHome(); }
+  if (L.results.length !== L.lesson.exercises.length){ // answers out of step with the questions: never leave the rep stuck
+    store.del(progressKey(L.lesson.id)); toast("Something got out of order. Let's run this lesson again from the top.", 6000);
+    return openLesson(L.lesson.id);
+  }
   $("lesson-bar").style.width = "100%";
   setCheck("Saving…", false);
   try {
     L.saveId = L.saveId || newId();
-    const r = await api("/api/lesson", { lessonId: L.lesson.id, results: L.results, answers: L.answers, saveId: L.saveId });
+    const r = await api("/api/lesson", { lessonId: L.lesson.id, results: L.results, answers: L.answers, saveId: L.saveId, v: APP_VERSION });
     state.path = r.path; state.lastLessonId = r.id; $("done-review").hidden = !r.id;
     store.del(progressKey(L.lesson.id));
     $("done-title").textContent = r.stars === 3 ? "Perfect lesson!" : "Lesson complete!";
@@ -1557,7 +1949,7 @@ async function finishLesson(){
     $("done-art").innerHTML = Art.mascot("cheer", 150);
     show("s-done"); confetti();
     say(`Lesson complete. ${r.points} points.${r.newBadges.length ? " New badge: " + r.newBadges.map((b)=>b.name).join(" and ") + "." : ""}`, "coach");
-  } catch (e) { setCheck("Try again", true); L.i -= 1; L.checked = true; toast(e.message); }
+  } catch (e) { setCheck("Try again", true); L.review = true; L.reviewQueue = []; L.checked = true; toast(e.message); }
 }
 $("done-btn").onclick = () => { stopSpeaking(); state.tab = "learn"; loadHome(); };
 $("done-review").onclick = () => { stopSpeaking(); openHistory(state.lastLessonId, "done"); };
@@ -1575,7 +1967,7 @@ async function getBriefing(){
     $("brief-kicker").textContent = (state.checkpoint ? "Checkpoint call · score 70+ to pass · " : "") + (r.play ? r.play.name : "Your call");
     $("brief-name").innerHTML = "";
     $("brief-text").innerHTML = sceneCard(r.scene, true) + `<p style="margin:6px 0 0">${esc(r.briefing)}</p>`;
-    $("brief-tough").textContent = `He'll be ${r.toughness}. Say "coach me" any time for a quick tip.`;
+    $("brief-tough").textContent = `How tough: ${r.toughness}. Say "coach me" any time for a quick tip.`;
     show("s-brief"); say(r.briefing, "coach");
   } catch (e) { $("setup-err").textContent = e.message; }
 }
@@ -1622,8 +2014,10 @@ async function farmerTurn(){
     $("done-talk").hidden = false; $("done-talk").textContent = "Try again"; state.retry = true;
   }
 }
+// Phones often hear "Carl" as "girl". In a call with Carl, put his name back.
+const fixNames = (text) => (/^Carl\b/.test(state.farmerName || "") ? String(text).replace(/\bgirls?\b/gi, (w) => (/s$/i.test(w) ? "Carl's" : "Carl")) : text);
 function sendRep(text){
-  text = (text||"").trim();
+  text = fixNames((text||"").trim());
   if (state.ended) return;
   if (!text){ callListen(); return setStatus(ON_PHONE ? "I didn't hear anything. Tap to talk and try again." : "Didn't catch that. Keep going.", "you"); }
   if (state.busy) return;
@@ -1641,7 +2035,7 @@ function callListen(keep, tapped){
   phase("you"); $("done-talk").textContent = "I'm done talking"; state.retry = false;
   onMicOn = () => setStatus("Listening. Talk now.", "you");
   const ok = startListening(null, sendRep, (t, warn) => {
-    if (warn && /didn't start/.test(warn)){ phase("ready"); $("done-talk").innerHTML = icon("mic") + "Tap to talk"; return setStatus(warn, "err"); }
+    if (warn && /didn't start|didn't catch|mic stopped/.test(warn)){ phase("ready"); $("done-talk").innerHTML = icon("mic") + "Tap to talk"; return setStatus(warn, "err"); }
     if (warn){ openTyping(true); return setStatus(warn, "err"); }
     $("s-call").classList.toggle("hearing", !!t); if (t) caption(t, true);
   }, 2800, keep);
@@ -1670,7 +2064,17 @@ $("done-talk").onclick = () => {
   stopListening(true);
 };
 // Tap the farmer to cut in while he's talking.
-$("portrait").onclick = () => { if (live.on && live.paused){ return liveResume(); } if (live.on){ liveStopPlayback(); return; } if (state.phase === "farmer"){ phase("idle"); stopSpeaking(); callListen(false, true); } };
+// Tap the farmer to cut in (standard voice only; in a live call you cut in by talking). Only a real tap counts:
+// not a swipe (like flicking away the iPhone mic banner) and not a touch right after coming back to the page.
+let tapStart = null, pageBackAt = 0;
+$("portrait").addEventListener("pointerdown", (e) => { tapStart = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+const realTap = (e) => !!tapStart && Date.now() - tapStart.t < 600 && Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) < 14 && Date.now() - pageBackAt > 1500;
+$("portrait").onclick = (e) => {
+  if (live.on && live.paused) return liveResume();
+  if (live.on) return;
+  if (!realTap(e)) return;
+  if (state.phase === "farmer"){ phase("idle"); stopSpeaking(); callListen(false, true); }
+};
 $("mute-btn").onclick = () => {
   state.muted = !state.muted;
   if (live.on){ live.muted = state.muted; $("mute-btn").setAttribute("aria-pressed", String(state.muted));
@@ -1706,7 +2110,10 @@ async function startCall(){
   show("s-call"); caption(""); setStatus("Calling…");
   if (liveAvailable()){
     try { await startLive(); return; }
-    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); toast(`Live voice didn't connect (${e.message}), so this call uses standard voice.`); }
+    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message);
+      // A closed or blocked mic prompt is the common case; say what to do, not what broke.
+      if (/^mic:.*(dismiss|denied|not ?allowed|permission)/i.test(e.message)) toast("The Sales Coach needs your microphone. When your browser asks, click Allow. (If you blocked it, click the lock icon by the address, then Microphone, then Allow.)", 10000);
+      else toast(`Live voice didn't connect (${e.message}), so this call uses standard voice.`); }
   }
   say(""); farmerTurn();
 }
@@ -1726,6 +2133,7 @@ const liveAvailable = () => liveWanted() && !MIC_BLOCKED && !GAS && !!(window.We
 
 function liveAdd(role, text){
   if (!text) return;
+  if (role === "rep") text = fixNames(text);
   const t = state.transcript, last = t[t.length - 1];
   if (last && last.role === role && !last.closed) last.text = (last.text + text).replace(/\s+/g, " ");
   else t.push({ role, text: text.replace(/^\s+/, "") }); // keep the trailing space; the next chunk follows it
@@ -1760,11 +2168,21 @@ function liveMic(frame){
   // louder than speaker leak. Quiet audio goes out as silence, so he can't hear himself as "the rep".
   const playing = live.nextT > live.ctx.currentTime - 0.35;
   const rms = Math.sqrt(live.buf.reduce((n, v) => n + v * v, 0) / live.buf.length);
-  if (playing && rms < LIVE_ECHO_GATE) live.buf.fill(0);
-  const pcm = new Int16Array(live.buf.length); live.buf.forEach((v, i) => { pcm[i] = v < 0 ? v * 32768 : v * 32767; }); live.buf = [];
-  const bytes = new Uint8Array(pcm.buffer); let bin = ""; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  const chunk = live.buf; live.buf = [];
+  // Noise guard: while he's talking, a short burst (a cough, a door, a dog) shouldn't cut him off. Loud audio is
+  // held back until it lasts about 0.3 seconds, which real talking does, then sent all at once so no words are lost.
+  if (!playing){ liveFlushHeld(); return liveSendPcm(chunk); }
+  if (rms < LIVE_ECHO_GATE){ live.held = []; return liveSendPcm(chunk.map(() => 0)); }
+  live.held = (live.held || []).concat([chunk]);
+  if (live.held.length < 3) return liveSendPcm(chunk.map(() => 0));
+  liveFlushHeld();
+}
+function liveFlushHeld(){ const h = live.held || []; live.held = []; for (const c of h) liveSendPcm(c); }
+function liveSendPcm(samples){
   // On a weak signal, don't pile up old audio (he'd answer something you said seconds ago).
   if (live.ws.bufferedAmount > 64000){ if (!live.lagLogged){ live.lagLogged = true; liveLog("send backlog " + live.ws.bufferedAmount); } return; }
+  const pcm = new Int16Array(samples.length); samples.forEach((v, i) => { pcm[i] = v < 0 ? v * 32768 : v * 32767; });
+  const bytes = new Uint8Array(pcm.buffer); let bin = ""; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
   live.ws.send(JSON.stringify({ realtimeInput: { audio: { data: btoa(bin), mimeType: "audio/pcm;rate=16000" } } }));
 }
 function liveSendText(text){
@@ -1781,7 +2199,7 @@ function stopLive(){
   // Always release the mic, including one that arrived after the call failed to start.
   for (const st of [live.stream, live.pendingStream]) try { st && st.getTracks().forEach((t) => t.stop()); } catch {}
   try { live.ctx && live.ctx.close(); } catch {}
-  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.lagLogged = false; live.paused = false;
+  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.lagLogged = false; live.paused = false;
   audioMode("playback");
 }
 // Live voice failed mid-call (signal, Gemini's time limit, phone stopped the audio): keep going with standard voice.
@@ -1800,7 +2218,15 @@ function liveCheckAudio(){
   if (!live.ctx || !live.on || state.ended) return;
   const track = live.stream && live.stream.getAudioTracks()[0];
   if (track && track.readyState === "ended") return liveFallback("mic ended");
-  if (live.ctx.state !== "running"){ live.paused = true; phase("ready"); $("done-talk").hidden = false; $("done-talk").innerHTML = icon("mic") + "Tap to resume"; setStatus("The call's audio paused. Tap to resume.", "err"); }
+  if (live.ctx.state === "running"){ if (live.paused){ live.paused = false; phase("you"); $("done-talk").hidden = true; setStatus("Your turn. Just talk.", "you"); } return; }
+  // iPhones pause the call's audio for banners, Siri or a phone call. Try to pick it back up on our own once the
+  // rep is back; only ask for a tap if the phone won't allow it.
+  if (document.hidden) return;
+  live.ctx.resume().catch(() => {});
+  setTimeout(() => {
+    if (!live.ctx || !live.on || state.ended || live.ctx.state === "running") return;
+    live.paused = true; phase("ready"); $("done-talk").hidden = false; $("done-talk").innerHTML = icon("mic") + "Tap to resume"; setStatus("The call's audio paused. Tap to resume.", "err");
+  }, 700);
 }
 // Called right from the "Start the call" tap: the audio and mic must start on the tap itself.
 async function startLive(){
@@ -1813,7 +2239,8 @@ async function startLive(){
   live.ctx.onstatechange = () => liveCheckAudio();
   // His voice plays a bit louder and evened out (iPhones play it at quiet "call" volume while the mic is on).
   try { const comp = live.ctx.createDynamicsCompressor(); const gain = live.ctx.createGain(); gain.gain.value = 1.7; comp.connect(gain); gain.connect(live.ctx.destination); live.out = comp; } catch { live.out = null; }
-  const micP = navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  // voiceIsolation: newer phones can filter out everything but the voice; browsers that don't know it ignore it.
+  const micP = navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, voiceIsolation: true } });
   micP.then((s) => { live.pendingStream = s; }, () => {}); // so a failed start can still release the mic
   setStatus("Connecting…");
   const [pass, stream] = await Promise.all([step("pass", api("/api/live", { rollToken: state.rollToken })), step("mic", micP)]);
@@ -1938,12 +2365,15 @@ function renderResults({ overall, grade, game, transcript, scene, at, checkpoint
     if (game.newBest) rw.push(`<span class="pill" style="border-color:var(--ok);color:var(--ok-d)">New personal best</span>`);
     if (game.weekRank) rw.push(`<span class="pill">#${game.weekRank} this week</span>`);
     if (game.unitComplete) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50)">🏆 ${esc(game.unitName || "Unit")} complete</span>`);
-  } else if (game && !review) rw.push(`<span class="pill">Calls need 4+ real answers to earn points</span>`);
+  } else if (game && !review) rw.push(`<span class="pill">Too short to earn points: calls need 4+ real answers</span>`);
   if (review && points) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50);color:var(--gold-ink)">⚡ +${points} points</span>`);
   $("res-reward").innerHTML = rw.join("");
   badgeTiles($("res-badges"), (game?.newBadges||[]).map((b)=>({...b,earned:true})), (game?.newBadges||[]).map((b)=>b.id));
   $("res-areas").innerHTML = `<div style="font-weight:800;font-size:18px">By skill</div>` + grade.areas.map((a)=>`<div class="area"><div class="top"><span>${esc(a.area)}</span><span>${a.score}/5</span></div><div class="meter"><span style="width:${a.score*20}%;background:${a.score>=4?"var(--ok)":a.score>=3?"var(--blue)":"var(--err)"}"></span></div><p>${esc(a.note)}${a.evidence?` You said: “${esc(a.evidence)}”`:""}${a.capped?` <b>Capped at ${a.score} by a habit below.</b>`:""}</p></div>`).join("")
-    + ((grade.red_flags||[]).length ? `<div style="font-weight:800;font-size:16px;margin-top:12px">Habits the coaches flag</div><ul>${grade.red_flags.map((f)=>`<li>${esc(f.label||f)}</li>`).join("")}</ul>` : "");
+    + ((grade.red_flags||[]).length ? `<div style="font-weight:800;font-size:16px;margin-top:12px">Habits the coaches flag</div><ul>${grade.red_flags.map((f)=>`<li>${esc(f.label||f)}</li>`).join("")}</ul>` : "")
+    // NuVue: top reps talk about 30% of the call. Measured from the transcript.
+    + (typeof grade.talk_share === "number" ? (() => { const pct = Math.round(grade.talk_share * 100), ok = pct <= 45;
+        return `<div class="area"><div class="top"><span>Your share of the talking</span><span>${pct}%</span></div><div class="meter"><span style="width:${pct}%;background:${ok ? "var(--ok)" : pct <= 60 ? "var(--blue)" : "var(--err)"}"></span></div><p>${ok ? "Nice: he did most of the talking." : "Aim for about 30%: ask shorter questions and let him talk."}</p></div>`; })() : "");
   $("res-fix").textContent = grade.fix_first; $("res-better").textContent = grade.better_line;
   const li = (el, items) => el.innerHTML = (items||[]).map((t)=>`<li>${esc(t)}</li>`).join("");
   li($("res-well"), grade.did_well); li($("res-missed"), grade.missed); li($("res-lines"), grade.playbook_lines);
