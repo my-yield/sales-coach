@@ -194,6 +194,7 @@ textarea.said:focus{border-color:var(--blue)}
 .speech .k{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
 .scene{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--blue-100);background:var(--blue-50);border-radius:18px;padding:14px;margin:6px 0 12px}
 .scene .who{font-weight:800;font-size:17px}
+.scene .cardnote{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-2)}
 .facts{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
 .facts li{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink-2);font-weight:500}
 .facts svg.i{width:17px;height:17px;color:var(--blue);margin-top:1px}
@@ -971,10 +972,10 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v8e06a54311"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v458933340e"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
-const VOICE_PAGE = "https://bryantholt.github.io/myyield-sales-coach/?relay=1&v=" + APP_VERSION;
-const VOICE_ORIGIN = "https://bryantholt.github.io";
+const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
+const VOICE_ORIGIN = "https://my-yield.github.io";
 const GAS_PEER = /^https:\/\/n-[a-z0-9-]+-script\.googleusercontent\.com$/;
 let relayPeer = null, relaySeq = 0, relayAcks = false, relayVersion = "";
 // google.script.run failures are not network problems most of the time. Say what actually went wrong.
@@ -1867,8 +1868,11 @@ function renderExerciseBody(){
 function sceneCard(sc, big){
   if (!sc) return "";
   const f = (ic, t) => `<li>${icon(ic)}<span>${esc(t)}</span></li>`;
-  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
-    ${f("pin", sc.place)}${f("grid", sc.growers ? `Serves about ${sc.growers} growers` : Number(sc.acres).toLocaleString("en-US") + " acres")}${f("sprout", sc.crops)}${f("mega", sc.lead)}${f("home", "Talking " + sc.setting)}</ul></div></div>`;
+  // Only what the card actually knows: a cold call shows just a name and a place, a current customer shows the account.
+  const g = (ic, t) => (t ? f(ic, t) : "");
+  const size = sc.growers ? `Serves about ${sc.growers} growers` : sc.acres ? `About ${Number(sc.acres).toLocaleString("en-US")} acres` : "";
+  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
+    ${g("pin", sc.place)}${g("grid", size)}${g("sprout", sc.crops)}${g("user", sc.note)}${(sc.account || []).map((a) => g("check", a)).join("")}${g("mega", sc.lead)}${g("home", sc.setting && "Talking " + sc.setting)}</ul>${sc.lead && !sc.acres && !sc.growers && !sc.crops ? `<small class="cardnote">That's all you know. The rest is discovery.</small>` : ""}</div></div>`;
 }
 
 const CHEERS = { 3: "3 in a row!", 5: "5 in a row! You're on fire.", 8: "8 in a row!", 10: "10 in a row! That's top-rep stuff.", 15: "15 in a row!" };
