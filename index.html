@@ -150,7 +150,7 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .x{color:var(--faint)}
 .bar{flex:1;height:16px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .bar span{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08);transition:width .35s ease}
-.ex{flex:1;padding:8px 0 180px}
+.ex{flex:1;padding:8px 16px 180px}
 .kicker{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin:10px 0 6px}
 .q{font-size:22px;font-weight:800;line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
 .ctx{display:inline-flex;gap:8px;align-items:center;background:var(--blue-50);color:var(--blue);font-weight:600;font-size:14px;padding:8px 12px;border-radius:12px;margin:6px 0 4px}
@@ -946,7 +946,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v81eb245631"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v2d226ffd95"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1434,7 +1434,7 @@ function renderUnit(k){
       <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
       <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    ${heard ? "" : `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>New to this unit? Start here.</b><small>Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.</small></span></button>`}
+    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
   $("unit-guide").onclick = () => openGuide(k);
