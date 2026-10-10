@@ -150,7 +150,12 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .x{color:var(--faint)}
 .bar{flex:1;height:16px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .bar span{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08);transition:width .35s ease}
-.ex{flex:1;padding:8px 0 180px}
+.trackpick{padding:16px 16px 10px;margin-top:14px}
+.trackopt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px 14px;margin:0 0 8px;border-radius:12px;border:1.5px solid var(--line);background:#fff}
+.trackopt b{display:block;color:var(--char)}.trackopt small{display:block;color:var(--ink-2);font-size:13px;margin-top:2px}
+.trackopt.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}.trackopt svg{color:var(--blue)}
+.linkbtn{background:none;border:0;padding:0;color:var(--blue);font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit}
+.ex{flex:1;padding:8px 16px 180px}
 .kicker{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin:10px 0 6px}
 .q{font-size:22px;font-weight:800;line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
 .ctx{display:inline-flex;gap:8px;align-items:center;background:var(--blue-50);color:var(--blue);font-weight:600;font-size:14px;padding:8px 12px;border-radius:12px;margin:6px 0 4px}
@@ -277,36 +282,6 @@ textarea.said:focus{border-color:var(--blue)}
 .guidecard .gic{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--char);color:var(--gold)}
 .guidecard b{display:block;color:var(--char);font-size:15px}
 .guidecard small{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
-.gvid{position:relative;aspect-ratio:16/9;margin:16px 0 0;border-radius:16px;overflow:hidden;background:linear-gradient(140deg,var(--blue),#184EFF);box-shadow:0 18px 40px -22px rgba(0,23,202,.55)}
-.gv-layer{position:absolute;inset:-2%;background-size:cover;background-position:center;opacity:0;transition:opacity .9s ease}
-.gv-layer.on{opacity:1}
-.gv-layer.pan-l{animation:panl var(--dur,30s) linear forwards}.gv-layer.pan-r{animation:panr var(--dur,30s) linear forwards}
-.gvid.paused .gv-layer{animation-play-state:paused}
-@keyframes panl{from{transform:scale(1.04) translate(0,0)}to{transform:scale(1.16) translate(-3%,-1.5%)}}
-@keyframes panr{from{transform:scale(1.16) translate(-3%,0)}to{transform:scale(1.04) translate(0,-1%)}}
-.gv-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(244,242,237,.96) 0%,rgba(244,242,237,.82) 30%,rgba(244,242,237,0) 58%)}
-.gv-title{position:absolute;left:5%;top:9%;max-width:46%}
-.gv-n{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
-.gv-h{margin:6px 0 0;font-size:clamp(17px,4.6vw,30px);line-height:1.12;color:var(--char);letter-spacing:-.02em}
-.gv-big{display:inline-block;margin-top:10px;padding:5px 12px;border-radius:999px;background:var(--blue);color:#fff;font-weight:800;font-size:clamp(13px,3.4vw,18px)}
-.gv-play{position:absolute;left:50%;top:50%;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;background:rgba(0,23,202,.92);color:#fff;display:none;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.gv-play svg{width:34px;height:34px;margin-left:4px}
-.gvid.paused .gv-play{display:grid}
-.gv-bar{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(38,43,53,.25);cursor:pointer}
-.gv-bar span{position:absolute;left:0;top:0;bottom:0;background:#184EFF;transition:width .25s linear}
-.gv-bar i{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.85)}
-.gv-callouts{list-style:none;margin:14px 0 0;padding:0}
-.gv-callouts li{display:flex;gap:12px;align-items:center;padding:6px 2px;font-size:16px;font-weight:600;color:var(--ink-2);opacity:0;transform:translateX(-10px);transition:opacity .45s,transform .45s,color .3s}
-.gv-callouts li.in{opacity:1;transform:none}
-.gv-callouts li.now{color:var(--char);font-size:17px}
-.gv-callouts .em{flex:none;width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(20,24,32,.12);display:grid;place-items:center;font-size:20px}
-.gv-callouts li.now .em{box-shadow:0 0 0 3px #184EFF}
-.gcap{min-height:44px;margin:12px 2px 0;padding:8px 12px;border-radius:8px;background:var(--char);color:#fff;font-size:14.5px;line-height:1.4;text-align:center}
-.gcap:empty{visibility:hidden}
-.gv-chapters{display:flex;gap:8px;overflow-x:auto;margin:14px 0 4px;padding-bottom:4px}
-.gv-chap{flex:none;display:flex;gap:6px;align-items:center;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap}
-.gv-chap b{color:var(--blue)}.gv-chap.on{border-color:var(--blue);color:var(--char);box-shadow:0 0 0 1px var(--blue)}
-.gread{margin-top:14px}.gread summary{cursor:pointer;color:var(--ink-2);font-weight:600;font-size:14px;padding:8px 0}
 .gsec{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0;transition:border-color .2s,box-shadow .2s}
 .gsec.on{border:2px solid var(--gold);box-shadow:0 0 0 4px var(--gold-50)}
 .gsec h4{margin:0 0 4px;font-size:16px;color:var(--char)}
@@ -715,6 +690,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <p class="sub" id="me-sub"></p>
       <p class="sub" style="font-size:12px;margin-top:-2px" id="app-version"></p>
       <div class="statgrid" id="me-stats"></div>
+      <div id="me-track" style="margin-top:16px"></div>
       <h3 class="section">History</h3>
       <p class="sub" style="margin-top:-4px">Tap any lesson or call to see how it was graded.</p>
       <div class="card" style="padding:4px 14px" id="me-hist"></div>
@@ -817,17 +793,8 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   <div class="wrap" style="padding-bottom:140px">
     <div class="kicker" id="guide-title"></div>
     <h2 style="margin:4px 0 6px;font-size:24px" id="guide-sub"></h2>
-    <p class="sub">A short narrated overview. Then jump into the lessons.</p>
-    <div class="gvid paused" id="guide-stage">
-      <div class="gv-layer" id="gv-a"></div><div class="gv-layer" id="gv-b"></div><div class="gv-shade"></div>
-      <div class="gv-title"><span class="gv-n" id="gv-n"></span><h3 class="gv-h" id="gv-h"></h3><span class="gv-big" id="gv-big" hidden></span></div>
-      <button class="gv-play" id="gv-play" type="button" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
-      <div class="gv-bar" id="gv-bar"><span id="gv-prog"></span><div id="gv-ticks"></div></div>
-    </div>
-    <ol class="gv-callouts" id="guide-callouts" aria-live="polite"></ol>
-    <div class="gcap" id="guide-cap"></div>
-    <div class="gv-chapters" id="guide-dots"></div>
-    <details class="gread"><summary>Read the whole guide instead</summary><div id="guide-body"></div></details>
+    <p class="sub">Listen, read, or both. Then jump into the lessons.</p>
+    <div id="guide-body"></div>
   </div>
   <div class="dock"><div class="wrap"><button class="btn btn-primary" id="guide-play"></button></div></div>
 </section>
@@ -985,7 +952,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v6055b28706"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vb8cf702545"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1445,12 +1412,24 @@ function renderPath(){
 }
 // "Unit 4 · Play 1" for plays; just "Unit 1" when the short name already says it.
 function unitKicker(u, k){ return `Unit ${k + 1}` + (u.short && u.short !== u.title ? ` · ${esc(u.title)}` : ""); }
+// Paths: each rep has one (from the team roster, or picked). Their units come first; the rest stay open under More units.
+const trackName = (t) => (state.path && state.path.tracks && state.path.tracks[t] && state.path.tracks[t].name) || "";
+function trackPicker(intro, onProfile){
+  const ts = (state.path && state.path.tracks) || {}, cur = state.path && state.path.track;
+  return `<div class="card trackpick"><b>${esc(intro)}</b><p class="sub" style="margin:4px 0 10px">This decides which units and practice calls come first.${onProfile ? "" : " You can change it any time on your Profile."}</p>
+    ${Object.entries(ts).map(([id, t]) => `<button class="trackopt ${id === cur ? "on" : ""}" data-track="${id}"><span><b>${esc(t.name)}</b><small>${esc(t.who)}</small></span>${id === cur ? icon("check") : ""}</button>`).join("")}</div>`;
+}
+function wireTrackPicker(box){
+  for (const b of box.querySelectorAll(".trackopt")) b.onclick = async () => {
+    b.disabled = true;
+    try { await api("/api/track", { track: b.dataset.track }); state.learnView = "units"; await loadHome(); toast(`Your path: ${trackName(b.dataset.track)}.`); }
+    catch (e) { b.disabled = false; toast(e.message); } };
+}
 function renderUnitList(){
   state.learnView = "units"; $("today").hidden = false; renderSideUnits();
-  const units = state.path.units, here = store.get("sc_unit");
+  const units = state.path.units, here = store.get("sc_unit"), track = state.path.track;
   const box = $("learn");
-  box.innerHTML = `<h3 class="section" style="margin-top:18px">Units</h3><p class="sub">Start any unit. Inside a unit, each lesson unlocks the next.</p>` +
-    units.map((u, k) => {
+  const card = (u, k) => {
       const p = unitProgress(u), isHere = u.id === here;
       const cta = p.finished ? "Review" : p.started || isHere ? "Continue" : "Start";
       return `<button class="ucard ${p.finished ? "fin" : ""} ${isHere ? "here" : ""}" data-k="${k}">
@@ -1461,7 +1440,14 @@ function renderUnitList(){
           <span class="umeta"><span class="ubar"><span style="width:${(p.done / p.total) * 100}%"></span></span>
           <span class="ucount">${p.done}/${p.total}</span></span></span>
         <span class="ucta" aria-label="${cta}">${icon("next")}</span></button>`;
-    }).join("");
+    };
+  const mine = units.map((u, k) => [u, k]).filter(([u]) => u.mine), more = units.map((u, k) => [u, k]).filter(([u]) => !u.mine);
+  box.innerHTML = (track ? "" : trackPicker("Pick your path"))
+    + `<h3 class="section" style="margin-top:18px">${track ? `Your path: ${esc(trackName(track))}` : "Units"}</h3><p class="sub">${track ? `<button class="linkbtn" id="track-change" type="button">Change path</button> · ` : ""}Start any unit. Inside a unit, each lesson unlocks the next.</p>`
+    + mine.map(([u, k]) => card(u, k)).join("")
+    + (more.length ? `<h3 class="section" style="margin-top:26px">More units</h3><p class="sub">Not part of your path, but open any time.</p>` + more.map(([u, k]) => card(u, k)).join("") : "");
+  wireTrackPicker(box);
+  if ($("track-change")) $("track-change").onclick = () => { setTab("me"); setTimeout(() => $("me-track") && $("me-track").scrollIntoView({ block: "center" }), 50); };
   for (const b of box.querySelectorAll(".ucard")) b.onclick = () => { store.set("sc_unit", units[+b.dataset.k].id); state.learnView = "unit"; renderUnit(+b.dataset.k); window.scrollTo(0, 0); };
 }
 function renderUnit(k){
@@ -1473,7 +1459,7 @@ function renderUnit(k){
       <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
       <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Watch the unit overview again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute narrated slideshow with the big ideas.` : `Watch the ${guideMinutes(u)}-minute narrated slideshow: the big ideas and how to use them on a call.`}</small></span></button>
+    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
   $("unit-guide").onclick = () => openGuide(k);
@@ -1536,17 +1522,7 @@ function openGuide(k){
   $("guide-title").textContent = `Unit ${k + 1} · ${u.title}`;
   $("guide-sub").textContent = u.subtitle;
   $("guide-body").innerHTML = u.guide.map((g, j) => `<div class="gsec" id="gsec-${j}"><h4>${esc(g.h)}</h4><p>${esc(g.p)}</p></div>`).join("");
-  $("guide-dots").innerHTML = u.guide.map((g, j) => `<button class="gv-chap" data-j="${j}"><b>${j + 1}</b>${esc(g.h)}</button>`).join("");
-  for (const b of $("guide-dots").querySelectorAll(".gv-chap")) b.onclick = () => guideJump(+b.dataset.j);
-  const total = u.guideSeconds || 1;
-  $("gv-ticks").innerHTML = u.guide.slice(1).map((g) => `<i style="left:${(g.t / total) * 100}%"></i>`).join("");
-  $("gv-play").onclick = () => playGuide();
-  $("gv-bar").onclick = (e) => { const r = $("gv-bar").getBoundingClientRect(); const at = ((e.clientX - r.left) / r.width) * total;
-    let j = 0; for (let x = 0; x < u.guide.length; x++) if (at >= (u.guide[x].t || 0)) j = x; guideJump(j, at); };
-  slideAt = { j: -1, k: -1, c: -1 };
-  $("gv-prog").style.width = "0%";
-  renderSlide(u, 0, 1, true);
-  $("guide-play").innerHTML = icon("mic") + `Play (${u.guideSeconds ? Math.round(u.guideSeconds / 60 * 2) / 2 : guideMinutes(u)} min)`;
+  $("guide-play").innerHTML = icon("mic") + `Listen (${u.guideSeconds ? Math.round(u.guideSeconds / 60 * 2) / 2 : guideMinutes(u)} min)`;
   if (guideAudio && guideAudio.unit !== u.id) guideAudio = null;
   show("s-guide");
 }
@@ -1556,7 +1532,7 @@ let guideLoading = false, guideSeq = 0;
 async function playGuide(){
   const u = state.path.units[state.guideUnit];
   const btn = $("guide-play");
-  if (guidePlaying){ guidePlaying = false; player.pause(); btn.innerHTML = icon("mic") + "Resume"; $("guide-stage").classList.add("paused"); return; }
+  if (guidePlaying){ guidePlaying = false; player.pause(); btn.innerHTML = icon("mic") + "Resume"; return; }
   // Start the player on this tap (phones only allow sound that starts from a tap), then load the recording into it.
   stopSpeaking();
   if (!guideAudio || guideAudio.unit !== u.id || player.src !== guideAudio.src){
@@ -1569,10 +1545,10 @@ async function playGuide(){
     try {
       const r = await api("/api/guide-audio?unit=" + encodeURIComponent(u.id));
       guideAudio = { unit: u.id, src: `data:audio/mpeg;base64,${r.audio}`, pos: 0 };
-    } catch (e) { btn.innerHTML = icon("mic") + "Play"; return toast(e.message); }
+    } catch (e) { btn.innerHTML = icon("mic") + "Listen"; return toast(e.message); }
     finally { guideLoading = false; }
     // The rep left the guide (or opened another) while it loaded: keep the recording, don't start playing.
-    if (mySeq !== guideSeq || $("s-guide").hidden || state.path.units[state.guideUnit] !== u){ btn.innerHTML = icon("mic") + "Play"; return; }
+    if (mySeq !== guideSeq || $("s-guide").hidden || state.path.units[state.guideUnit] !== u){ btn.innerHTML = icon("mic") + "Listen"; return; }
   }
   if (player.src !== guideAudio.src){
     player.src = guideAudio.src;
@@ -1580,56 +1556,19 @@ async function playGuide(){
     if (at) player.addEventListener("loadedmetadata", () => { player.currentTime = at; }, { once: true });
   }
   audioMode("playback");
-  player.ontimeupdate = () => { guideAudio.pos = player.currentTime; syncSlide(u, player.currentTime, player.duration); };
-  player.onended = () => { guidePlaying = false; guideAudio.pos = 0; btn.innerHTML = icon("mic") + "Watch again"; renderSlide(u, u.guide.length - 1, 1); $("guide-stage").classList.add("paused"); };
-  guidePlaying = true; btn.innerHTML = "Pause"; $("guide-stage").classList.remove("paused");
-  try { await player.play(); audioUnlocked = true; } catch { guidePlaying = false; btn.innerHTML = icon("mic") + "Play"; toast("Tap Play again to start."); }
-}
-// Narrated overview, drawn like an explainer video: a full-frame illustration per section that slowly pans,
-// the section title over it, key points that land as the coach says them, and subtitles.
-let slideAt = { j: -1, k: -1, c: -1 }, gvFront = "gv-a";
-const artUrl = (u, j) => `${VOICE_ORIGIN}/sales-coach/art/${u.id}-${j}.jpg?v=${ART_V}`;
-const ART_V = 1;
-function sectionSpan(u, j, dur){
-  const start = u.guide[j].t || 0;
-  const end = j + 1 < u.guide.length ? u.guide[j + 1].t : (dur && isFinite(dur) ? dur : u.guideSeconds || start + 30);
-  return [start, Math.max(1, end - start)];
-}
-function sentences(p){ return (p.match(/[^.!?]+[.!?]+["')]*\s*|[^.!?]+$/g) || [p]).map((x) => x.trim()).filter(Boolean); }
-// frac = how far through this section's narration we are (0..1); 1 shows every point (paused, finished or picked by hand).
-function renderSlide(u, j, frac, cover){
-  const g = u.guide[j], pts = g.points || [], n = pts.length;
-  const shown = frac >= 1 ? n : Math.min(n, 1 + Math.floor(frac * n * 1.15));
-  const sents = sentences(g.p), words = sents.map((x) => x.split(/\s+/).length), tot = words.reduce((a, b) => a + b, 0);
-  let c = sents.length - 1, acc = 0; if (frac < 1) for (let x = 0; x < sents.length; x++){ acc += words[x]; if (frac * tot < acc){ c = x; break; } }
-  if (slideAt.j !== j){
-    // Cross-fade to this section's picture and start its slow pan (direction alternates).
-    const back = gvFront === "gv-a" ? "gv-b" : "gv-a", el = $(back), [, len] = sectionSpan(u, j, player && player.duration);
-    el.style.backgroundImage = `url("${artUrl(u, j)}")`; el.style.setProperty("--dur", len + "s");
-    el.className = "gv-layer on " + (j % 2 ? "pan-r" : "pan-l"); $(gvFront).className = "gv-layer"; gvFront = back;
-    $("gv-n").textContent = cover ? `Unit overview · ${u.guide.length} parts` : `Part ${j + 1} of ${u.guide.length}`;
-    $("gv-h").textContent = cover ? (u.short || u.title) : g.h;
-    $("gv-big").hidden = cover || !g.big; $("gv-big").textContent = g.big || "";
-    $("guide-callouts").innerHTML = cover ? "" : pts.map((t, k) => { const m = t.match(/^(\S+)\s+(.*)$/u);
-      return `<li data-k="${k}"><span class="em" aria-hidden="true">${esc(m ? m[1] : "•")}</span><span>${esc(m ? m[2] : t)}</span></li>`; }).join("");
-    for (const d of $("guide-dots").querySelectorAll(".gv-chap")) d.classList.toggle("on", !cover && +d.dataset.j === j);
-  }
-  if (slideAt.j !== j || slideAt.k !== shown) for (const li of $("guide-callouts").querySelectorAll("li")){ const k = +li.dataset.k; li.classList.toggle("in", k < shown); li.classList.toggle("now", k === shown - 1 && frac < 1); }
-  if (slideAt.j !== j || slideAt.c !== c) $("guide-cap").textContent = frac >= 1 && !guidePlaying ? "" : sents[c] || "";
-  $("guide-stage").classList.toggle("paused", !guidePlaying);
-  slideAt = { j: cover ? -1 : j, k: shown, c };
-}
-function syncSlide(u, now, dur){
-  let j = 0; for (let x = 0; x < u.guide.length; x++) if (now >= (u.guide[x].t || 0)) j = x;
-  const [start, len] = sectionSpan(u, j, dur);
-  $("gv-prog").style.width = Math.min(100, (now / (dur && isFinite(dur) ? dur : u.guideSeconds || 1)) * 100) + "%";
-  renderSlide(u, j, Math.min(0.999, (now - start) / len));
-}
-function guideJump(j, at){
-  const u = state.path.units[state.guideUnit], to = at != null ? at : (u.guide[j].t || 0) + 0.05;
-  $("gv-prog").style.width = (to / (u.guideSeconds || 1)) * 100 + "%";
-  if (guideAudio && guideAudio.unit === u.id && player.src === guideAudio.src){ player.currentTime = to; guideAudio.pos = to; if (!guidePlaying) renderSlide(u, j, 1); }
-  else { if (guideAudio && guideAudio.unit === u.id) guideAudio.pos = to; renderSlide(u, j, 1); }
+  const secs = u.guide.map((g) => g.t || 0);
+  let lastOn = -1;
+  player.ontimeupdate = () => {
+    guideAudio.pos = player.currentTime;
+    let j = 0; for (let x = 0; x < secs.length; x++) if (player.currentTime >= secs[x]) j = x;
+    if (j !== lastOn){ lastOn = j;
+      for (const el of document.querySelectorAll(".gsec")) el.classList.toggle("on", el.id === "gsec-" + j);
+      $("gsec-" + j) && $("gsec-" + j).scrollIntoView({ block: "center", behavior: "smooth" }); }
+  };
+  player.onended = () => { guidePlaying = false; guideAudio.pos = 0; btn.innerHTML = icon("mic") + "Listen again";
+    for (const el of document.querySelectorAll(".gsec")) el.classList.remove("on"); };
+  guidePlaying = true; btn.innerHTML = "Pause";
+  try { await player.play(); audioUnlocked = true; } catch { guidePlaying = false; btn.innerHTML = icon("mic") + "Listen"; toast("Tap Listen again to play."); }
 }
 function stopGuide(){ guidePlaying = false; guideSeq++; player.ontimeupdate = null; try { player.pause(); } catch {} }
 
@@ -1680,7 +1619,17 @@ function renderPractice({ farmers, toughness, plays }){
     const list = farmers.filter((f) => !!f.dealer === dealer);
     personaCards($("farmers"), dealer ? list : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...list], "farmerId");
   };
-  if (state.plays) pills($("plays"), state.plays.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  const track = state.path && state.path.track;
+  const mineP = (state.plays || []).filter((p) => !track || (p.tracks || []).includes(track));
+  const shown = state.allPlays || !track ? (state.plays || []) : mineP;
+  if (track && !shown.some((p) => p.id === state.callPlay) && shown[0]) state.callPlay = shown[0].id;
+  if (state.plays) pills($("plays"), shown.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  if (track && mineP.length < (state.plays || []).length){
+    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "6px";
+    t.textContent = state.allPlays ? `Only my path's calls (${trackName(track)})` : "Show calls from other paths";
+    t.onclick = (e) => { e.stopPropagation(); state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
+    $("plays").appendChild(t);
+  }
   $("plays").onclick = people;
   people();
   pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
@@ -1726,6 +1675,10 @@ function renderMe(){
     + stat("book","var(--ok)",s.lessonsDone,"Lessons") + stat("phone","var(--blue)",s.calls,"Practice calls")
     + stat("flame","var(--gold-d)",s.bestStreak,"Best streak") + stat("target","var(--blue)",`${Math.min(s.weekCalls,s.weeklyGoal)}/${s.weeklyGoal}`,"Weekly goal");
   badgeTiles($("me-badges"), s.badges);
+  const tb = $("me-track");
+  if (tb && state.path){ const t = state.path.track;
+    tb.innerHTML = trackPicker(t ? `Your path: ${trackName(t)}${state.path.trackSource === "roster" ? " (from the team roster)" : ""}` : "Pick your path", true);
+    wireTrackPicker(tb); }
   loadHistory();
 }
 
