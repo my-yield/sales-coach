@@ -150,6 +150,11 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .x{color:var(--faint)}
 .bar{flex:1;height:16px;border-radius:99px;background:var(--line-2);overflow:hidden}
 .bar span{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08);transition:width .35s ease}
+.trackpick{padding:16px 16px 10px;margin-top:14px}
+.trackopt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px 14px;margin:0 0 8px;border-radius:12px;border:1.5px solid var(--line);background:#fff}
+.trackopt b{display:block;color:var(--char)}.trackopt small{display:block;color:var(--ink-2);font-size:13px;margin-top:2px}
+.trackopt.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}.trackopt svg{color:var(--blue)}
+.linkbtn{background:none;border:0;padding:0;color:var(--blue);font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit}
 .ex{flex:1;padding:8px 16px 180px}
 .kicker{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin:10px 0 6px}
 .q{font-size:22px;font-weight:800;line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
@@ -685,6 +690,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <p class="sub" id="me-sub"></p>
       <p class="sub" style="font-size:12px;margin-top:-2px" id="app-version"></p>
       <div class="statgrid" id="me-stats"></div>
+      <div id="me-track" style="margin-top:16px"></div>
       <h3 class="section">History</h3>
       <p class="sub" style="margin-top:-4px">Tap any lesson or call to see how it was graded.</p>
       <div class="card" style="padding:4px 14px" id="me-hist"></div>
@@ -946,7 +952,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v2d226ffd95"; // stamped by appsscript/build.mjs
+const APP_VERSION = "va58fa06d00"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1406,12 +1412,24 @@ function renderPath(){
 }
 // "Unit 4 · Play 1" for plays; just "Unit 1" when the short name already says it.
 function unitKicker(u, k){ return `Unit ${k + 1}` + (u.short && u.short !== u.title ? ` · ${esc(u.title)}` : ""); }
+// Paths: each rep has one (from the team roster, or picked). Their units come first; the rest stay open under More units.
+const trackName = (t) => (state.path && state.path.tracks && state.path.tracks[t] && state.path.tracks[t].name) || "";
+function trackPicker(intro, onProfile){
+  const ts = (state.path && state.path.tracks) || {}, cur = state.path && state.path.track;
+  return `<div class="card trackpick"><b>${esc(intro)}</b><p class="sub" style="margin:4px 0 10px">This decides which units and practice calls come first.${onProfile ? "" : " You can change it any time on your Profile."}</p>
+    ${Object.entries(ts).map(([id, t]) => `<button class="trackopt ${id === cur ? "on" : ""}" data-track="${id}"><span><b>${esc(t.name)}</b><small>${esc(t.who)}</small></span>${id === cur ? icon("check") : ""}</button>`).join("")}</div>`;
+}
+function wireTrackPicker(box){
+  for (const b of box.querySelectorAll(".trackopt")) b.onclick = async () => {
+    b.disabled = true;
+    try { await api("/api/track", { track: b.dataset.track }); state.learnView = "units"; await loadHome(); toast(`Your path: ${trackName(b.dataset.track)}.`); }
+    catch (e) { b.disabled = false; toast(e.message); } };
+}
 function renderUnitList(){
   state.learnView = "units"; $("today").hidden = false; renderSideUnits();
-  const units = state.path.units, here = store.get("sc_unit");
+  const units = state.path.units, here = store.get("sc_unit"), track = state.path.track;
   const box = $("learn");
-  box.innerHTML = `<h3 class="section" style="margin-top:18px">Units</h3><p class="sub">Start any unit. Inside a unit, each lesson unlocks the next.</p>` +
-    units.map((u, k) => {
+  const card = (u, k) => {
       const p = unitProgress(u), isHere = u.id === here;
       const cta = p.finished ? "Review" : p.started || isHere ? "Continue" : "Start";
       return `<button class="ucard ${p.finished ? "fin" : ""} ${isHere ? "here" : ""}" data-k="${k}">
@@ -1422,7 +1440,14 @@ function renderUnitList(){
           <span class="umeta"><span class="ubar"><span style="width:${(p.done / p.total) * 100}%"></span></span>
           <span class="ucount">${p.done}/${p.total}</span></span></span>
         <span class="ucta" aria-label="${cta}">${icon("next")}</span></button>`;
-    }).join("");
+    };
+  const mine = units.map((u, k) => [u, k]).filter(([u]) => u.mine), more = units.map((u, k) => [u, k]).filter(([u]) => !u.mine);
+  box.innerHTML = (track ? "" : trackPicker("Pick your path"))
+    + `<h3 class="section" style="margin-top:18px">${track ? `Your path: ${esc(trackName(track))}` : "Units"}</h3><p class="sub">${track ? `<button class="linkbtn" id="track-change" type="button">Change path</button> · ` : ""}Start any unit. Inside a unit, each lesson unlocks the next.</p>`
+    + mine.map(([u, k]) => card(u, k)).join("")
+    + (more.length ? `<h3 class="section" style="margin-top:26px">More units</h3><p class="sub">Not part of your path, but open any time.</p>` + more.map(([u, k]) => card(u, k)).join("") : "");
+  wireTrackPicker(box);
+  if ($("track-change")) $("track-change").onclick = () => { setTab("me"); setTimeout(() => $("me-track") && $("me-track").scrollIntoView({ block: "center" }), 50); };
   for (const b of box.querySelectorAll(".ucard")) b.onclick = () => { store.set("sc_unit", units[+b.dataset.k].id); state.learnView = "unit"; renderUnit(+b.dataset.k); window.scrollTo(0, 0); };
 }
 function renderUnit(k){
@@ -1431,13 +1456,13 @@ function renderUnit(k){
   const box = $("learn");
   const heard = store.get("sc_guide_" + u.id);
   box.innerHTML = `<div class="unithead"><div class="uheadrow"><button class="uback" id="all-units">${icon("back")}<span>All units</span></button>
-      <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
+      ${u.guideSeconds ? `<button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button>` : ""}</div><div class="unit">
       <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>
+    ${u.guideSeconds ? `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>` : ""}
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
-  $("unit-guide").onclick = () => openGuide(k);
+  if ($("unit-guide")) $("unit-guide").onclick = () => openGuide(k);
   if ($("guide-card")) $("guide-card").onclick = () => openGuide(k);
   renderUnitPath(box.querySelector(".path"), u, k);
 }
@@ -1594,7 +1619,17 @@ function renderPractice({ farmers, toughness, plays }){
     const list = farmers.filter((f) => !!f.dealer === dealer);
     personaCards($("farmers"), dealer ? list : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...list], "farmerId");
   };
-  if (state.plays) pills($("plays"), state.plays.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  const track = state.path && state.path.track;
+  const mineP = (state.plays || []).filter((p) => !track || (p.tracks || []).includes(track));
+  const shown = state.allPlays || !track ? (state.plays || []) : mineP;
+  if (track && !shown.some((p) => p.id === state.callPlay) && shown[0]) state.callPlay = shown[0].id;
+  if (state.plays) pills($("plays"), shown.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  if (track && mineP.length < (state.plays || []).length){
+    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "6px";
+    t.textContent = state.allPlays ? `Only my path's calls (${trackName(track)})` : "Show calls from other paths";
+    t.onclick = (e) => { e.stopPropagation(); state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
+    $("plays").appendChild(t);
+  }
   $("plays").onclick = people;
   people();
   pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
@@ -1640,6 +1675,10 @@ function renderMe(){
     + stat("book","var(--ok)",s.lessonsDone,"Lessons") + stat("phone","var(--blue)",s.calls,"Practice calls")
     + stat("flame","var(--gold-d)",s.bestStreak,"Best streak") + stat("target","var(--blue)",`${Math.min(s.weekCalls,s.weeklyGoal)}/${s.weeklyGoal}`,"Weekly goal");
   badgeTiles($("me-badges"), s.badges);
+  const tb = $("me-track");
+  if (tb && state.path){ const t = state.path.track;
+    tb.innerHTML = trackPicker(t ? `Your path: ${trackName(t)}${state.path.trackSource === "roster" ? " (from the team roster)" : ""}` : "Pick your path", true);
+    wireTrackPicker(tb); }
   loadHistory();
 }
 
