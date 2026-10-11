@@ -952,7 +952,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vb8cf702545"; // stamped by appsscript/build.mjs
+const APP_VERSION = "va58fa06d00"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1456,13 +1456,13 @@ function renderUnit(k){
   const box = $("learn");
   const heard = store.get("sc_guide_" + u.id);
   box.innerHTML = `<div class="unithead"><div class="uheadrow"><button class="uback" id="all-units">${icon("back")}<span>All units</span></button>
-      <button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button></div><div class="unit">
+      ${u.guideSeconds ? `<button class="uback" id="unit-guide">${icon("book")}<span>Unit guide</span></button>` : ""}</div><div class="unit">
       <div class="eyebrow">${unitKicker(u, k)}</div><h2>${esc(u.short || u.title)}</h2><div class="udesc">${esc(u.subtitle)}</div>
       <div class="prog"><span style="width:${(p.done / p.total) * 100}%"></span></div><div class="art">${Art.field}</div></div></div>
-    <button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>
+    ${u.guideSeconds ? `<button class="guidecard" id="guide-card"><span class="gic">${icon("mic")}</span><span><b>${heard ? "Listen to the unit guide again" : "New to this unit? Start here."}</b><small>${heard ? `The ${guideMinutes(u)}-minute unit guide with the big ideas.` : `Listen to the ${guideMinutes(u)}-minute unit guide: the big ideas and how to use them on a call.`}</small></span></button>` : ""}
     <div class="path"></div>`;
   $("all-units").onclick = () => { renderUnitList(); window.scrollTo(0, 0); };
-  $("unit-guide").onclick = () => openGuide(k);
+  if ($("unit-guide")) $("unit-guide").onclick = () => openGuide(k);
   if ($("guide-card")) $("guide-card").onclick = () => openGuide(k);
   renderUnitPath(box.querySelector(".path"), u, k);
 }
