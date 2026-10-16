@@ -952,7 +952,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "va58fa06d00"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v0a31305601"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1845,7 +1845,7 @@ function nextReview(){
 // One answer checked. First pass: it counts. Review round: a miss goes to the back of the line.
 function record(right, answer){
   if (L.review){ if (right) L.reviewDone += 1; else L.reviewQueue.push(L.i); }
-  else { L.results.push(right); L.answers[L.i] = answer; }
+  else { L.results[L.i] = right; L.answers[L.i] = answer; } // by position, so a double tap can never add an extra answer
   L.combo = right ? (L.combo || 0) + 1 : 0;
   showCombo();
 }
@@ -1969,11 +1969,13 @@ $("check-btn").onclick = async () => {
     const right = L.order.every((k,n)=>k===n); L.checked = true; record(right, { order: L.order.slice() });
     feedback(right, right ? "Exactly right!" : "Close. Here's the order:", right ? `<p>${esc(ex.why)}</p>` : `<ul>${ex.items.map((t)=>`<li>${esc(t)}</li>`).join("")}</ul><p>${esc(ex.why)}</p>`);
   } else {
+    if (L.grading) return; // already being graded: a second tap (or the mic finishing) must not grade it twice
+    L.grading = true;
     stopListening(true);
     setCheck("Coach is listening…", false);
     try {
       const g = await api("/api/say", { lessonId: L.lesson.id, index: L.i, answer: $("said").value, scene: ex.scene });
-      L.checked = true; L.results.push(g.pass); L.combo = g.pass ? (L.combo || 0) + 1 : 0; showCombo();
+      L.checked = true; L.results[L.i] = g.pass; L.combo = g.pass ? (L.combo || 0) + 1 : 0; showCombo();
       L.answers[L.i] = { said: $("said").value, scene: ex.scene, score: g.score, got: g.got, missed: g.missed, feedback: g.feedback, better_line: g.better_line };
       const dots = `<div class="dots">${[1,2,3,4,5].map((k)=>`<i class="${k<=g.score?"on":""}"></i>`).join("")}</div>`;
       const got = g.got.length ? `<ul>${g.got.map((x)=>`<li>✓ ${esc(x)}</li>`).join("")}${g.missed.map((x)=>`<li>✗ ${esc(x)}</li>`).join("")}</ul>` : "";
@@ -1981,12 +1983,14 @@ $("check-btn").onclick = async () => {
         `${dots}<p>${esc(g.feedback)}</p>${got}<p><b>Try:</b> ${esc(g.better_line)}</p>`);
       say(g.feedback, "coach");
     } catch (e) { setCheck("Check", true); $("say-hint").textContent = e.message; }
+    finally { L.grading = false; }
   }
 };
 
 async function finishLesson(){
   if (L.practice){ toast("Practice done. Practice doesn't change your stars."); state.tab = "learn"; return loadHome(); }
-  if (L.results.length !== L.lesson.exercises.length){ // answers out of step with the questions: never leave the rep stuck
+  if (L.results.length > L.lesson.exercises.length) L.results.length = L.lesson.exercises.length; // older saved progress could carry an extra answer
+  if (L.results.length !== L.lesson.exercises.length || L.results.some((r) => r === undefined)){ // a question really was skipped: never leave the rep stuck
     store.del(progressKey(L.lesson.id)); toast("Something got out of order. Let's run this lesson again from the top.", 6000);
     return openLesson(L.lesson.id);
   }
