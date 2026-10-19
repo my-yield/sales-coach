@@ -952,7 +952,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vd861d5ce88"; // stamped by appsscript/build.mjs
+const APP_VERSION = "va23a483c00"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2023,7 +2023,7 @@ async function getBriefing(){
     state.rollToken = r.rollToken; state.farmerName = r.farmerName; state.scene = r.scene;
     // Get the farmer's first line (and voice) ready while the rep reads the briefing.
     state.firstTurn = liveAvailable() ? null : api("/api/turn", { rollToken: r.rollToken, transcript: [], voice: true }).catch(() => null);
-    $("brief-kicker").textContent = (state.checkpoint ? "Checkpoint call · score 70+ to pass · " : "") + (r.play ? r.play.name : "Your call");
+    $("brief-kicker").textContent = (state.checkpoint ? "Checkpoint call · score 70+ to pass · " : "") + (r.play ? (r.play.short && r.play.short !== r.play.name ? `${r.play.name} · ${r.play.short}` : r.play.name) : "Your call");
     $("brief-name").innerHTML = "";
     $("brief-text").innerHTML = sceneCard(r.scene, true) + `<p style="margin:6px 0 0">${esc(r.briefing)}</p>`;
     $("brief-tough").textContent = `How tough: ${r.toughness}. Say "coach me" any time for a quick tip.`;
