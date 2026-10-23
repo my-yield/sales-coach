@@ -486,7 +486,30 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .persona .pc svg{width:14px;height:14px}
 .persona[aria-pressed="true"]{border:2px solid var(--char);background:var(--gold-50);padding:9.5px 11.5px}
 .persona[aria-pressed="true"] .pc{background:var(--char);border-color:var(--char);color:var(--gold)}
-.persona .hs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;font-weight:700;color:var(--char);margin-top:4px}
+.playtiles{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ptile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 3px 0 var(--line);font:inherit;color:var(--char);cursor:pointer}
+.ptile:hover{border-color:var(--char)}
+.ptile .pn{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.ptile b{display:block;font-size:16px;margin-top:2px}
+.ptile .pb{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);font-weight:700;flex:none}
+.ptile .pb span{display:block;font-size:20px;font-weight:800;color:var(--blue)}
+.suggest{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:12px;background:var(--char);color:#fff;border-radius:16px;padding:14px 16px;font:inherit;cursor:pointer}
+.suggest small{display:block;color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.suggest b{font-size:15px} .suggest .go{margin-left:auto;font-weight:800;color:var(--gold);flex:none}
+.matchup{margin-top:16px}
+.matchup .mtitle{font-size:18px;font-weight:800;margin:6px 0 12px}
+/* Start stays in reach above the tab bar, so the whole matchup works without scrolling to find it. */
+.matchup #setup-btn{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+@media (min-width:1080px){.matchup #setup-btn{bottom:16px}}
+.matchup .mtitle small{display:block;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.faces{display:flex;gap:4px;padding:2px 0 4px}
+.face{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:700}
+.face .fe{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bg);border:2px solid var(--line)}
+.face[aria-checked="true"]{color:var(--char)} .face[aria-checked="true"] .fe{border-color:var(--char);background:var(--gold-50);box-shadow:0 0 0 2px var(--gold)}
+.fcard{margin-top:10px;background:var(--bg);border-radius:14px;padding:12px 14px;color:var(--char)}
+.fcard b{font-size:16px} .fcard i{display:block;font-size:13px;color:var(--ink-2);margin-top:2px} .fcard small{display:block;font-size:12.5px;color:var(--blue);font-weight:600;margin-top:4px}
+.fcard .hs{margin-top:8px}
+.persona .hs, .fcard .hs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;font-weight:700;color:var(--char);margin-top:4px}
 .persona .hs span{white-space:nowrap}
 /* Desktop: like Duolingo, the tabs become a left sidebar and streak, quests and the leaderboard sit in a right column. */
 .rail{display:none} .sideunits{display:none}
@@ -672,20 +695,25 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     </div>
 
     <div class="wrap" id="tab-practice" hidden>
-      <h3 class="section">Practice call</h3>
-      <p class="sub">A full call. Ask good questions, handle his pushback, and get graded.</p>
-      <div class="card">
-        <div style="font-weight:800">Which play?</div>
-        <div class="pills" id="plays"></div>
-        <div style="font-weight:800;margin-top:16px">Who do you want to call?</div>
-        <div class="pills" id="farmers"></div>
-        <div style="font-weight:800;margin-top:16px">How tough?</div>
-        <div class="seg" id="tough" style="margin-top:8px"></div>
-        <label class="toggle" style="margin-top:16px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
-        <div class="err" id="setup-err" style="margin-top:12px"></div>
-        <button class="btn btn-primary" id="setup-btn">Get my briefing</button>
+      <div id="pr-head"><h3 class="section">Practice call</h3>
+      <p class="sub">A full call. Ask good questions, handle his pushback, and get graded.</p></div>
+      <!-- Step 1: pick a play (the skill). Step 2: the matchup screen (farmer, toughness, start). -->
+      <div id="pr-pick">
+        <button class="suggest" id="pr-suggest" type="button" hidden></button>
+        <div class="playtiles" id="plays"></div>
       </div>
-      <div class="card goal">
+      <div class="card matchup" id="pr-match" hidden>
+        <button class="linkbtn" id="pr-back" type="button">‹ All plays</button>
+        <div class="mtitle" id="pr-play"></div>
+        <div class="faces" id="farmers" role="radiogroup" aria-label="Who do you want to call?"></div>
+        <div class="fcard" id="pr-farmer"></div>
+        <div style="font-weight:800;margin-top:14px">How tough?</div>
+        <div class="seg" id="tough" style="margin-top:8px"></div>
+        <label class="toggle" style="margin-top:12px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
+        <div class="err" id="setup-err" style="margin-top:12px"></div>
+        <button class="btn btn-primary" id="setup-btn">Start call</button>
+      </div>
+      <div class="card goal" id="pr-goal">
         <div class="ringwrap"><svg viewBox="0 0 36 36" width="58" height="58"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="5"/><circle id="goal-ring" cx="18" cy="18" r="15" fill="none" stroke="var(--blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/></svg><span id="goal-n">0</span></div>
         <div><div style="font-weight:800">Weekly goal</div><div class="sub" id="goal-text" style="margin:0"></div></div>
       </div>
@@ -978,7 +1006,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v699f8d788d"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v0ed3a795e0"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1625,48 +1653,51 @@ function pills(el, options, key){
     b.setAttribute("aria-pressed", String(state[key]===o.id));
     b.onclick = () => { state[key]=o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c===b)); }; el.appendChild(b); }
 }
-// "Who do you want to call?": the customer personas as stacked cards (emoji, name, quote, what wins him over).
-function personaCards(el, options, key){
-  el.className = "personas"; el.innerHTML = "";
-  if (!options.some((o) => o.id === state[key])) state[key] = options[0].id;
-  for (const o of options){
-    const b = document.createElement("button"); b.className = "persona"; b.type = "button";
-    b.innerHTML = `<span class="pe" aria-hidden="true">${esc(o.emoji || "")}</span><span class="pt"><b>${esc(o.label)}</b>${o.quote ? `<i>“${esc(o.quote)}”</i>` : ""}${o.wants ? `<small>Win him over with: ${esc(o.wants)}</small>` : ""}${o.hs || ""}</span><span class="pc" aria-hidden="true">${icon("check")}</span>`;
-    b.setAttribute("aria-pressed", String(state[key] === o.id));
-    b.onclick = () => { state[key] = o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c === b)); };
-    el.appendChild(b);
+// Practice is play-first: pick the play (the skill, as in Learn), then a one-screen matchup to pick the farmer and toughness.
+const SURPRISE = { id:"surprise", label:"Surprise me", short:"Surprise", emoji:"🎲", quote:"One of the five, picked at random, like a real day of calls." };
+const firstWord = (l) => String(l || "").split(" ").pop(); // "Controlling Carl" -> "Carl"
+// The rep's best graded score on a play (any farmer, any toughness), from the high-score boards.
+function myBestOn(playId, farmerId){
+  let best = null;
+  for (const [k, b] of Object.entries(state.high || {})){
+    const [p, f] = k.split("|");
+    if (p === playId && (!farmerId || f === farmerId) && b.mine && (best === null || b.mine.score > best)) best = b.mine.score;
   }
+  return best;
 }
 function renderPractice({ farmers, toughness, plays }){
   if (!state.callPlay) state.callPlay = "play1";
-  state.farmers = farmers;
+  state.farmers = farmers; state.toughList = toughness;
   if (plays) state.plays = plays;
-  const people = () => {
-    const dealer = (state.plays || []).some((p) => p.id === state.callPlay && p.dealer);
-    const list = farmers.filter((f) => !!f.dealer === dealer);
-    // Each card shows the high score to beat on this play and the rep's own best.
-    const withHs = list.map((f) => { const b = state.high[`${state.callPlay}|${f.id}|${state.toughness}`];
-      const top = b && b.top[0], mine = b && b.mine;
-      const hs = top ? `<span>🏆&nbsp;${esc(cap(state.toughness))} high score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No ${esc(state.toughness)} high score yet. Set it.</span>`;
-      return { ...f, hs: `<span class="hs">${hs}</span>` }; });
-    personaCards($("farmers"), dealer ? withHs : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...withHs], "farmerId");
-  };
   const track = state.path && state.path.track;
   const mineP = (state.plays || []).filter((p) => !track || (p.tracks || []).includes(track));
   const shown = state.allPlays || !track ? (state.plays || []) : mineP;
-  if (track && !shown.some((p) => p.id === state.callPlay) && shown[0]) state.callPlay = shown[0].id;
-  if (state.plays) pills($("plays"), shown.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  // Step 1: play tiles, each with the rep's best score on it.
+  $("plays").innerHTML = "";
+  for (const p of shown){
+    const best = myBestOn(p.id);
+    const b = document.createElement("button"); b.type = "button"; b.className = "ptile";
+    b.innerHTML = `<span><span class="pn">${esc(p.name)}</span><b>${esc(p.short)}</b></span><span class="pb">${best === null ? "Not tried yet" : `Your best<span>${best}</span>`}</span>`;
+    b.onclick = () => { state.callPlay = p.id; openMatchup(); };
+    $("plays").appendChild(b);
+  }
   if (track && mineP.length < (state.plays || []).length){
-    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "6px";
+    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "2px";
     t.textContent = state.allPlays ? `Only my path's calls (${trackName(track)})` : "Show calls from other paths";
-    t.onclick = (e) => { e.stopPropagation(); state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
+    t.onclick = () => { state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
     $("plays").appendChild(t);
   }
-  $("plays").onclick = people;
-  people();
-  pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
-  for (const b of $("tough").children) b.className = ""; // segmented toggle, not pills
-  $("tough").onclick = people; // high scores on the cards follow the toughness
+  // Suggested next call: a path play never tried, else the one with the lowest best; the farmer you've done worst with on it.
+  const cand = mineP.filter((p) => !p.dealer || track === "dealer");
+  const pick = cand.map((p) => ({ p, best: myBestOn(p.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0];
+  if (pick){
+    const fl = farmers.filter((f) => !!f.dealer === !!pick.p.dealer);
+    const f = fl.map((x) => ({ x, best: myBestOn(pick.p.id, x.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0].x;
+    $("pr-suggest").hidden = false;
+    $("pr-suggest").innerHTML = `<span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
+    $("pr-suggest").onclick = () => { state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
+  } else $("pr-suggest").hidden = true;
+  if (state.prView === "match") openMatchup(); else showPick();
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
   $("goal-n").textContent = `${Math.min(s.weekCalls, s.weeklyGoal)}/${s.weeklyGoal}`;
@@ -2105,6 +2136,39 @@ async function getBriefing(){
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
+function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; }
+$("pr-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
+// Step 2: the matchup. Farmer faces in a row, his card with the score to beat, the toughness toggle and Start.
+function openMatchup(){
+  state.prView = "match"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = false; $("setup-err").textContent = "";
+  const play = (state.plays || []).find((p) => p.id === state.callPlay) || {};
+  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}`;
+  const list = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
+  const opts = play.dealer ? list : [SURPRISE, ...list];
+  if (!opts.some((o) => o.id === state.farmerId)) state.farmerId = opts[0].id;
+  const card = () => {
+    const f = opts.find((o) => o.id === state.farmerId) || opts[0];
+    let hs = "";
+    if (f.id !== "surprise"){
+      const b = state.high[`${state.callPlay}|${f.id}|${state.toughness}`], top = b && b.top[0], mine = b && b.mine;
+      hs = top ? `<span>🏆&nbsp;${esc(cap(state.toughness))} high score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No ${esc(state.toughness)} high score yet. Set it.</span>`;
+    }
+    $("pr-farmer").innerHTML = `<b>${esc(f.emoji || "")} ${esc(f.label)}</b>${f.quote ? `<i>“${esc(f.quote)}”</i>` : ""}${f.wants ? `<small>Win him over with: ${esc(f.wants)}</small>` : ""}${hs ? `<span class="hs">${hs}</span>` : ""}`;
+  };
+  $("farmers").innerHTML = "";
+  for (const o of opts){
+    const b = document.createElement("button"); b.type = "button"; b.className = "face"; b.setAttribute("role", "radio");
+    b.innerHTML = `<span class="fe" aria-hidden="true">${esc(o.emoji || "")}</span>${esc(o.short || firstWord(o.label))}`;
+    b.setAttribute("aria-label", o.label); b.setAttribute("aria-checked", String(o.id === state.farmerId));
+    b.onclick = () => { state.farmerId = o.id; for (const c of $("farmers").children) c.setAttribute("aria-checked", String(c === b)); card(); };
+    $("farmers").appendChild(b);
+  }
+  pills($("tough"), (state.toughList || ["easygoing", "typical", "tough"]).map((t) => ({ id: t, label: cap(t) })), "toughness");
+  for (const b of $("tough").children) b.className = ""; // segmented toggle, not pills
+  $("tough").onclick = card; // the score to beat follows the toughness
+  card();
+  window.scrollTo(0, 0);
+}
 
 $("brief-x").onclick = () => { stopSpeaking(); loadHome(); };
 $("call-btn").onclick = () => { stopSpeaking(); startCall(); };
