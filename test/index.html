@@ -131,6 +131,21 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .row .meta{font-size:12px;color:var(--muted);font-weight:500}
 .row .val{font-weight:800;color:var(--blue)}
 .row.you{background:var(--blue-50);border-radius:14px;border-bottom-color:transparent}
+.seg.small{margin:0 0 10px} .seg.small button{padding:7px 6px;font-size:12px}
+/* Arcade high scores: one board per play + farmer */
+.hsgrid{display:grid;gap:12px;margin-top:12px}
+.arcade{background:#16181d;color:#f4f1e8;border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.arcade h4{margin:0 0 2px;font-size:15px;display:flex;align-items:center;gap:8px}
+.arcade .q{font-size:12px;color:#a9a597;margin:0 0 8px}
+.arcade ol{list-style:none;margin:0;padding:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.arcade li{display:grid;grid-template-columns:2.2em 1fr auto;gap:8px;align-items:center;padding:4px 0;font-size:15px}
+.arcade li .r{color:#a9a597}
+.arcade li .nm{font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arcade li .sc{font-weight:800;font-size:17px}
+.arcade li.you{background:#2a2e38;border-radius:8px;padding:4px 6px;margin:0 -6px}
+.arcade .tg{font-size:10px;font-weight:800;letter-spacing:.06em;color:#16181d;background:var(--gold);border-radius:4px;padding:1px 4px;margin-left:6px;vertical-align:2px}
+.arcade .empty{font-size:13px;color:#a9a597;margin:4px 0}
+.arcade .minebelow{border-top:1px dashed #3a3e48;margin-top:6px;padding-top:6px}
 
 /* Profile */
 .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -472,6 +487,8 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .persona .pc svg{width:14px;height:14px}
 .persona[aria-pressed="true"]{border:2px solid var(--char);background:var(--gold-50);padding:9.5px 11.5px}
 .persona[aria-pressed="true"] .pc{background:var(--char);border-color:var(--char);color:var(--gold)}
+.persona .hs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;font-weight:700;color:var(--char);margin-top:4px}
+.persona .hs span{white-space:nowrap}
 /* Desktop: like Duolingo, the tabs become a left sidebar and streak, quests and the leaderboard sit in a right column. */
 .rail{display:none} .sideunits{display:none}
 .sideunits .sh{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--blue);margin:18px 8px 6px}
@@ -664,7 +681,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
         <div style="font-weight:800;margin-top:16px">Who do you want to call?</div>
         <div class="pills" id="farmers"></div>
         <div style="font-weight:800;margin-top:16px">How tough?</div>
-        <div class="pills" id="tough"></div>
+        <div class="seg" id="tough" style="margin-top:8px"></div>
         <label class="toggle" style="margin-top:16px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
         <div class="err" id="setup-err" style="margin-top:12px"></div>
         <button class="btn btn-primary" id="setup-btn">Get my briefing</button>
@@ -677,12 +694,20 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 
     <div class="wrap" id="tab-board" hidden>
       <h3 class="section">Leaderboard</h3>
-      <div class="seg" id="lb-tabs">
+      <div class="seg" id="lb-kind">
+        <button data-kind="points" aria-pressed="true">Points</button>
+        <button data-kind="calls" aria-pressed="false">Calls</button>
+        <button data-kind="high" aria-pressed="false">High scores</button>
+      </div>
+      <p class="sub" id="lb-note" hidden></p>
+      <div class="pills" id="hs-plays" hidden></div>
+      <div class="seg small" id="lb-tabs">
         <button data-tab="week" aria-pressed="true">This week</button>
         <button data-tab="allTime" aria-pressed="false">All time</button>
         <button data-tab="improved" aria-pressed="false">Most improved</button>
       </div>
       <div class="card" style="padding:8px 10px" id="lb"></div>
+      <div class="hsgrid" id="hs" hidden></div>
     </div>
 
     <div class="wrap" id="tab-me" hidden>
@@ -939,7 +964,7 @@ const avColor = (n) => AV[[...String(n)].reduce((a,c)=>a+c.charCodeAt(0),0) % AV
 
 const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmerId:"surprise", toughness:"typical",
   rollToken:null, farmerName:"", transcript:[], startedAt:null, busy:false, ended:false, checkpoint:false,
-  me:null, board:null, boardTab:"week", path:null, tab:"learn" };
+  me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, path:null, tab:"learn" };
 
 function show(id){
   for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results"]) $(s).hidden = s !== id;
@@ -952,7 +977,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "va23a483c00"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v5a4d264b1f"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1335,7 +1360,7 @@ async function loadHome(){
   $("home-err").hidden = true;
   try {
     const [me, path, opts] = await Promise.all([api("/api/me"), api("/api/path"), api("/api/start")]);
-    state.me = me.stats; state.board = me.leaderboard; state.path = path;
+    state.me = me.stats; state.board = me.leaderboard; state.high = me.highScores || {}; state.path = path;
     renderChips(); renderToday(); renderPath(); renderPractice(opts); renderBoard(); renderRailBoard(); renderSideUnits(); renderMe(); placeToday();
     offerPendingCall();
   } catch (e) {
@@ -1605,7 +1630,7 @@ function personaCards(el, options, key){
   if (!options.some((o) => o.id === state[key])) state[key] = options[0].id;
   for (const o of options){
     const b = document.createElement("button"); b.className = "persona"; b.type = "button";
-    b.innerHTML = `<span class="pe" aria-hidden="true">${esc(o.emoji || "")}</span><span class="pt"><b>${esc(o.label)}</b>${o.quote ? `<i>“${esc(o.quote)}”</i>` : ""}${o.wants ? `<small>Win him over with: ${esc(o.wants)}</small>` : ""}</span><span class="pc" aria-hidden="true">${icon("check")}</span>`;
+    b.innerHTML = `<span class="pe" aria-hidden="true">${esc(o.emoji || "")}</span><span class="pt"><b>${esc(o.label)}</b>${o.quote ? `<i>“${esc(o.quote)}”</i>` : ""}${o.wants ? `<small>Win him over with: ${esc(o.wants)}</small>` : ""}${o.hs || ""}</span><span class="pc" aria-hidden="true">${icon("check")}</span>`;
     b.setAttribute("aria-pressed", String(state[key] === o.id));
     b.onclick = () => { state[key] = o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c === b)); };
     el.appendChild(b);
@@ -1613,11 +1638,17 @@ function personaCards(el, options, key){
 }
 function renderPractice({ farmers, toughness, plays }){
   if (!state.callPlay) state.callPlay = "play1";
+  state.farmers = farmers;
   if (plays) state.plays = plays;
   const people = () => {
     const dealer = (state.plays || []).some((p) => p.id === state.callPlay && p.dealer);
     const list = farmers.filter((f) => !!f.dealer === dealer);
-    personaCards($("farmers"), dealer ? list : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...list], "farmerId");
+    // Each card shows the high score to beat on this play and the rep's own best.
+    const withHs = list.map((f) => { const b = state.high[`${state.callPlay}|${f.id}`];
+      const top = b && b.top[0], mine = b && b.mine;
+      const hs = top ? `<span>🏆&nbsp;High score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No high score yet. Set it.</span>`;
+      return { ...f, hs: `<span class="hs">${hs}</span>` }; });
+    personaCards($("farmers"), dealer ? withHs : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...withHs], "farmerId");
   };
   const track = state.path && state.path.track;
   const mineP = (state.plays || []).filter((p) => !track || (p.tracks || []).includes(track));
@@ -1633,6 +1664,7 @@ function renderPractice({ farmers, toughness, plays }){
   $("plays").onclick = people;
   people();
   pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
+  for (const b of $("tough").children) b.className = ""; // segmented toggle, not pills
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
   $("goal-n").textContent = `${Math.min(s.weekCalls, s.weeklyGoal)}/${s.weeklyGoal}`;
@@ -1644,9 +1676,27 @@ function renderBoard(){
   const box = $("lb"); box.innerHTML = "";
   // New reps don't open the board to find themselves last: it unlocks after a few practices.
   const doneN = state.me ? (state.me.lessonsDone || 0) + (state.me.calls || 0) : BOARD_UNLOCK;
-  $("lb-tabs").hidden = doneN < BOARD_UNLOCK;
+  const locked = doneN < BOARD_UNLOCK;
+  $("lb-tabs").hidden = locked; $("lb-kind").hidden = locked;
+  if (locked){ $("hs").hidden = true; $("hs-plays").hidden = true; $("lb-note").hidden = true; box.hidden = false; }
   if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN;
     box.innerHTML = `<div class="lockcard">${Art.mascot("happy", 90)}<p style="font-weight:800;color:var(--char);margin:8px 0 4px">Unlock the leaderboard</p><p class="sub" style="margin:0">Finish ${left} more lesson${left === 1 ? "" : "s"} or practice call${left === 1 ? "" : "s"} to start competing.</p></div>`; return; }
+  const kind = state.boardKind;
+  $("lb-tabs").hidden = kind !== "points"; $("hs-plays").hidden = kind !== "high"; $("hs").hidden = kind !== "high"; box.hidden = kind === "high";
+  $("lb-note").hidden = kind === "points";
+  if (kind === "high") return renderHighScores();
+  if (kind === "calls"){
+    $("lb-note").textContent = "This week: the average of each rep's best 3 graded calls. 3 calls to get on the board.";
+    const cr = (state.board && state.board.calls) || [];
+    if (!cr.length){ box.innerHTML = `<div class="lbempty">${Art.mascot("happy", 90)}No one has 3 graded calls this week yet.<br>Three calls puts you on the board.</div>`; return; }
+    for (const r of cr){
+      const rank = r.rank<=3 ? `<div class="medal" style="background:${MEDAL[r.rank-1]}">${r.rank}</div>` : `<div class="rank">${r.rank}</div>`;
+      const el = document.createElement("div"); el.className = "row" + (r.you ? " you" : "");
+      el.innerHTML = `${rank}<div class="av" style="background:${avColor(r.rep)}">${esc(initials(r.rep))}</div><div class="name">${esc(r.rep)}${r.you?" (you)":""}<div class="meta">${r.weekGraded} graded call${r.weekGraded === 1 ? "" : "s"} this week</div></div><div class="val">${r.callScore}</div>`;
+      box.appendChild(el);
+    }
+    return;
+  }
   const rows = (state.board && state.board[state.boardTab]) || [];
   if (!rows.length){ box.innerHTML = `<div class="lbempty">${Art.mascot("happy", 90)}No one's on the board yet.<br>Your first lesson takes the top spot.</div>`; return; }
   for (const r of rows){
@@ -1658,6 +1708,24 @@ function renderBoard(){
     box.appendChild(el);
   }
 }
+// High scores: pick a play, then one arcade board per farmer.
+function renderHighScores(){
+  const plays = (state.plays || []).filter((p) => !state.path || !state.path.track || (p.tracks || []).includes(state.path.track) || Object.keys(state.high).some((k) => k.startsWith(p.id + "|")));
+  if (!state.hsPlay || !plays.some((p) => p.id === state.hsPlay)) state.hsPlay = (plays.find((p) => p.id === state.callPlay) || plays[0] || {}).id;
+  pills($("hs-plays"), plays.map((p) => ({ id: p.id, label: p.short })), "hsPlay");
+  $("hs-plays").onclick = () => renderHighScores();
+  const play = plays.find((p) => p.id === state.hsPlay) || {};
+  $("lb-note").textContent = "Best graded call on each play and farmer, all time. One spot per rep. Ties go to the tougher call. TOUGH marks a score set on a tough call.";
+  const farmers = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
+  $("hs").innerHTML = farmers.map((f) => {
+    const b = state.high[`${state.hsPlay}|${f.id}`];
+    const li = (e) => `<li class="${e.you ? "you" : ""}"><span class="r">${e.rank}.</span><span class="nm">${esc(e.rep)}${e.you ? " (you)" : ""}</span><span class="sc">${e.score}${e.toughness === "tough" ? `<span class="tg">TOUGH</span>` : ""}</span></li>`;
+    const body = b ? `<ol>${b.top.map(li).join("")}</ol>${b.mine && b.mine.rank > b.top.length ? `<ol class="minebelow">${li(b.mine)}</ol>` : ""}` : `<p class="empty">No scores yet. The first graded call sets the high score.</p>`;
+    return `<div class="arcade"><h4><span aria-hidden="true">${esc(f.emoji || "")}</span>${esc(f.label)}</h4><p class="q">${esc(play.short || "")}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
+  }).join("");
+}
+for (const b of document.querySelectorAll("#lb-kind button")) b.onclick = () => { state.boardKind = b.dataset.kind;
+  for (const c of document.querySelectorAll("#lb-kind button")) c.setAttribute("aria-pressed", String(c===b)); renderBoard(); };
 for (const b of document.querySelectorAll("#lb-tabs button")) b.onclick = () => { state.boardTab=b.dataset.tab;
   for (const c of document.querySelectorAll("#lb-tabs button")) c.setAttribute("aria-pressed", String(c===b)); renderBoard(); };
 
