@@ -504,9 +504,20 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .matchup .mtitle small{display:block;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .faces{display:flex;gap:4px;padding:2px 0 4px}
 .face{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:700}
-.face .fe{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bg);border:2px solid var(--line)}
+.face .fe{position:relative;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bg);border:2px solid var(--line)}
+.face .fe svg{display:block;border-radius:50%}
+/* The persona's icon rides on the portrait as a small badge. */
+.pbadge{position:absolute;right:-5px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:#fff;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;line-height:1}
+.fcard{display:flex;gap:12px;align-items:flex-start}
+.fcard .fport{position:relative;flex:none}
+.fcard .fport svg{display:block}
+.fcard .ftext{min-width:0}
+.ptile .uic{flex:none}
+.suggest .sport{position:relative;flex:none}
+.suggest .sport svg{display:block}
+.arcade h4 svg{flex:none}
 .face[aria-checked="true"]{color:var(--char)} .face[aria-checked="true"] .fe{border-color:var(--char);background:var(--gold-50);box-shadow:0 0 0 2px var(--gold)}
-.fcard{margin-top:10px;background:var(--bg);border-radius:14px;padding:12px 14px;color:var(--char)}
+.fcard{margin-top:12px;background:var(--bg);border-radius:14px;padding:12px 14px;color:var(--char)}
 .fcard b{font-size:16px} .fcard i{display:block;font-size:13px;color:var(--ink-2);margin-top:2px} .fcard small{display:block;font-size:12.5px;color:var(--blue);font-weight:600;margin-top:4px}
 .fcard .hs{margin-top:8px}
 .persona .hs, .fcard .hs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;font-weight:700;color:var(--char);margin-top:4px}
@@ -932,10 +943,11 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   const SHIRT = ["#9A3B2E", "#2E5E8A", "#3F6B3A", "#6B5B8A", "#8A6A3E"];
   const HAIR = ["#5A3A22", "#2B2B2B", "#8A8A8A", "#B88A52", "#D9D9D9"];
   function hash(s) { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
-  function farmer(name, size = 56) {
-    const h = hash(name);
-    const skin = SKIN[h % SKIN.length], cap = CAP[(h >> 3) % CAP.length], shirt = SHIRT[(h >> 6) % SHIRT.length], hair = HAIR[(h >> 9) % HAIR.length];
-    const beard = (h >> 12) % 3 === 0, stache = (h >> 12) % 3 === 1, glasses = (h >> 14) % 4 === 0;
+  // "look" overrides the hashed traits (used for the fixed practice-call personas).
+  function farmer(name, size = 56, look) {
+    const h = hash(name), o = look || {};
+    const skin = o.skin || SKIN[h % SKIN.length], cap = o.cap || CAP[(h >> 3) % CAP.length], shirt = o.shirt || SHIRT[(h >> 6) % SHIRT.length], hair = o.hair || HAIR[(h >> 9) % HAIR.length];
+    const beard = "beard" in o ? o.beard : (h >> 12) % 3 === 0, stache = "stache" in o ? o.stache : (h >> 12) % 3 === 1, glasses = "glasses" in o ? o.glasses : (h >> 14) % 4 === 0;
     return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
       <circle cx="50" cy="50" r="50" fill="${BLUE_XL}"/>
       <clipPath id="fc${h}"><circle cx="50" cy="50" r="50"/></clipPath>
@@ -961,6 +973,18 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     </svg>`;
   }
 
+  // The practice-call personas: one fixed face each, so reps know they're about to talk to a person.
+  const PERSONA_LOOK = {
+    carl:  { skin: SKIN[1], cap: CAP[0], shirt: SHIRT[0], hair: HAIR[2], beard: false, stache: true,  glasses: false },
+    cody:  { skin: SKIN[4], cap: CAP[2], shirt: SHIRT[1], hair: HAIR[3], beard: false, stache: false, glasses: true },
+    henry: { skin: SKIN[0], cap: CAP[1], shirt: SHIRT[2], hair: HAIR[0], beard: true,  stache: false, glasses: false },
+    rick:  { skin: SKIN[2], cap: CAP[3], shirt: SHIRT[4], hair: HAIR[4], beard: false, stache: true,  glasses: true },
+    aaron: { skin: SKIN[3], cap: CAP[4], shirt: SHIRT[3], hair: HAIR[1], beard: true,  stache: false, glasses: false },
+    dan:   { skin: SKIN[1], cap: CAP[5], shirt: SHIRT[1], hair: HAIR[1], beard: false, stache: false, glasses: true },
+  };
+  const hasPersona = (id) => !!PERSONA_LOOK[id === "nate" ? "cody" : id];
+  function persona(id, size = 56) { const k = id === "nate" ? "cody" : id; return farmer("persona-" + k, size, PERSONA_LOOK[k]); }
+
   // Decorations for the lesson path and banner: the demo website's own line icons
   // (~/Projects/EmpoweringFarmers/source/brand_icons.py), drawn the way the site draws them.
   const scenery = {
@@ -973,7 +997,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   // Unit banner: the site's dark sections show their icons in gold.
   const field = `<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="${WIN}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 54V12M42 54V12M22 44c-6-2-10-6-12-12 5 1 9 5 12 12zM22 34c6-2 10-6 12-12-5 1-9 5-12 12zM22 24c-5-2-8-5-9-10 4 1 7 4 9 10zM42 44c6-2 10-6 12-12-5 1-9 5-12 12zM42 34c-6-2-10-6-12-12 5 1 9 5 12 12zM42 24c5-2 8-5 9-10-4 1-7 4-9 10zM10 54h44"/></svg>`;
 
-  window.Art = { mascot, icon, farmer, scenery, field };
+  window.Art = { mascot, icon, farmer, persona, hasPersona, scenery, field };
 })();
 
 </script>
@@ -1006,7 +1030,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v0ed3a795e0"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vb4a574f554"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1655,6 +1679,10 @@ function pills(el, options, key){
 }
 // Practice is play-first: pick the play (the skill, as in Learn), then a one-screen matchup to pick the farmer and toughness.
 const SURPRISE = { id:"surprise", label:"Surprise me", short:"Surprise", emoji:"🎲", quote:"One of the five, picked at random, like a real day of calls." };
+// A persona's face: the drawn farmer portrait with his icon as a badge (Surprise keeps the dice).
+const face = (o, size) => Art.hasPersona(o.id) ? `${Art.persona(o.id, size)}<span class="pbadge" aria-hidden="true">${esc(o.emoji || "")}</span>` : esc(o.emoji || "");
+const PLAY_ICON = { play1:"tractor", play2:"steps", play3:"grid", play4:"bolt", play6:"target", play7:"sprout", play8:"mega", roi:"sprout" };
+const playIcon = (id) => ((state.path && state.path.units || []).find((u) => u.id === id) || {}).icon || PLAY_ICON[id] || "phone";
 const firstWord = (l) => String(l || "").split(" ").pop(); // "Controlling Carl" -> "Carl"
 // The rep's best graded score on a play (any farmer, any toughness), from the high-score boards.
 function myBestOn(playId, farmerId){
@@ -1677,7 +1705,7 @@ function renderPractice({ farmers, toughness, plays }){
   for (const p of shown){
     const best = myBestOn(p.id);
     const b = document.createElement("button"); b.type = "button"; b.className = "ptile";
-    b.innerHTML = `<span><span class="pn">${esc(p.name)}</span><b>${esc(p.short)}</b></span><span class="pb">${best === null ? "Not tried yet" : `Your best<span>${best}</span>`}</span>`;
+    b.innerHTML = `<span class="uic">${icon(playIcon(p.id))}</span><span><span class="pn">${esc(p.name)}</span><b>${esc(p.short)}</b></span><span class="pb">${best === null ? "Not tried yet" : `Your best<span>${best}</span>`}</span>`;
     b.onclick = () => { state.callPlay = p.id; openMatchup(); };
     $("plays").appendChild(b);
   }
@@ -1694,7 +1722,7 @@ function renderPractice({ farmers, toughness, plays }){
     const fl = farmers.filter((f) => !!f.dealer === !!pick.p.dealer);
     const f = fl.map((x) => ({ x, best: myBestOn(pick.p.id, x.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0].x;
     $("pr-suggest").hidden = false;
-    $("pr-suggest").innerHTML = `<span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
+    $("pr-suggest").innerHTML = `<span class="sport">${Art.persona(f.id, 44)}</span><span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
     $("pr-suggest").onclick = () => { state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
   } else $("pr-suggest").hidden = true;
   if (state.prView === "match") openMatchup(); else showPick();
@@ -1758,7 +1786,7 @@ function renderHighScores(){
     const b = state.high[`${state.hsPlay}|${f.id}|${state.hsTough}`];
     const li = (e) => `<li class="${e.you ? "you" : ""}"><span class="r">${e.rank}.</span><span class="nm">${esc(e.rep)}${e.you ? " (you)" : ""}</span><span class="sc">${e.score}</span></li>`;
     const body = b ? `<ol>${b.top.map(li).join("")}</ol>${b.mine && b.mine.rank > b.top.length ? `<ol class="minebelow">${li(b.mine)}</ol>` : ""}` : `<p class="empty">No scores yet. The first graded call sets the high score.</p>`;
-    return `<div class="arcade"><h4><span aria-hidden="true">${esc(f.emoji || "")}</span>${esc(f.label)}</h4><p class="q">${esc(play.short || "")} · ${esc(cap(state.hsTough))}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
+    return `<div class="arcade"><h4>${Art.persona(f.id, 30)}${esc(f.label)} <span aria-hidden="true">${esc(f.emoji || "")}</span></h4><p class="q">${esc(play.short || "")} · ${esc(cap(state.hsTough))}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
   }).join("");
 }
 for (const b of document.querySelectorAll("#lb-kind button")) b.onclick = () => { state.boardKind = b.dataset.kind;
@@ -2030,7 +2058,7 @@ function sceneCard(sc, big){
   // Only what the card actually knows: a cold call shows just a name and a place, a current customer shows the account.
   const g = (ic, t) => (t ? f(ic, t) : "");
   const size = sc.growers ? `Serves about ${sc.growers} growers` : sc.acres ? `About ${Number(sc.acres).toLocaleString("en-US")} acres` : "";
-  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
+  return `<div class="scene">${Art.hasPersona(sc.farmerId) ? Art.persona(sc.farmerId, big ? 84 : 64) : Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
     ${g("pin", sc.place)}${g("grid", size)}${g("sprout", sc.crops)}${g("user", sc.note)}${(sc.account || []).map((a) => g("check", a)).join("")}${g("mega", sc.lead)}${g("home", sc.setting && "Talking " + sc.setting)}</ul>${sc.lead && !sc.acres && !sc.growers && !sc.crops ? `<small class="cardnote">That's all you know. The rest is discovery.</small>` : ""}</div></div>`;
 }
 
@@ -2153,12 +2181,12 @@ function openMatchup(){
       const b = state.high[`${state.callPlay}|${f.id}|${state.toughness}`], top = b && b.top[0], mine = b && b.mine;
       hs = top ? `<span>🏆&nbsp;${esc(cap(state.toughness))} high score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No ${esc(state.toughness)} high score yet. Set it.</span>`;
     }
-    $("pr-farmer").innerHTML = `<b>${esc(f.emoji || "")} ${esc(f.label)}</b>${f.quote ? `<i>“${esc(f.quote)}”</i>` : ""}${f.wants ? `<small>Win him over with: ${esc(f.wants)}</small>` : ""}${hs ? `<span class="hs">${hs}</span>` : ""}`;
+    $("pr-farmer").innerHTML = `<span class="fport" aria-hidden="true">${Art.hasPersona(f.id) ? face(f, 64) : `<span style="font-size:40px">${esc(f.emoji || "")}</span>`}</span><span class="ftext"><b>${esc(f.label)}</b>${f.quote ? `<i>“${esc(f.quote)}”</i>` : ""}${f.wants ? `<small>Win him over with: ${esc(f.wants)}</small>` : ""}${hs ? `<span class="hs">${hs}</span>` : ""}</span>`;
   };
   $("farmers").innerHTML = "";
   for (const o of opts){
     const b = document.createElement("button"); b.type = "button"; b.className = "face"; b.setAttribute("role", "radio");
-    b.innerHTML = `<span class="fe" aria-hidden="true">${esc(o.emoji || "")}</span>${esc(o.short || firstWord(o.label))}`;
+    b.innerHTML = `<span class="fe" aria-hidden="true">${face(o, 44)}</span>${esc(o.short || firstWord(o.label))}`;
     b.setAttribute("aria-label", o.label); b.setAttribute("aria-checked", String(o.id === state.farmerId));
     b.onclick = () => { state.farmerId = o.id; for (const c of $("farmers").children) c.setAttribute("aria-checked", String(c === b)); card(); };
     $("farmers").appendChild(b);
