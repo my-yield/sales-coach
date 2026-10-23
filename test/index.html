@@ -143,7 +143,6 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .arcade li .nm{font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .arcade li .sc{font-weight:800;font-size:17px}
 .arcade li.you{background:#2a2e38;border-radius:8px;padding:4px 6px;margin:0 -6px}
-.arcade .tg{font-size:10px;font-weight:800;letter-spacing:.06em;color:#16181d;background:var(--gold);border-radius:4px;padding:1px 4px;margin-left:6px;vertical-align:2px}
 .arcade .empty{font-size:13px;color:#a9a597;margin:4px 0}
 .arcade .minebelow{border-top:1px dashed #3a3e48;margin-top:6px;padding-top:6px}
 
@@ -701,6 +700,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       </div>
       <p class="sub" id="lb-note" hidden></p>
       <div class="pills" id="hs-plays" hidden></div>
+      <div class="seg" id="hs-tough" hidden></div>
       <div class="seg small" id="lb-tabs">
         <button data-tab="week" aria-pressed="true">This week</button>
         <button data-tab="allTime" aria-pressed="false">All time</button>
@@ -958,13 +958,14 @@ const store = {
 };
 const icon = (name, cls="i") => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const cap = (t) => (t ? String(t)[0].toUpperCase() + String(t).slice(1) : "");
 const initials = (n) => String(n||"?").split(/\s+/).filter(Boolean).slice(0,2).map((w)=>w[0].toUpperCase()).join("");
 const AV = ["#0017CA","#2E7D6B","#6B4E9B","#9A5B2E","#184EFF","#5E6B2E","#8A3F5A"];
 const avColor = (n) => AV[[...String(n)].reduce((a,c)=>a+c.charCodeAt(0),0) % AV.length];
 
 const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmerId:"surprise", toughness:"typical",
   rollToken:null, farmerName:"", transcript:[], startedAt:null, busy:false, ended:false, checkpoint:false,
-  me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, path:null, tab:"learn" };
+  me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, hsTough:null, path:null, tab:"learn" };
 
 function show(id){
   for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results"]) $(s).hidden = s !== id;
@@ -977,7 +978,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v5a4d264b1f"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v699f8d788d"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1644,9 +1645,9 @@ function renderPractice({ farmers, toughness, plays }){
     const dealer = (state.plays || []).some((p) => p.id === state.callPlay && p.dealer);
     const list = farmers.filter((f) => !!f.dealer === dealer);
     // Each card shows the high score to beat on this play and the rep's own best.
-    const withHs = list.map((f) => { const b = state.high[`${state.callPlay}|${f.id}`];
+    const withHs = list.map((f) => { const b = state.high[`${state.callPlay}|${f.id}|${state.toughness}`];
       const top = b && b.top[0], mine = b && b.mine;
-      const hs = top ? `<span>🏆&nbsp;High score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No high score yet. Set it.</span>`;
+      const hs = top ? `<span>🏆&nbsp;${esc(cap(state.toughness))} high score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No ${esc(state.toughness)} high score yet. Set it.</span>`;
       return { ...f, hs: `<span class="hs">${hs}</span>` }; });
     personaCards($("farmers"), dealer ? withHs : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...withHs], "farmerId");
   };
@@ -1665,6 +1666,7 @@ function renderPractice({ farmers, toughness, plays }){
   people();
   pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
   for (const b of $("tough").children) b.className = ""; // segmented toggle, not pills
+  $("tough").onclick = people; // high scores on the cards follow the toughness
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
   $("goal-n").textContent = `${Math.min(s.weekCalls, s.weeklyGoal)}/${s.weeklyGoal}`;
@@ -1678,11 +1680,11 @@ function renderBoard(){
   const doneN = state.me ? (state.me.lessonsDone || 0) + (state.me.calls || 0) : BOARD_UNLOCK;
   const locked = doneN < BOARD_UNLOCK;
   $("lb-tabs").hidden = locked; $("lb-kind").hidden = locked;
-  if (locked){ $("hs").hidden = true; $("hs-plays").hidden = true; $("lb-note").hidden = true; box.hidden = false; }
+  if (locked){ $("hs").hidden = true; $("hs-plays").hidden = true; $("hs-tough").hidden = true; $("lb-note").hidden = true; box.hidden = false; }
   if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN;
     box.innerHTML = `<div class="lockcard">${Art.mascot("happy", 90)}<p style="font-weight:800;color:var(--char);margin:8px 0 4px">Unlock the leaderboard</p><p class="sub" style="margin:0">Finish ${left} more lesson${left === 1 ? "" : "s"} or practice call${left === 1 ? "" : "s"} to start competing.</p></div>`; return; }
   const kind = state.boardKind;
-  $("lb-tabs").hidden = kind !== "points"; $("hs-plays").hidden = kind !== "high"; $("hs").hidden = kind !== "high"; box.hidden = kind === "high";
+  $("lb-tabs").hidden = kind !== "points"; $("hs-plays").hidden = kind !== "high"; $("hs-tough").hidden = kind !== "high"; $("hs").hidden = kind !== "high"; box.hidden = kind === "high";
   $("lb-note").hidden = kind === "points";
   if (kind === "high") return renderHighScores();
   if (kind === "calls"){
@@ -1714,14 +1716,18 @@ function renderHighScores(){
   if (!state.hsPlay || !plays.some((p) => p.id === state.hsPlay)) state.hsPlay = (plays.find((p) => p.id === state.callPlay) || plays[0] || {}).id;
   pills($("hs-plays"), plays.map((p) => ({ id: p.id, label: p.short })), "hsPlay");
   $("hs-plays").onclick = () => renderHighScores();
+  if (!state.hsTough) state.hsTough = state.toughness || "typical";
+  pills($("hs-tough"), ["easygoing", "typical", "tough"].map((t) => ({ id: t, label: cap(t) })), "hsTough");
+  for (const b of $("hs-tough").children) b.className = "";
+  $("hs-tough").onclick = () => renderHighScores();
   const play = plays.find((p) => p.id === state.hsPlay) || {};
-  $("lb-note").textContent = "Best graded call on each play and farmer, all time. One spot per rep. Ties go to the tougher call. TOUGH marks a score set on a tough call.";
+  $("lb-note").textContent = "Best graded call on each play, farmer and toughness, all time. Easygoing, Typical and Tough each have their own boards. One spot per rep.";
   const farmers = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
   $("hs").innerHTML = farmers.map((f) => {
-    const b = state.high[`${state.hsPlay}|${f.id}`];
-    const li = (e) => `<li class="${e.you ? "you" : ""}"><span class="r">${e.rank}.</span><span class="nm">${esc(e.rep)}${e.you ? " (you)" : ""}</span><span class="sc">${e.score}${e.toughness === "tough" ? `<span class="tg">TOUGH</span>` : ""}</span></li>`;
+    const b = state.high[`${state.hsPlay}|${f.id}|${state.hsTough}`];
+    const li = (e) => `<li class="${e.you ? "you" : ""}"><span class="r">${e.rank}.</span><span class="nm">${esc(e.rep)}${e.you ? " (you)" : ""}</span><span class="sc">${e.score}</span></li>`;
     const body = b ? `<ol>${b.top.map(li).join("")}</ol>${b.mine && b.mine.rank > b.top.length ? `<ol class="minebelow">${li(b.mine)}</ol>` : ""}` : `<p class="empty">No scores yet. The first graded call sets the high score.</p>`;
-    return `<div class="arcade"><h4><span aria-hidden="true">${esc(f.emoji || "")}</span>${esc(f.label)}</h4><p class="q">${esc(play.short || "")}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
+    return `<div class="arcade"><h4><span aria-hidden="true">${esc(f.emoji || "")}</span>${esc(f.label)}</h4><p class="q">${esc(play.short || "")} · ${esc(cap(state.hsTough))}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
   }).join("");
 }
 for (const b of document.querySelectorAll("#lb-kind button")) b.onclick = () => { state.boardKind = b.dataset.kind;
