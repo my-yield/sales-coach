@@ -131,6 +131,20 @@ h3.section{font-size:20px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01e
 .row .meta{font-size:12px;color:var(--muted);font-weight:500}
 .row .val{font-weight:800;color:var(--blue)}
 .row.you{background:var(--blue-50);border-radius:14px;border-bottom-color:transparent}
+.seg.small{margin:0 0 10px} .seg.small button{padding:7px 6px;font-size:12px}
+/* Arcade high scores: one board per play + farmer */
+.hsgrid{display:grid;gap:12px;margin-top:12px}
+.arcade{background:#16181d;color:#f4f1e8;border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.arcade h4{margin:0 0 2px;font-size:15px;display:flex;align-items:center;gap:8px}
+.arcade .q{font-size:12px;color:#a9a597;margin:0 0 8px}
+.arcade ol{list-style:none;margin:0;padding:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.arcade li{display:grid;grid-template-columns:2.2em 1fr auto;gap:8px;align-items:center;padding:4px 0;font-size:15px}
+.arcade li .r{color:#a9a597}
+.arcade li .nm{font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arcade li .sc{font-weight:800;font-size:17px}
+.arcade li.you{background:#2a2e38;border-radius:8px;padding:4px 6px;margin:0 -6px}
+.arcade .empty{font-size:13px;color:#a9a597;margin:4px 0}
+.arcade .minebelow{border-top:1px dashed #3a3e48;margin-top:6px;padding-top:6px}
 
 /* Profile */
 .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -472,6 +486,44 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .persona .pc svg{width:14px;height:14px}
 .persona[aria-pressed="true"]{border:2px solid var(--char);background:var(--gold-50);padding:9.5px 11.5px}
 .persona[aria-pressed="true"] .pc{background:var(--char);border-color:var(--char);color:var(--gold)}
+.playtiles{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ptile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 3px 0 var(--line);font:inherit;color:var(--char);cursor:pointer}
+.ptile:hover{border-color:var(--char)}
+.ptile .pn{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.ptile b{display:block;font-size:16px;margin-top:2px}
+.ptile .pb{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);font-weight:700;flex:none}
+.ptile .pb span{display:block;font-size:20px;font-weight:800;color:var(--blue)}
+.suggest{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:12px;background:var(--char);color:#fff;border-radius:16px;padding:14px 16px;font:inherit;cursor:pointer}
+.suggest small{display:block;color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.suggest b{font-size:15px} .suggest .go{margin-left:auto;font-weight:800;color:var(--gold);flex:none}
+.matchup{margin-top:16px}
+.matchup .mtitle{font-size:18px;font-weight:800;margin:6px 0 12px}
+/* Start stays in reach above the tab bar, so the whole matchup works without scrolling to find it. */
+.matchup #setup-btn{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+@media (min-width:1080px){.matchup #setup-btn{bottom:16px}}
+.matchup .mtitle small{display:block;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.faces{display:flex;gap:4px;padding:2px 0 4px}
+.face{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:700}
+.face .fe{position:relative;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bg);border:2px solid var(--line)}
+.face .fe svg{display:block;border-radius:50%}
+/* The persona's icon rides on the portrait as a small badge. */
+.pbadge{position:absolute;right:-5px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:#fff;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;line-height:1}
+.fcard{display:flex;gap:12px;align-items:flex-start}
+.fcard .fport{position:relative;flex:none}
+.fcard .fport svg{display:block}
+.fcard .ftext{min-width:0}
+.ptile .uic{flex:none}
+.suggest .sport{position:relative;flex:none}
+.suggest .sport svg{display:block}
+.arcade h4 .hsport{position:relative;flex:none;display:block;width:34px;height:34px}
+.arcade h4 .pbadge{width:18px;height:18px;font-size:10px;right:-6px;bottom:-5px;border-color:#16181d}
+.ptile .uic .micon{width:24px;height:24px}
+.face[aria-checked="true"]{color:var(--char)} .face[aria-checked="true"] .fe{border-color:var(--char);background:var(--gold-50);box-shadow:0 0 0 2px var(--gold)}
+.fcard{margin-top:12px;background:var(--bg);border-radius:14px;padding:12px 14px;color:var(--char)}
+.fcard b{font-size:16px} .fcard i{display:block;font-size:13px;color:var(--ink-2);margin-top:2px} .fcard small{display:block;font-size:12.5px;color:var(--blue);font-weight:600;margin-top:4px}
+.fcard .hs{margin-top:8px}
+.persona .hs, .fcard .hs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;font-weight:700;color:var(--char);margin-top:4px}
+.persona .hs span{white-space:nowrap}
 /* Desktop: like Duolingo, the tabs become a left sidebar and streak, quests and the leaderboard sit in a right column. */
 .rail{display:none} .sideunits{display:none}
 .sideunits .sh{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--blue);margin:18px 8px 6px}
@@ -656,20 +708,25 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     </div>
 
     <div class="wrap" id="tab-practice" hidden>
-      <h3 class="section">Practice call</h3>
-      <p class="sub">A full call. Ask good questions, handle his pushback, and get graded.</p>
-      <div class="card">
-        <div style="font-weight:800">Which play?</div>
-        <div class="pills" id="plays"></div>
-        <div style="font-weight:800;margin-top:16px">Who do you want to call?</div>
-        <div class="pills" id="farmers"></div>
-        <div style="font-weight:800;margin-top:16px">How tough?</div>
-        <div class="pills" id="tough"></div>
-        <label class="toggle" style="margin-top:16px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
-        <div class="err" id="setup-err" style="margin-top:12px"></div>
-        <button class="btn btn-primary" id="setup-btn">Get my briefing</button>
+      <div id="pr-head"><h3 class="section">Practice call</h3>
+      <p class="sub">A full call. Ask good questions, handle his pushback, and get graded.</p></div>
+      <!-- Step 1: pick a play (the skill). Step 2: the matchup screen (farmer, toughness, start). -->
+      <div id="pr-pick">
+        <button class="suggest" id="pr-suggest" type="button" hidden></button>
+        <div class="playtiles" id="plays"></div>
       </div>
-      <div class="card goal">
+      <div class="card matchup" id="pr-match" hidden>
+        <button class="linkbtn" id="pr-back" type="button">‹ All plays</button>
+        <div class="mtitle" id="pr-play"></div>
+        <div class="faces" id="farmers" role="radiogroup" aria-label="Who do you want to call?"></div>
+        <div class="fcard" id="pr-farmer"></div>
+        <div style="font-weight:800;margin-top:14px">How tough?</div>
+        <div class="seg" id="tough" style="margin-top:8px"></div>
+        <label class="toggle" style="margin-top:12px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
+        <div class="err" id="setup-err" style="margin-top:12px"></div>
+        <button class="btn btn-primary" id="setup-btn">Start call</button>
+      </div>
+      <div class="card goal" id="pr-goal">
         <div class="ringwrap"><svg viewBox="0 0 36 36" width="58" height="58"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="5"/><circle id="goal-ring" cx="18" cy="18" r="15" fill="none" stroke="var(--blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/></svg><span id="goal-n">0</span></div>
         <div><div style="font-weight:800">Weekly goal</div><div class="sub" id="goal-text" style="margin:0"></div></div>
       </div>
@@ -677,12 +734,21 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 
     <div class="wrap" id="tab-board" hidden>
       <h3 class="section">Leaderboard</h3>
-      <div class="seg" id="lb-tabs">
+      <div class="seg" id="lb-kind">
+        <button data-kind="points" aria-pressed="true">Points</button>
+        <button data-kind="calls" aria-pressed="false">Calls</button>
+        <button data-kind="high" aria-pressed="false">High scores</button>
+      </div>
+      <p class="sub" id="lb-note" hidden></p>
+      <div class="pills" id="hs-plays" hidden></div>
+      <div class="seg" id="hs-tough" hidden></div>
+      <div class="seg small" id="lb-tabs">
         <button data-tab="week" aria-pressed="true">This week</button>
         <button data-tab="allTime" aria-pressed="false">All time</button>
         <button data-tab="improved" aria-pressed="false">Most improved</button>
       </div>
       <div class="card" style="padding:8px 10px" id="lb"></div>
+      <div class="hsgrid" id="hs" hidden></div>
     </div>
 
     <div class="wrap" id="tab-me" hidden>
@@ -879,10 +945,11 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   const SHIRT = ["#9A3B2E", "#2E5E8A", "#3F6B3A", "#6B5B8A", "#8A6A3E"];
   const HAIR = ["#5A3A22", "#2B2B2B", "#8A8A8A", "#B88A52", "#D9D9D9"];
   function hash(s) { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
-  function farmer(name, size = 56) {
-    const h = hash(name);
-    const skin = SKIN[h % SKIN.length], cap = CAP[(h >> 3) % CAP.length], shirt = SHIRT[(h >> 6) % SHIRT.length], hair = HAIR[(h >> 9) % HAIR.length];
-    const beard = (h >> 12) % 3 === 0, stache = (h >> 12) % 3 === 1, glasses = (h >> 14) % 4 === 0;
+  // "look" overrides the hashed traits (used for the fixed practice-call personas).
+  function farmer(name, size = 56, look) {
+    const h = hash(name), o = look || {};
+    const skin = o.skin || SKIN[h % SKIN.length], cap = o.cap || CAP[(h >> 3) % CAP.length], shirt = o.shirt || SHIRT[(h >> 6) % SHIRT.length], hair = o.hair || HAIR[(h >> 9) % HAIR.length];
+    const beard = "beard" in o ? o.beard : (h >> 12) % 3 === 0, stache = "stache" in o ? o.stache : (h >> 12) % 3 === 1, glasses = "glasses" in o ? o.glasses : (h >> 14) % 4 === 0;
     return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
       <circle cx="50" cy="50" r="50" fill="${BLUE_XL}"/>
       <clipPath id="fc${h}"><circle cx="50" cy="50" r="50"/></clipPath>
@@ -908,6 +975,31 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     </svg>`;
   }
 
+  // The practice-call personas: one fixed face each, so reps know they're about to talk to a person.
+  const PERSONA_LOOK = {
+    carl:  { skin: SKIN[1], cap: CAP[0], shirt: SHIRT[0], hair: HAIR[2], beard: false, stache: true,  glasses: false },
+    cody:  { skin: SKIN[4], cap: CAP[2], shirt: SHIRT[1], hair: HAIR[3], beard: false, stache: false, glasses: true },
+    henry: { skin: SKIN[0], cap: CAP[1], shirt: SHIRT[2], hair: HAIR[0], beard: true,  stache: false, glasses: false },
+    rick:  { skin: SKIN[2], cap: CAP[3], shirt: SHIRT[4], hair: HAIR[4], beard: false, stache: true,  glasses: true },
+    aaron: { skin: SKIN[3], cap: CAP[4], shirt: SHIRT[3], hair: HAIR[1], beard: true,  stache: false, glasses: false },
+    dan:   { skin: SKIN[1], cap: CAP[5], shirt: SHIRT[1], hair: HAIR[1], beard: false, stache: false, glasses: true },
+  };
+  const hasPersona = (id) => !!PERSONA_LOOK[id === "nate" ? "cody" : id];
+  function persona(id, size = 56) { const k = id === "nate" ? "cody" : id; return farmer("persona-" + k, size, PERSONA_LOOK[k]); }
+
+  // Google Material Symbols (Rounded, Apache 2.0) for the play tiles.
+  const PLAY_ICONS = {
+    play1: "M160-600q-17 0-28.5-11.5T120-640q0-17 11.5-28.5T160-680h120q33 0 56.5 23.5T360-600H160Zm80 360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm540 0q25 0 42.5-17.5T840-300q0-25-17.5-42.5T780-360q-25 0-42.5 17.5T720-300q0 25 17.5 42.5T780-240Zm-540-60q-25 0-42.5-17.5T180-360q0-25 17.5-42.5T240-420q25 0 42.5 17.5T300-360q0 25-17.5 42.5T240-300Zm560-139q26 5 43 13.5t37 27.5v-242q0-33-23.5-56.5T800-720H548l-42-44 56-56-28-28-142 142 30 28 56-56 42 42v92q0 33-23.5 56.5T440-520h-81q23 17 37 35t28 45h16q66 0 113-47t47-113v-40h200v201ZM641-320q6-27 14.5-43.5T682-400H436q4 23 4 40t-4 40h205Zm139 160q-58 0-99-41t-41-99q0-58 41-99t99-41q58 0 99 41t41 99q0 58-41 99t-99 41Zm-540 0q-83 0-141.5-58.5T40-360q0-83 58.5-141.5T240-560q83 0 141.5 58.5T440-360q0 83-58.5 141.5T240-160Zm393-360Z",
+    play2: "M161-366q-16-12-15.5-31.5T162-429q11-8 24-8t24 8l270 209 270-209q11-8 24-8t24 8q16 12 16.5 31.5T799-366L529-156q-22 17-49 17t-49-17L161-366Zm270 8L201-537q-31-24-31-63t31-63l230-179q22-17 49-17t49 17l230 179q31 24 31 63t-31 63L529-358q-22 17-49 17t-49-17Zm49-64 230-178-230-178-230 178 230 178Zm0-178Z",
+    play3: "M400-200v-80q-83 0-141.5-58.5T200-480q0-61 33.5-111t90.5-73q8-34 35.5-55t62.5-21l-9-25q-5-16 1.5-30.5T437-816h1q-6-15 1-29.5t24-20.5q15-5 29.5 1.5T512-842q16-6 31 1t21 23l82 225q6 16-.5 30.5T623-542h-1q6 16-1 31t-24 21q-15 5-29.5-1.5T548-514q-16 6-31-1t-21-23l-10-28q-15 14-34.5 21t-39.5 5q-22-2-41-13.5T338-582q-27 16-42.5 43T280-480q0 50 35 85t85 35h280q17 0 28.5 11.5T720-320q0 17-11.5 28.5T680-280H520v80h200q17 0 28.5 11.5T760-160q0 17-11.5 28.5T720-120H240q-17 0-28.5-11.5T200-160q0-17 11.5-28.5T240-200h160Zm146-378 36-14-68-188-38 14 70 188Zm-126-22q17 0 28.5-11.5T460-640q0-17-11.5-28.5T420-680q-17 0-28.5 11.5T380-640q0 17 11.5 28.5T420-600Zm126 22Zm-126-62Zm0 0Z",
+    play4: "M240-478q0 16 2 31.5t7 30.5q5 17-1 32.5T227-361q-16 8-31.5 1.5T175-383q-8-23-11.5-47t-3.5-48q0-134 93-228t227-94h7l-36-36q-11-11-11-28t11-28q11-11 28-11t28 11l104 104q12 12 12 28t-12 28L507-628q-11 11-28 11t-28-11q-11-11-11-28t11-28l36-36h-7q-100 0-170 70.5T240-478Zm480-4q0-16-2-31.5t-7-30.5q-5-17 1-32.5t21-22.5q16-8 31.5-1.5T785-577q8 23 11.5 47t3.5 48q0 134-93 228t-227 94h-7l36 36q11 11 11 28t-11 28q-11 11-28 11t-28-11L349-172q-12-12-12-28t12-28l104-104q11-11 28-11t28 11q11 11 11 28t-11 28l-36 36h7q100 0 170-70.5T720-482Z",
+    play6: "M108-255q-12-12-11.5-28.5T108-311l211-214q23-23 57-23t57 23l103 104 208-206h-64q-17 0-28.5-11.5T640-667q0-17 11.5-28.5T680-707h160q17 0 28.5 11.5T880-667v160q0 17-11.5 28.5T840-467q-17 0-28.5-11.5T800-507v-64L593-364q-23 23-57 23t-57-23L376-467 164-255q-11 11-28 11t-28-11Z",
+    play7: "M216-176q-45-45-70.5-104T120-402q0-63 24-124.5T222-642q60-60 169.5-91T675-759q26 1 48 11t39 27q17 17 27 39.5t11 48.5q2 82-4.5 151.5t-21 125.5q-14.5 56-37 99.5T684-182q-53 53-112.5 77.5T450-80q-65 0-127-25.5T216-176Zm112-16q29 17 59.5 24.5T450-160q46 0 91-18.5t86-59.5q18-18 36.5-50.5t32-85Q709-426 716-500.5t2-177.5q-49-2-110.5-1.5T485-670q-61 9-116 29t-90 55q-45 45-62 89t-17 85q0 59 22.5 103.5T262-246q42-80 111-153.5T534-520q-72 63-125.5 142.5T328-192Zm0 0Zm0 0Z",
+    play8: "M201-120q-33 0-56.5-23.5T121-200v-318q-23-21-35.5-54t-.5-72l42-136q8-26 28.5-43t47.5-17h556q27 0 47 16.5t29 43.5l42 136q12 39-.5 71T841-518v318q0 33-23.5 56.5T761-120H201Zm368-440q27 0 41-18.5t11-41.5l-22-140h-78v148q0 21 14 36.5t34 15.5Zm-180 0q23 0 37.5-15.5T441-612v-148h-78l-22 140q-4 24 10.5 42t37.5 18Zm-178 0q18 0 31.5-13t16.5-33l22-154h-78l-40 134q-6 20 6.5 43t41.5 23Zm540 0q29 0 42-23t6-43l-42-134h-76l22 154q3 20 16.5 33t31.5 13ZM201-200h560v-282q-5 2-6.5 2H751q-27 0-47.5-9T663-518q-18 18-41 28t-49 10q-27 0-50.5-10T481-518q-17 18-39.5 28T393-480q-29 0-52.5-10T299-518q-21 21-41.5 29.5T211-480h-4.5q-2.5 0-5.5-2v282Zm560 0H201h560Z",
+    roi: "M160-120q-17 0-28.5-11.5T120-160v-40q0-17 11.5-28.5T160-240q17 0 28.5 11.5T200-200v40q0 17-11.5 28.5T160-120Zm160 0q-17 0-28.5-11.5T280-160v-220q0-17 11.5-28.5T320-420q17 0 28.5 11.5T360-380v220q0 17-11.5 28.5T320-120Zm160 0q-17 0-28.5-11.5T440-160v-140q0-17 11.5-28.5T480-340q17 0 28.5 11.5T520-300v140q0 17-11.5 28.5T480-120Zm160 0q-17 0-28.5-11.5T600-160v-200q0-17 11.5-28.5T640-400q17 0 28.5 11.5T680-360v200q0 17-11.5 28.5T640-120Zm160 0q-17 0-28.5-11.5T760-160v-360q0-17 11.5-28.5T800-560q17 0 28.5 11.5T840-520v360q0 17-11.5 28.5T800-120ZM560-481q-16 0-30.5-6T503-504L400-607 188-395q-12 12-28.5 11.5T131-396q-11-12-10.5-28.5T132-452l211-211q12-12 26.5-17.5T400-686q16 0 31 5.5t26 17.5l103 103 212-212q12-12 28.5-11.5T829-771q11 12 10.5 28.5T828-715L617-504q-11 11-26 17t-31 6Z",
+  };
+  const playIcon = (id, size = 24) => PLAY_ICONS[id] ? `<svg class="micon" viewBox="0 -960 960 960" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="${PLAY_ICONS[id]}"/></svg>` : "";
+
   // Decorations for the lesson path and banner: the demo website's own line icons
   // (~/Projects/EmpoweringFarmers/source/brand_icons.py), drawn the way the site draws them.
   const scenery = {
@@ -920,7 +1012,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   // Unit banner: the site's dark sections show their icons in gold.
   const field = `<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="${WIN}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 54V12M42 54V12M22 44c-6-2-10-6-12-12 5 1 9 5 12 12zM22 34c6-2 10-6 12-12-5 1-9 5-12 12zM22 24c-5-2-8-5-9-10 4 1 7 4 9 10zM42 44c6-2 10-6 12-12-5 1-9 5-12 12zM42 34c-6-2-10-6-12-12 5 1 9 5 12 12zM42 24c5-2 8-5 9-10-4 1-7 4-9 10zM10 54h44"/></svg>`;
 
-  window.Art = { mascot, icon, farmer, scenery, field };
+  window.Art = { mascot, icon, farmer, persona, hasPersona, playIcon, scenery, field };
 })();
 
 </script>
@@ -933,13 +1025,14 @@ const store = {
 };
 const icon = (name, cls="i") => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const cap = (t) => (t ? String(t)[0].toUpperCase() + String(t).slice(1) : "");
 const initials = (n) => String(n||"?").split(/\s+/).filter(Boolean).slice(0,2).map((w)=>w[0].toUpperCase()).join("");
 const AV = ["#0017CA","#2E7D6B","#6B4E9B","#9A5B2E","#184EFF","#5E6B2E","#8A3F5A"];
 const avColor = (n) => AV[[...String(n)].reduce((a,c)=>a+c.charCodeAt(0),0) % AV.length];
 
 const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmerId:"surprise", toughness:"typical",
   rollToken:null, farmerName:"", transcript:[], startedAt:null, busy:false, ended:false, checkpoint:false,
-  me:null, board:null, boardTab:"week", path:null, tab:"learn" };
+  me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, hsTough:null, path:null, tab:"learn" };
 
 function show(id){
   for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results"]) $(s).hidden = s !== id;
@@ -952,7 +1045,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "va23a483c00"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v0e05e2b5a8"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1335,7 +1428,7 @@ async function loadHome(){
   $("home-err").hidden = true;
   try {
     const [me, path, opts] = await Promise.all([api("/api/me"), api("/api/path"), api("/api/start")]);
-    state.me = me.stats; state.board = me.leaderboard; state.path = path;
+    state.me = me.stats; state.board = me.leaderboard; state.high = me.highScores || {}; state.path = path;
     renderChips(); renderToday(); renderPath(); renderPractice(opts); renderBoard(); renderRailBoard(); renderSideUnits(); renderMe(); placeToday();
     offerPendingCall();
   } catch (e) {
@@ -1599,40 +1692,55 @@ function pills(el, options, key){
     b.setAttribute("aria-pressed", String(state[key]===o.id));
     b.onclick = () => { state[key]=o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c===b)); }; el.appendChild(b); }
 }
-// "Who do you want to call?": the customer personas as stacked cards (emoji, name, quote, what wins him over).
-function personaCards(el, options, key){
-  el.className = "personas"; el.innerHTML = "";
-  if (!options.some((o) => o.id === state[key])) state[key] = options[0].id;
-  for (const o of options){
-    const b = document.createElement("button"); b.className = "persona"; b.type = "button";
-    b.innerHTML = `<span class="pe" aria-hidden="true">${esc(o.emoji || "")}</span><span class="pt"><b>${esc(o.label)}</b>${o.quote ? `<i>“${esc(o.quote)}”</i>` : ""}${o.wants ? `<small>Win him over with: ${esc(o.wants)}</small>` : ""}</span><span class="pc" aria-hidden="true">${icon("check")}</span>`;
-    b.setAttribute("aria-pressed", String(state[key] === o.id));
-    b.onclick = () => { state[key] = o.id; for (const c of el.children) c.setAttribute("aria-pressed", String(c === b)); };
-    el.appendChild(b);
+// Practice is play-first: pick the play (the skill, as in Learn), then a one-screen matchup to pick the farmer and toughness.
+const SURPRISE = { id:"surprise", label:"Surprise me", short:"Surprise", emoji:"🎲", quote:"One of the five, picked at random, like a real day of calls." };
+// A persona's face: the drawn farmer portrait with his icon as a badge (Surprise keeps the dice).
+const face = (o, size) => Art.hasPersona(o.id) ? `${Art.persona(o.id, size)}<span class="pbadge" aria-hidden="true">${esc(o.emoji || "")}</span>` : esc(o.emoji || "");
+const PLAY_ICON = { play1:"tractor", play2:"steps", play3:"grid", play4:"bolt", play6:"target", play7:"sprout", play8:"mega", roi:"sprout" };
+const playIcon = (id) => ((state.path && state.path.units || []).find((u) => u.id === id) || {}).icon || PLAY_ICON[id] || "phone";
+const firstWord = (l) => String(l || "").split(" ").pop(); // "Controlling Carl" -> "Carl"
+// The rep's best graded score on a play (any farmer, any toughness), from the high-score boards.
+function myBestOn(playId, farmerId){
+  let best = null;
+  for (const [k, b] of Object.entries(state.high || {})){
+    const [p, f] = k.split("|");
+    if (p === playId && (!farmerId || f === farmerId) && b.mine && (best === null || b.mine.score > best)) best = b.mine.score;
   }
+  return best;
 }
 function renderPractice({ farmers, toughness, plays }){
   if (!state.callPlay) state.callPlay = "play1";
+  state.farmers = farmers; state.toughList = toughness;
   if (plays) state.plays = plays;
-  const people = () => {
-    const dealer = (state.plays || []).some((p) => p.id === state.callPlay && p.dealer);
-    const list = farmers.filter((f) => !!f.dealer === dealer);
-    personaCards($("farmers"), dealer ? list : [{ id:"surprise", label:"Surprise me", emoji:"🎲", quote:"One of the five below, picked at random, like a real day of calls." }, ...list], "farmerId");
-  };
   const track = state.path && state.path.track;
   const mineP = (state.plays || []).filter((p) => !track || (p.tracks || []).includes(track));
   const shown = state.allPlays || !track ? (state.plays || []) : mineP;
-  if (track && !shown.some((p) => p.id === state.callPlay) && shown[0]) state.callPlay = shown[0].id;
-  if (state.plays) pills($("plays"), shown.map((p) => ({ id: p.id, label: p.short })), "callPlay");
+  // Step 1: play tiles, each with the rep's best score on it.
+  $("plays").innerHTML = "";
+  for (const p of shown){
+    const best = myBestOn(p.id);
+    const b = document.createElement("button"); b.type = "button"; b.className = "ptile";
+    b.innerHTML = `<span class="uic">${Art.playIcon(p.id) || icon(playIcon(p.id))}</span><span><span class="pn">${esc(p.name)}</span><b>${esc(p.short)}</b></span><span class="pb">${best === null ? "Not tried yet" : `Your best<span>${best}</span>`}</span>`;
+    b.onclick = () => { state.callPlay = p.id; openMatchup(); };
+    $("plays").appendChild(b);
+  }
   if (track && mineP.length < (state.plays || []).length){
-    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "6px";
+    const t = document.createElement("button"); t.type = "button"; t.className = "linkbtn"; t.style.marginTop = "2px";
     t.textContent = state.allPlays ? `Only my path's calls (${trackName(track)})` : "Show calls from other paths";
-    t.onclick = (e) => { e.stopPropagation(); state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
+    t.onclick = () => { state.allPlays = !state.allPlays; renderPractice({ farmers, toughness, plays: state.plays }); };
     $("plays").appendChild(t);
   }
-  $("plays").onclick = people;
-  people();
-  pills($("tough"), toughness.map((t)=>({ id:t, label:t[0].toUpperCase()+t.slice(1) })), "toughness");
+  // Suggested next call: a path play never tried, else the one with the lowest best; the farmer you've done worst with on it.
+  const cand = mineP.filter((p) => !p.dealer || track === "dealer");
+  const pick = cand.map((p) => ({ p, best: myBestOn(p.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0];
+  if (pick){
+    const fl = farmers.filter((f) => !!f.dealer === !!pick.p.dealer);
+    const f = fl.map((x) => ({ x, best: myBestOn(pick.p.id, x.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0].x;
+    $("pr-suggest").hidden = false;
+    $("pr-suggest").innerHTML = `<span class="sport">${face(f, 44)}</span><span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
+    $("pr-suggest").onclick = () => { state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
+  } else $("pr-suggest").hidden = true;
+  if (state.prView === "match") openMatchup(); else showPick();
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
   $("goal-n").textContent = `${Math.min(s.weekCalls, s.weeklyGoal)}/${s.weeklyGoal}`;
@@ -1644,9 +1752,27 @@ function renderBoard(){
   const box = $("lb"); box.innerHTML = "";
   // New reps don't open the board to find themselves last: it unlocks after a few practices.
   const doneN = state.me ? (state.me.lessonsDone || 0) + (state.me.calls || 0) : BOARD_UNLOCK;
-  $("lb-tabs").hidden = doneN < BOARD_UNLOCK;
+  const locked = doneN < BOARD_UNLOCK;
+  $("lb-tabs").hidden = locked; $("lb-kind").hidden = locked;
+  if (locked){ $("hs").hidden = true; $("hs-plays").hidden = true; $("hs-tough").hidden = true; $("lb-note").hidden = true; box.hidden = false; }
   if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN;
     box.innerHTML = `<div class="lockcard">${Art.mascot("happy", 90)}<p style="font-weight:800;color:var(--char);margin:8px 0 4px">Unlock the leaderboard</p><p class="sub" style="margin:0">Finish ${left} more lesson${left === 1 ? "" : "s"} or practice call${left === 1 ? "" : "s"} to start competing.</p></div>`; return; }
+  const kind = state.boardKind;
+  $("lb-tabs").hidden = kind !== "points"; $("hs-plays").hidden = kind !== "high"; $("hs-tough").hidden = kind !== "high"; $("hs").hidden = kind !== "high"; box.hidden = kind === "high";
+  $("lb-note").hidden = kind === "points";
+  if (kind === "high") return renderHighScores();
+  if (kind === "calls"){
+    $("lb-note").textContent = "This week: the average of each rep's best 3 graded calls. 3 calls to get on the board.";
+    const cr = (state.board && state.board.calls) || [];
+    if (!cr.length){ box.innerHTML = `<div class="lbempty">${Art.mascot("happy", 90)}No one has 3 graded calls this week yet.<br>Three calls puts you on the board.</div>`; return; }
+    for (const r of cr){
+      const rank = r.rank<=3 ? `<div class="medal" style="background:${MEDAL[r.rank-1]}">${r.rank}</div>` : `<div class="rank">${r.rank}</div>`;
+      const el = document.createElement("div"); el.className = "row" + (r.you ? " you" : "");
+      el.innerHTML = `${rank}<div class="av" style="background:${avColor(r.rep)}">${esc(initials(r.rep))}</div><div class="name">${esc(r.rep)}${r.you?" (you)":""}<div class="meta">${r.weekGraded} graded call${r.weekGraded === 1 ? "" : "s"} this week</div></div><div class="val">${r.callScore}</div>`;
+      box.appendChild(el);
+    }
+    return;
+  }
   const rows = (state.board && state.board[state.boardTab]) || [];
   if (!rows.length){ box.innerHTML = `<div class="lbempty">${Art.mascot("happy", 90)}No one's on the board yet.<br>Your first lesson takes the top spot.</div>`; return; }
   for (const r of rows){
@@ -1658,6 +1784,28 @@ function renderBoard(){
     box.appendChild(el);
   }
 }
+// High scores: pick a play, then one arcade board per farmer.
+function renderHighScores(){
+  const plays = (state.plays || []).filter((p) => !state.path || !state.path.track || (p.tracks || []).includes(state.path.track) || Object.keys(state.high).some((k) => k.startsWith(p.id + "|")));
+  if (!state.hsPlay || !plays.some((p) => p.id === state.hsPlay)) state.hsPlay = (plays.find((p) => p.id === state.callPlay) || plays[0] || {}).id;
+  pills($("hs-plays"), plays.map((p) => ({ id: p.id, label: p.short })), "hsPlay");
+  $("hs-plays").onclick = () => renderHighScores();
+  if (!state.hsTough) state.hsTough = state.toughness || "typical";
+  pills($("hs-tough"), ["easygoing", "typical", "tough"].map((t) => ({ id: t, label: cap(t) })), "hsTough");
+  for (const b of $("hs-tough").children) b.className = "";
+  $("hs-tough").onclick = () => renderHighScores();
+  const play = plays.find((p) => p.id === state.hsPlay) || {};
+  $("lb-note").textContent = "Best graded call on each play, farmer and toughness, all time. Easygoing, Typical and Tough each have their own boards. One spot per rep.";
+  const farmers = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
+  $("hs").innerHTML = farmers.map((f) => {
+    const b = state.high[`${state.hsPlay}|${f.id}|${state.hsTough}`];
+    const li = (e) => `<li class="${e.you ? "you" : ""}"><span class="r">${e.rank}.</span><span class="nm">${esc(e.rep)}${e.you ? " (you)" : ""}</span><span class="sc">${e.score}</span></li>`;
+    const body = b ? `<ol>${b.top.map(li).join("")}</ol>${b.mine && b.mine.rank > b.top.length ? `<ol class="minebelow">${li(b.mine)}</ol>` : ""}` : `<p class="empty">No scores yet. The first graded call sets the high score.</p>`;
+    return `<div class="arcade"><h4><span class="hsport">${face(f, 34)}</span>${esc(f.label)}</h4><p class="q">${esc(play.short || "")} · ${esc(cap(state.hsTough))}${b ? ` · ${b.players} rep${b.players === 1 ? "" : "s"}` : ""}</p>${body}</div>`;
+  }).join("");
+}
+for (const b of document.querySelectorAll("#lb-kind button")) b.onclick = () => { state.boardKind = b.dataset.kind;
+  for (const c of document.querySelectorAll("#lb-kind button")) c.setAttribute("aria-pressed", String(c===b)); renderBoard(); };
 for (const b of document.querySelectorAll("#lb-tabs button")) b.onclick = () => { state.boardTab=b.dataset.tab;
   for (const c of document.querySelectorAll("#lb-tabs button")) c.setAttribute("aria-pressed", String(c===b)); renderBoard(); };
 
@@ -1925,7 +2073,7 @@ function sceneCard(sc, big){
   // Only what the card actually knows: a cold call shows just a name and a place, a current customer shows the account.
   const g = (ic, t) => (t ? f(ic, t) : "");
   const size = sc.growers ? `Serves about ${sc.growers} growers` : sc.acres ? `About ${Number(sc.acres).toLocaleString("en-US")} acres` : "";
-  return `<div class="scene">${Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
+  return `<div class="scene">${Art.hasPersona(sc.farmerId) ? Art.persona(sc.farmerId, big ? 84 : 64) : Art.farmer(sc.name, big ? 84 : 64)}<div><div class="kicker" style="margin:0">${sc.dealer || sc.growers ? "Your dealer" : "Your grower"}</div><div class="who">${esc(sc.name)}</div><ul class="facts">
     ${g("pin", sc.place)}${g("grid", size)}${g("sprout", sc.crops)}${g("user", sc.note)}${(sc.account || []).map((a) => g("check", a)).join("")}${g("mega", sc.lead)}${g("home", sc.setting && "Talking " + sc.setting)}</ul>${sc.lead && !sc.acres && !sc.growers && !sc.crops ? `<small class="cardnote">That's all you know. The rest is discovery.</small>` : ""}</div></div>`;
 }
 
@@ -2031,6 +2179,39 @@ async function getBriefing(){
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
+function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; }
+$("pr-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
+// Step 2: the matchup. Farmer faces in a row, his card with the score to beat, the toughness toggle and Start.
+function openMatchup(){
+  state.prView = "match"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = false; $("setup-err").textContent = "";
+  const play = (state.plays || []).find((p) => p.id === state.callPlay) || {};
+  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}`;
+  const list = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
+  const opts = play.dealer ? list : [SURPRISE, ...list];
+  if (!opts.some((o) => o.id === state.farmerId)) state.farmerId = opts[0].id;
+  const card = () => {
+    const f = opts.find((o) => o.id === state.farmerId) || opts[0];
+    let hs = "";
+    if (f.id !== "surprise"){
+      const b = state.high[`${state.callPlay}|${f.id}|${state.toughness}`], top = b && b.top[0], mine = b && b.mine;
+      hs = top ? `<span>🏆&nbsp;${esc(cap(state.toughness))} high score ${top.score} · ${top.you ? "you" : esc(top.rep)}</span>${mine && !top.you ? `<span>Your best ${mine.score} (#${mine.rank})</span>` : ""}` : `<span>🏆&nbsp;No ${esc(state.toughness)} high score yet. Set it.</span>`;
+    }
+    $("pr-farmer").innerHTML = `<span class="fport" aria-hidden="true">${Art.hasPersona(f.id) ? face(f, 64) : `<span style="font-size:40px">${esc(f.emoji || "")}</span>`}</span><span class="ftext"><b>${esc(f.label)}</b>${f.quote ? `<i>“${esc(f.quote)}”</i>` : ""}${f.wants ? `<small>Win him over with: ${esc(f.wants)}</small>` : ""}${hs ? `<span class="hs">${hs}</span>` : ""}</span>`;
+  };
+  $("farmers").innerHTML = "";
+  for (const o of opts){
+    const b = document.createElement("button"); b.type = "button"; b.className = "face"; b.setAttribute("role", "radio");
+    b.innerHTML = `<span class="fe" aria-hidden="true">${face(o, 44)}</span>${esc(o.short || firstWord(o.label))}`;
+    b.setAttribute("aria-label", o.label); b.setAttribute("aria-checked", String(o.id === state.farmerId));
+    b.onclick = () => { state.farmerId = o.id; for (const c of $("farmers").children) c.setAttribute("aria-checked", String(c === b)); card(); };
+    $("farmers").appendChild(b);
+  }
+  pills($("tough"), (state.toughList || ["easygoing", "typical", "tough"]).map((t) => ({ id: t, label: cap(t) })), "toughness");
+  for (const b of $("tough").children) b.className = ""; // segmented toggle, not pills
+  $("tough").onclick = card; // the score to beat follows the toughness
+  card();
+  window.scrollTo(0, 0);
+}
 
 $("brief-x").onclick = () => { stopSpeaking(); loadHome(); };
 $("call-btn").onclick = () => { stopSpeaking(); startCall(); };
