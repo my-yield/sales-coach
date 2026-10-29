@@ -1082,7 +1082,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v9a70b6e0c7"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v644721ed76"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1226,8 +1226,10 @@ function browserSay(text){ return new Promise((resolve)=>{ if (!("speechSynthesi
 // "playback" while the farmer talks (full speaker volume), "play-and-record" only while the rep talks. Other phones ignore this.
 function audioMode(type){ try { if (navigator.audioSession) navigator.audioSession.type = type; } catch {} }
 // audio: a voice clip the server already made (a farmer turn comes back with its voice), so there's no second trip.
-async function say(text, role, audio){
+// onReady fires once the voice request is back (or failed), so other voice work can wait its turn.
+async function say(text, role, audio, onReady){
   const my = ++speakSeq; text = String(text || "").trim();
+  let readied = false; const ready = () => { if (!readied && onReady) { readied = true; try { onReady(); } catch {} } };
   try { player.pause(); } catch {} if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (endSpeak) { const f = endSpeak; endSpeak = null; f(); }
   if (!text) { try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="; await player.play(); } catch {} return; } // unlocks audio on phones
@@ -1236,18 +1238,26 @@ async function say(text, role, audio){
   audioMode("playback");
   try {
     if (!audio){
-      const r = await api("/api/tts", { text, role });
-      if (my !== speakSeq) return;
-      if (!r || !r.audio) throw new Error("no tts");
+      let r = await api("/api/tts", { text, role }).catch(() => null);
+      if (my !== speakSeq) return ready();
+      // One retry, a sentence at a time (the way the farmer's voice is made), before giving up on the natural voice.
+      if (!r || !r.audio) { r = await api("/api/tts", { text, role, split: true }).catch(() => null); if (my !== speakSeq) return ready(); }
+      if (!r || !r.audio) { api("/api/clientlog", { msg: `tts failed twice (${role}, ${text.length} chars): ${text.slice(0, 60)}`, ua: navigator.userAgent, v: APP_VERSION }).catch(() => {}); throw new Error("no tts"); }
       audio = r.audio;
     }
+    ready();
     // A farmer turn can come back as one clip per sentence (made at the same time, so he starts sooner).
     for (const clip of Array.isArray(audio) ? audio : [audio]){
       if (my !== speakSeq) return;
       player.src = `data:audio/${clip.startsWith("UklGR") ? "wav" : "mpeg"};base64,${clip}`; // WAV clips start "RIFF"; the rest are MP3
       await new Promise((resolve) => { endSpeak = resolve; player.onended = player.onerror = resolve; player.play().then(() => { audioUnlocked = true; }, resolve); });
     }
-  } catch { if (my === speakSeq) await new Promise((resolve) => { endSpeak = resolve; browserSay(text).then(resolve); }); }
+  } catch {
+    ready();
+    // The coach never falls back to the robotic phone voice: the words are already on screen.
+    if (role === "coach") { if (my === speakSeq) toast("Voice is busy right now. Read the card on screen."); }
+    else if (my === speakSeq) await new Promise((resolve) => { endSpeak = resolve; browserSay(text).then(resolve); });
+  }
   if (my === speakSeq) endSpeak = null;
 }
 
@@ -2207,12 +2217,14 @@ async function getBriefing(){
     $("brief-mission").innerHTML = ((r.play && r.play.mission) || []).map((m) => `<li>${esc(m)}</li>`).join("");
     state.rollToken = r.rollToken; state.farmerName = r.farmerName; state.scene = r.scene;
     // Get the farmer's first line (and voice) ready while the rep reads the briefing.
-    state.firstTurn = liveAvailable() ? null : api("/api/turn", { rollToken: r.rollToken, transcript: [], voice: true }).catch(() => null);
+    // Made after the coach's briefing voice comes back, so the two voice requests don't compete.
+    const prefetchFirstTurn = () => { if (!liveAvailable() && state.rollToken === r.rollToken && !state.firstTurn) state.firstTurn = api("/api/turn", { rollToken: r.rollToken, transcript: [], voice: true }).catch(() => null); };
+    state.firstTurn = null;
     $("brief-kicker").textContent = (state.checkpoint ? "Checkpoint call · score 70+ to pass · " : "") + (r.play ? (r.play.short && r.play.short !== r.play.name ? `${r.play.name} · ${r.play.short}` : r.play.name) : "Your call");
     $("brief-name").innerHTML = "";
     $("brief-text").innerHTML = sceneCard(r.scene, true) + `<p style="margin:6px 0 0">${esc(r.briefing)}</p>`;
     $("brief-tough").textContent = `How tough: ${r.toughness}. Say "coach me" any time for a quick tip.`;
-    show("s-brief"); say(r.briefing, "coach");
+    show("s-brief"); say(r.briefing, "coach", undefined, prefetchFirstTurn);
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
