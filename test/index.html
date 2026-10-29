@@ -445,6 +445,10 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 /* Choices, tiles, pills = the site's chips and tags */
 .pill{border-radius:6px;border:1.5px solid #CFCAC0;box-shadow:none;font-weight:700}
 .pill[aria-pressed="true"]{background:var(--char);border-color:var(--char);color:#fff;box-shadow:none}
+/* High scores plays: every play visible, two equal buttons per row, no sideways swipe. */
+#hs-plays{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:8px;margin-top:12px}
+#hs-plays[hidden]{display:none}
+#hs-plays .pill{min-height:48px;padding:10px 12px;text-align:center;line-height:1.2;display:flex;align-items:center;justify-content:center}
 /* Today card: workday streak strip and daily quests */
 .today{padding:14px 16px}
 .today .trow{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -632,9 +636,6 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   .fcard{padding:14px 16px}
   .seg{margin:12px 0}
   /* The play filter on High scores scrolls sideways instead of stacking into a wall of buttons. */
-  #hs-plays{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:12px -16px 0;padding:0 16px 4px}
-  #hs-plays::-webkit-scrollbar{display:none}
-  #hs-plays .pill{white-space:nowrap;flex:none}
   .hsgrid{gap:12px;margin-top:16px}
   .arcade{padding:14px 16px}
   /* Learn top: a lighter streak card and real space under the header. */
@@ -1081,7 +1082,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "va7e4c37128"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v9a70b6e0c7"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
