@@ -1082,7 +1082,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v644721ed76"; // stamped by appsscript/build.mjs
+const APP_VERSION = "va79051887c"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1241,7 +1241,8 @@ async function say(text, role, audio, onReady){
       let r = await api("/api/tts", { text, role }).catch(() => null);
       if (my !== speakSeq) return ready();
       // One retry, a sentence at a time (the way the farmer's voice is made), before giving up on the natural voice.
-      if (!r || !r.audio) { r = await api("/api/tts", { text, role, split: true }).catch(() => null); if (my !== speakSeq) return ready(); }
+      // No retry when Gemini says the daily voice limit is used up: more requests won't help.
+      if ((!r || !r.audio) && !(r && r.limited)) { r = await api("/api/tts", { text, role, split: true }).catch(() => null); if (my !== speakSeq) return ready(); }
       if (!r || !r.audio) { api("/api/clientlog", { msg: `tts failed twice (${role}, ${text.length} chars): ${text.slice(0, 60)}`, ua: navigator.userAgent, v: APP_VERSION }).catch(() => {}); throw new Error("no tts"); }
       audio = r.audio;
     }
