@@ -1104,7 +1104,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v2c35324cf2"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vbdf28b8e67"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2237,7 +2237,7 @@ async function getBriefing(){
   $("setup-err").textContent = "";
   try {
     const r = state.visit
-      ? await api("/api/visit/start", { companyId: state.visit.id, farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" })
+      ? await api("/api/visit-start", { companyId: state.visit.id, farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" })
       : await api("/api/start", { farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" });
     state.callPlayName = r.play ? `${r.play.name}: ${r.play.short}` : "";
     $("brief-mission").innerHTML = ((r.play && r.play.mission) || []).map((m) => `<li>${esc(m)}</li>`).join("");
@@ -2267,7 +2267,7 @@ function renderRealBar(){
 }
 async function probeRealVisits(){
   if (state.realReady !== undefined) { $("pr-real").hidden = !state.realReady; return; }
-  try { const r = await api("/api/visit/accounts", { probe: true }); state.realReady = !!(r && r.ready); } catch { state.realReady = false; }
+  try { const r = await api("/api/visit-accounts", { probe: true }); state.realReady = !!(r && r.ready); } catch { state.realReady = false; }
   $("pr-real").hidden = !state.realReady || !!state.visit;
   $("pr-real").querySelector(".rico").innerHTML = icon("pin");
 }
@@ -2286,7 +2286,7 @@ function listRealAccounts(){
 }
 async function loadRealAccounts(q){
   const my = ++realSeq; realAccounts = null; listRealAccounts();
-  try { const r = await api("/api/visit/accounts", q ? { q } : {}); if (my === realSeq) { realAccounts = r || { accounts: [] }; listRealAccounts(); } }
+  try { const r = await api("/api/visit-accounts", q ? { q } : {}); if (my === realSeq) { realAccounts = r || { accounts: [] }; listRealAccounts(); } }
   catch (e) { if (my === realSeq) { realAccounts = { accounts: [], why: e.message }; listRealAccounts(); } }
 }
 $("pr-real").onclick = () => {
