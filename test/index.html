@@ -493,6 +493,18 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .playtiles{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .ptile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 3px 0 var(--line);font:inherit;color:var(--char);cursor:pointer}
 .ptile:hover{border-color:var(--char)}
+/* Practice a real visit */
+.suggest.realtile{background:var(--card);color:var(--char);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.suggest.realtile small{color:var(--blue)} .suggest.realtile .go{color:var(--blue)}
+.realtile .rico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--blue-50);color:var(--blue)}
+.realtile .rico .micon{width:24px;height:24px}
+.realbar{display:flex;align-items:center;gap:10px;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:14px;color:var(--char)}
+.realbar b{font-weight:800} .realbar .linkbtn{margin-left:auto;flex:none}
+.realpick input{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--char);box-sizing:border-box}
+.reallist{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:60dvh;overflow-y:auto}
+.reallist button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;min-height:52px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font:inherit;color:var(--char);cursor:pointer}
+.reallist button b{font-size:15px} .reallist button span{font-size:13px;color:var(--muted)}
+.reallist .empty{color:var(--muted);font-size:14px;padding:8px 2px}
 .ptile .pn{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .ptile b{display:block;font-size:16px;margin-top:2px}
 .ptile .pb{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);font-weight:700;flex:none}
@@ -505,6 +517,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 /* Start stays in reach above the tab bar, so the whole matchup works without scrolling to find it. */
 .matchup #setup-btn{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 @media (min-width:1080px){.matchup #setup-btn{bottom:16px}}
+.matchup .mtitle .realnote{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--blue);margin-top:6px} .matchup .mtitle .realnote .micon{width:16px;height:16px}
 .matchup .mtitle small{display:block;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .faces{display:flex;gap:4px;padding:2px 0 4px}
 .face{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:700}
@@ -750,7 +763,16 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <!-- Step 1: pick a play (the skill). Step 2: the matchup screen (farmer, toughness, start). -->
       <div id="pr-pick">
         <button class="suggest" id="pr-suggest" type="button" hidden></button>
+        <button class="suggest realtile" id="pr-real" type="button" hidden><span class="sport rico" aria-hidden="true"></span><span><small>Practice a real visit</small><b>One of your own accounts</b></span><span class="go">Pick ›</span></button>
+        <div class="realbar" id="pr-realbar" hidden></div>
         <div class="playtiles" id="plays"></div>
+      </div>
+      <div class="card matchup realpick" id="pr-realpick" hidden>
+        <button class="linkbtn" id="pr-real-back" type="button">‹ All plays</button>
+        <div class="mtitle"><small>Practice a real visit</small>Pick one of your accounts</div>
+        <p class="sub" style="margin:0 0 10px">The card uses what HubSpot and NetSuite know about them. His personality and worries are still made up.</p>
+        <input id="pr-real-q" type="search" placeholder="Search your accounts" autocomplete="off">
+        <div class="reallist" id="pr-real-list"></div>
       </div>
       <div class="card matchup" id="pr-match" hidden>
         <button class="linkbtn" id="pr-back" type="button">‹ All plays</button>
@@ -1082,7 +1104,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "va79051887c"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v2c35324cf2"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1786,8 +1808,9 @@ function renderPractice({ farmers, toughness, plays }){
     const f = fl.map((x) => ({ x, best: myBestOn(pick.p.id, x.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0].x;
     $("pr-suggest").hidden = false;
     $("pr-suggest").innerHTML = `<span class="sport">${face(f, 44)}</span><span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
-    $("pr-suggest").onclick = () => { state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
+    $("pr-suggest").onclick = () => { state.visit = null; state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
   } else $("pr-suggest").hidden = true;
+  probeRealVisits();
   if (state.prView === "match") openMatchup(); else showPick();
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
@@ -2213,7 +2236,9 @@ $("done-review").onclick = () => { stopSpeaking(); openHistory(state.lastLessonI
 async function getBriefing(){
   $("setup-err").textContent = "";
   try {
-    const r = await api("/api/start", { farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" });
+    const r = state.visit
+      ? await api("/api/visit/start", { companyId: state.visit.id, farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" })
+      : await api("/api/start", { farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" });
     state.callPlayName = r.play ? `${r.play.name}: ${r.play.short}` : "";
     $("brief-mission").innerHTML = ((r.play && r.play.mission) || []).map((m) => `<li>${esc(m)}</li>`).join("");
     state.rollToken = r.rollToken; state.farmerName = r.farmerName; state.scene = r.scene;
@@ -2229,13 +2254,54 @@ async function getBriefing(){
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
-function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; }
+function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; $("pr-realpick").hidden = true; renderRealBar(); }
+// ---- Practice a real visit: pick one of your own accounts, then a play; the card comes from HubSpot and NetSuite ----
+let realAccounts = null, realSeq = 0;
+function renderRealBar(){
+  const v = state.visit;
+  $("pr-realbar").hidden = !v;
+  if (v) { $("pr-realbar").innerHTML = `${icon("pin")}<span>Real visit: <b>${esc(v.name)}</b>${v.town ? " · " + esc(v.town) : ""}. Now pick a play.</span><button class="linkbtn" type="button" id="pr-real-cancel">Cancel</button>`;
+    $("pr-real-cancel").onclick = () => { state.visit = null; renderRealBar(); }; }
+  if (state.realReady) $("pr-real").hidden = !!v;
+  $("pr-suggest").style.display = v ? "none" : ""; // one choice at a time: the suggested call would drop the account
+}
+async function probeRealVisits(){
+  if (state.realReady !== undefined) { $("pr-real").hidden = !state.realReady; return; }
+  try { const r = await api("/api/visit/accounts", { probe: true }); state.realReady = !!(r && r.ready); } catch { state.realReady = false; }
+  $("pr-real").hidden = !state.realReady || !!state.visit;
+  $("pr-real").querySelector(".rico").innerHTML = icon("pin");
+}
+function listRealAccounts(){
+  const q = $("pr-real-q").value.trim().toLowerCase(), list = $("pr-real-list");
+  const rows = (realAccounts && realAccounts.accounts || []).filter((a) => !q || realAccounts.all || (a.name + " " + a.town).toLowerCase().includes(q));
+  list.innerHTML = "";
+  if (!realAccounts) { list.innerHTML = `<div class="empty">Loading your accounts…</div>`; return; }
+  if (!rows.length) { list.innerHTML = `<div class="empty">${esc(realAccounts.why || (q ? "No account matches that." : "No accounts are assigned to you in HubSpot yet."))}</div>`; return; }
+  for (const a of rows.slice(0, 200)){
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `<b>${esc(a.name)}</b>${a.town ? `<span>${esc(a.town)}</span>` : ""}`;
+    b.onclick = () => { state.visit = a; showPick(); window.scrollTo(0, 0); };
+    list.appendChild(b);
+  }
+}
+async function loadRealAccounts(q){
+  const my = ++realSeq; realAccounts = null; listRealAccounts();
+  try { const r = await api("/api/visit/accounts", q ? { q } : {}); if (my === realSeq) { realAccounts = r || { accounts: [] }; listRealAccounts(); } }
+  catch (e) { if (my === realSeq) { realAccounts = { accounts: [], why: e.message }; listRealAccounts(); } }
+}
+$("pr-real").onclick = () => {
+  state.prView = "real"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = true; $("pr-realpick").hidden = false;
+  $("pr-real-q").value = ""; loadRealAccounts(""); window.scrollTo(0, 0);
+};
+$("pr-real-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
+let realQT = null;
+$("pr-real-q").oninput = () => { if (realAccounts && realAccounts.all) { clearTimeout(realQT); realQT = setTimeout(() => loadRealAccounts($("pr-real-q").value.trim()), 350); } else listRealAccounts(); };
 $("pr-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
 // Step 2: the matchup. Farmer faces in a row, his card with the score to beat, the toughness toggle and Start.
 function openMatchup(){
   state.prView = "match"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = false; $("setup-err").textContent = "";
   const play = (state.plays || []).find((p) => p.id === state.callPlay) || {};
-  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}`;
+  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}${state.visit ? `<span class="realnote">${icon("pin")} Real visit: ${esc(state.visit.name)}</span>` : ""}`;
   const list = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
   const opts = play.dealer ? list : [SURPRISE, ...list];
   if (!opts.some((o) => o.id === state.farmerId)) state.farmerId = opts[0].id;
