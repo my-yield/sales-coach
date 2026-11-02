@@ -1104,7 +1104,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vf83376d1f7"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vf0daa39dda"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2488,8 +2488,22 @@ const liveWanted = () => store.get("sc_live") !== "off";
 function liveLog(msg){ try { api("/api/clientlog", { msg: String(msg).slice(0, 300), ua: navigator.userAgent.slice(0, 200), v: APP_VERSION }).catch(() => {}); } catch {} }
 const liveAvailable = () => liveWanted() && !MIC_BLOCKED && !GAS && !!(window.WebSocket && window.AudioWorkletNode && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
+// Live voice models sometimes slip out a control note instead of a line, like ```json { "action": "wait" } ```.
+// Any farmer turn that looks like code is cut off and never shown, spoken or graded.
+const liveLooksLikeCode = (t) => /```|\{\s*"?\w+"?\s*:|^\s*json\b/i.test(t);
 function liveAdd(role, text){
   if (!text) return;
+  if (role === "farmer"){
+    const t = state.transcript, last = t[t.length - 1];
+    const turn = last && last.role === "farmer" && !last.closed ? last.text + text : text;
+    if (live.junk || liveLooksLikeCode(turn)){
+      if (!live.junk) liveLog("farmer turn dropped (looked like code): " + turn.slice(0, 120));
+      live.junk = true; liveStopPlayback();
+      if (last && last.role === "farmer" && !last.closed) t.pop();
+      live.farmerOpen = true; caption("");
+      return;
+    }
+  }
   if (role === "rep") text = fixNames(text);
   const t = state.transcript, last = t[t.length - 1];
   if (last && last.role === role && !last.closed) last.text = (last.text + text).replace(/\s+/g, " ");
@@ -2498,7 +2512,7 @@ function liveAdd(role, text){
   if (role === "farmer"){ live.farmerOpen = true; caption(cur.text.replace(/^Coach:\s*/i, "")); }
   else { caption(cur.text, true); }
 }
-function liveCloseTurn(role){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === role && !last.closed){ last.closed = true; if (role === "farmer") addMsg("farmer", last.text); else addMsg("rep", last.text); } }
+function liveCloseTurn(role){ if (role === "farmer") live.junk = false; const last = state.transcript[state.transcript.length - 1]; if (last && last.role === role && !last.closed){ last.closed = true; if (role === "farmer") addMsg("farmer", last.text); else addMsg("rep", last.text); } }
 function liveStopPlayback(){ for (const src of live.sources) try { src.stop(); } catch {} live.sources = []; live.nextT = 0; }
 function livePlay(b64){
   const bin = atob(b64), n = bin.length >> 1, f = new Float32Array(n);
@@ -2637,7 +2651,7 @@ async function startLive(){
       if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
       if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
       if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
-      for (const part of (sc.modelTurn && sc.modelTurn.parts) || []) if (part.inlineData && part.inlineData.data) livePlay(part.inlineData.data);
+      for (const part of (sc.modelTurn && sc.modelTurn.parts) || []) if (part.inlineData && part.inlineData.data && !live.junk) livePlay(part.inlineData.data);
       if (sc.turnComplete){ liveCloseTurn("farmer"); live.farmerOpen = false; }
     };
   });
