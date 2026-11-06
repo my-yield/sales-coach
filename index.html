@@ -493,6 +493,18 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 .playtiles{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .ptile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 3px 0 var(--line);font:inherit;color:var(--char);cursor:pointer}
 .ptile:hover{border-color:var(--char)}
+/* Practice a real visit */
+.suggest.realtile{background:var(--card);color:var(--char);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.suggest.realtile small{color:var(--blue)} .suggest.realtile .go{color:var(--blue)}
+.realtile .rico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--blue-50);color:var(--blue)}
+.realtile .rico .micon{width:24px;height:24px}
+.realbar{display:flex;align-items:center;gap:10px;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:14px;color:var(--char)}
+.realbar b{font-weight:800} .realbar .linkbtn{margin-left:auto;flex:none}
+.realpick input{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--char);box-sizing:border-box}
+.reallist{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:60dvh;overflow-y:auto}
+.reallist button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;min-height:52px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font:inherit;color:var(--char);cursor:pointer}
+.reallist button b{font-size:15px} .reallist button span{font-size:13px;color:var(--muted)}
+.reallist .empty{color:var(--muted);font-size:14px;padding:8px 2px}
 .ptile .pn{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .ptile b{display:block;font-size:16px;margin-top:2px}
 .ptile .pb{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);font-weight:700;flex:none}
@@ -505,6 +517,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
 /* Start stays in reach above the tab bar, so the whole matchup works without scrolling to find it. */
 .matchup #setup-btn{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 @media (min-width:1080px){.matchup #setup-btn{bottom:16px}}
+.matchup .mtitle .realnote{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--blue);margin-top:6px} .matchup .mtitle .realnote .micon{width:16px;height:16px}
 .matchup .mtitle small{display:block;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .faces{display:flex;gap:4px;padding:2px 0 4px}
 .face{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:700}
@@ -644,6 +657,23 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   .wkday i{width:28px;height:28px}
   #learn h3.section{margin-top:28px}
 }
+
+/* HubSpot unit */
+.hs-stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff;cursor:pointer;margin-top:10px;user-select:none}
+.hs-stage img{display:block;width:100%;height:auto}
+.hs-ring{position:absolute;border:3px solid #FFEE37;border-radius:8px;box-shadow:0 0 0 4000px rgba(10,14,40,.28);pointer-events:none}
+.hs-dot{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:4px solid #FFC400;pointer-events:none;animation:hsdot .6s ease-out forwards}
+.hs-dot.bad{border-color:#E5484D}
+@keyframes hsdot{from{transform:scale(.4);opacity:1}to{transform:scale(1.4);opacity:0}}
+.hs-type{position:absolute;border:3px solid #FFEE37;border-radius:6px;font:600 15px var(--font,system-ui);padding:2px 8px;background:#fff;color:#141a33;box-sizing:border-box;color-scheme:light}
+.hs-video{margin-top:10px;border-radius:12px;overflow:hidden;background:#0b1030;min-height:120px;position:relative}
+.hs-video video{display:block;width:100%;height:auto;background:#0b1030}
+.hs-vload{color:#fff;padding:40px 16px;text-align:center;font-weight:600}
+.hs-task ol{margin:10px 0 0;padding-left:22px;line-height:1.5}
+.hs-task li{margin:6px 0}
+#s-lesson.hs-wide .wrap{max-width:1180px}
+.hs-small{font-size:13px;color:var(--muted,#667);margin-top:8px}
+@media (prefers-reduced-motion:reduce){.hs-dot{animation:none;opacity:0}}
 </style>
 </head>
 <body>
@@ -750,7 +780,16 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
       <!-- Step 1: pick a play (the skill). Step 2: the matchup screen (farmer, toughness, start). -->
       <div id="pr-pick">
         <button class="suggest" id="pr-suggest" type="button" hidden></button>
+        <button class="suggest realtile" id="pr-real" type="button" hidden><span class="sport rico" aria-hidden="true"></span><span><small>Practice a real visit</small><b>One of your own accounts</b></span><span class="go">Pick ›</span></button>
+        <div class="realbar" id="pr-realbar" hidden></div>
         <div class="playtiles" id="plays"></div>
+      </div>
+      <div class="card matchup realpick" id="pr-realpick" hidden>
+        <button class="linkbtn" id="pr-real-back" type="button">‹ All plays</button>
+        <div class="mtitle"><small>Practice a real visit</small>Pick one of your accounts</div>
+        <p class="sub" style="margin:0 0 10px">The card uses what HubSpot and NetSuite know about them. His personality and worries are still made up.</p>
+        <input id="pr-real-q" type="search" placeholder="Search your accounts" autocomplete="off">
+        <div class="reallist" id="pr-real-list"></div>
       </div>
       <div class="card matchup" id="pr-match" hidden>
         <button class="linkbtn" id="pr-back" type="button">‹ All plays</button>
@@ -1082,7 +1121,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v11aa22abb5"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v9bfbbf1694"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1226,8 +1265,10 @@ function browserSay(text){ return new Promise((resolve)=>{ if (!("speechSynthesi
 // "playback" while the farmer talks (full speaker volume), "play-and-record" only while the rep talks. Other phones ignore this.
 function audioMode(type){ try { if (navigator.audioSession) navigator.audioSession.type = type; } catch {} }
 // audio: a voice clip the server already made (a farmer turn comes back with its voice), so there's no second trip.
-async function say(text, role, audio){
+// onReady fires once the voice request is back (or failed), so other voice work can wait its turn.
+async function say(text, role, audio, onReady){
   const my = ++speakSeq; text = String(text || "").trim();
+  let readied = false; const ready = () => { if (!readied && onReady) { readied = true; try { onReady(); } catch {} } };
   try { player.pause(); } catch {} if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (endSpeak) { const f = endSpeak; endSpeak = null; f(); }
   if (!text) { try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="; await player.play(); } catch {} return; } // unlocks audio on phones
@@ -1236,18 +1277,27 @@ async function say(text, role, audio){
   audioMode("playback");
   try {
     if (!audio){
-      const r = await api("/api/tts", { text, role });
-      if (my !== speakSeq) return;
-      if (!r || !r.audio) throw new Error("no tts");
+      let r = await api("/api/tts", { text, role }).catch(() => null);
+      if (my !== speakSeq) return ready();
+      // One retry, a sentence at a time (the way the farmer's voice is made), before giving up on the natural voice.
+      // No retry when Gemini says the daily voice limit is used up: more requests won't help.
+      if ((!r || !r.audio) && !(r && r.limited)) { r = await api("/api/tts", { text, role, split: true }).catch(() => null); if (my !== speakSeq) return ready(); }
+      if (!r || !r.audio) { api("/api/clientlog", { msg: `tts failed twice (${role}, ${text.length} chars): ${text.slice(0, 60)}`, ua: navigator.userAgent, v: APP_VERSION }).catch(() => {}); throw new Error("no tts"); }
       audio = r.audio;
     }
+    ready();
     // A farmer turn can come back as one clip per sentence (made at the same time, so he starts sooner).
     for (const clip of Array.isArray(audio) ? audio : [audio]){
       if (my !== speakSeq) return;
       player.src = `data:audio/${clip.startsWith("UklGR") ? "wav" : "mpeg"};base64,${clip}`; // WAV clips start "RIFF"; the rest are MP3
       await new Promise((resolve) => { endSpeak = resolve; player.onended = player.onerror = resolve; player.play().then(() => { audioUnlocked = true; }, resolve); });
     }
-  } catch { if (my === speakSeq) await new Promise((resolve) => { endSpeak = resolve; browserSay(text).then(resolve); }); }
+  } catch {
+    ready();
+    // The coach never falls back to the robotic phone voice: the words are already on screen.
+    if (role === "coach") { if (my === speakSeq) toast("Voice is busy right now. Read the card on screen."); }
+    else if (my === speakSeq) await new Promise((resolve) => { endSpeak = resolve; browserSay(text).then(resolve); });
+  }
   if (my === speakSeq) endSpeak = null;
 }
 
@@ -1613,7 +1663,7 @@ function showNodeCard(n, u, i){
       const answered = n.state === "done" || k < at;
       const open = n.state === "done" || k <= at;
       const next = n.state === "current" && k === at;
-      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : "Pick one";
+      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : q.type === "watch" ? "Watch" : q.type === "spot" ? "Click through" : q.type === "task" ? "Do it" : "Pick one";
       return `<button class="qrow ${answered ? "ok" : ""} ${next ? "next" : ""}" data-k="${k}" ${open && n.state !== "locked" ? "" : "disabled"}>
         <span class="qn">${answered ? icon("check") : k + 1}</span><span class="qt"><small>${next ? "Up next · " : answered && n.state !== "done" ? "Done · " : ""}${tag}</small>${esc(q.prompt)}</span>${next ? `<span class="qgo">${icon("back")}</span>` : ""}</button>`;
     }).join("");
@@ -1775,8 +1825,9 @@ function renderPractice({ farmers, toughness, plays }){
     const f = fl.map((x) => ({ x, best: myBestOn(pick.p.id, x.id) })).sort((a, b) => (a.best === null ? -1 : a.best) - (b.best === null ? -1 : b.best))[0].x;
     $("pr-suggest").hidden = false;
     $("pr-suggest").innerHTML = `<span class="sport">${face(f, 44)}</span><span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
-    $("pr-suggest").onclick = () => { state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
+    $("pr-suggest").onclick = () => { state.visit = null; state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
   } else $("pr-suggest").hidden = true;
+  probeRealVisits();
   if (state.prView === "match") openMatchup(); else showPick();
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
@@ -1847,7 +1898,8 @@ for (const b of document.querySelectorAll("#lb-tabs button")) b.onclick = () => 
   for (const c of document.querySelectorAll("#lb-tabs button")) c.setAttribute("aria-pressed", String(c===b)); renderBoard(); };
 
 const BADGE_ICON = { "first-lesson":"book","perfect-lesson":"star","unit-play1":"trophy","first-call":"phone","streak-3":"flame","streak-7":"flame","weekly-goal":"target",
-  "all-farmers":"tractor","tough-80":"shield","discovery-5":"search","objections-5":"steps","close-5":"flag","score-90":"trophy","comeback":"bolt","calls-10":"phone","calls-25":"phone" };
+  "all-farmers":"tractor","tough-80":"shield","discovery-5":"search","objections-5":"steps","close-5":"flag","score-90":"trophy","comeback":"bolt","calls-10":"phone","calls-25":"phone",
+  "hs-first":"grid","hs-records":"check","hs-pipeline":"target","hs-field":"phone","hs-ready":"trophy" };
 function badgeTiles(el, badges, fresh=[]){
   el.innerHTML = badges.map((b)=>`<div class="badge ${b.earned===false?"off":""} ${fresh.includes(b.id)?"new":""}" title="${esc(b.how)}"><div class="medalbig">${icon(BADGE_ICON[b.id]||"star")}</div>${esc(b.name)}</div>`).join("");
 }
@@ -1858,7 +1910,8 @@ function renderMe(){
   const stat = (ic, color, v, l) => `<div class="stat"><svg class="i" style="color:${color};width:28px;height:28px"><use href="#i-${ic}"/></svg><div><b>${v}</b><small>${l}</small></div></div>`;
   $("me-stats").innerHTML = stat("flame","var(--gold-d)",s.streak,"Day streak") + stat("bolt","var(--blue)",s.points,"Total points")
     + stat("book","var(--ok)",s.lessonsDone,"Lessons") + stat("phone","var(--blue)",s.calls,"Practice calls")
-    + stat("flame","var(--gold-d)",s.bestStreak,"Best streak") + stat("target","var(--blue)",`${Math.min(s.weekCalls,s.weeklyGoal)}/${s.weeklyGoal}`,"Weekly goal");
+    + stat("flame","var(--gold-d)",s.bestStreak,"Best streak") + stat("target","var(--blue)",`${Math.min(s.weekCalls,s.weeklyGoal)}/${s.weeklyGoal}`,"Weekly goal")
+    + (s.hsTotal ? stat("grid","#FF5C35",s.hsPoints || 0,`HubSpot points · ${s.hsDone || 0}/${s.hsTotal} lessons`) : "");
   badgeTiles($("me-badges"), s.badges);
   const tb = $("me-track");
   if (tb && state.path){ const t = state.path.track;
@@ -1960,6 +2013,7 @@ function saveProgress(){
 }
 async function openLesson(id, opts = {}){
   try { const lesson = await api("/api/path?lesson=" + encodeURIComponent(id));
+    await hsLoadMedia(lesson);
     L = { lesson, i:0, results:[], answers:[], practice: !!opts.practice, combo: 0, review: false, reviewTotal: 0, reviewDone: 0 };
     if (opts.start != null){
       // Jumping to a question: practice keeps nothing; going back in the current lesson keeps the answers before it.
@@ -2016,7 +2070,7 @@ function showCombo(){
 // After the last question, anything missed (pick-one and put-in-order) comes back until it's right.
 // Stars and points still use the first try.
 function startReview(){
-  L.missed = L.lesson.exercises.map((ex, k) => (ex.type !== "say" && L.results[k] === false ? k : -1)).filter((k) => k >= 0);
+  L.missed = L.lesson.exercises.map((ex, k) => (["choice", "order", "spot"].includes(ex.type) && L.results[k] === false ? k : -1)).filter((k) => k >= 0);
   if (!L.missed.length) return finishLesson();
   L.review = true; L.reviewQueue = L.missed.slice(); L.reviewTotal = L.missed.length; L.reviewDone = 0;
   resetDock();
@@ -2041,6 +2095,7 @@ function renderExerciseBody(){
   $("lesson-bar").style.width = (L.i / L.lesson.exercises.length * 100) + "%";
   L.checked = false; L.chosen = null; L.order = []; L.said = "";
   const box = $("ex");
+  $("s-lesson").classList.toggle("hs-wide", ex.type === "spot" || ex.type === "watch");
   if (ex.type === "choice"){
     // Shuffle the options so the right answer isn't always in the same spot. data-k keeps the original index.
     const order = ex.options.map((o,k)=>k).sort(()=>Math.random()-.5);
@@ -2059,6 +2114,9 @@ function renderExerciseBody(){
       setCheck("Check", L.order.length === ex.items.length); };
     for (const t of $("bank").querySelectorAll(".tile")) t.onclick = () => { if (L.checked || L.order.includes(+t.dataset.k)) return; L.order.push(+t.dataset.k); draw(); };
     draw();
+  } else if (ex.type === "watch"){ renderHsWatch(box, ex);
+  } else if (ex.type === "spot"){ renderHsSpot(box, ex);
+  } else if (ex.type === "task"){ renderHsTask(box, ex);
   } else {
     box.innerHTML = `${sceneCard(ex.scene)}<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Say it out loud</span>${esc(ex.prompt)}</div></div>${ex.context?`<div class="ctx">${esc(ex.context)}</div>`:""}
       <button class="mic" id="say-mic" aria-label="Tap to talk">${icon("mic")}</button><div class="hint" id="say-hint">${Recog?"Tap to talk, tap again when you're done":KEYBOARD_TIP}</div>
@@ -2080,6 +2138,133 @@ function renderExerciseBody(){
     };
     setCheck("Check", false);
   }
+}
+
+
+// ---------------- HubSpot unit: watch / spot / task ----------------
+const HS_W = 1434, HS_H = 744;
+const HS_MEDIA = {}, HS_VIDEO = {};
+async function hsLoadMedia(lesson){
+  if (!lesson.exercises.some((e) => e.type === "spot") || HS_MEDIA[lesson.id]) return;
+  try { HS_MEDIA[lesson.id] = (await api("/api/hs-media?lesson=" + encodeURIComponent(lesson.id))).images || {}; }
+  catch (e) { HS_MEDIA[lesson.id] = {}; }
+}
+const hsPct = (v, of) => (v / of * 100) + "%";
+function hsBox(h, pad = 6){ return `left:${hsPct(h[0] - pad, HS_W)};top:${hsPct(h[1] - pad, HS_H)};width:${hsPct(h[2] - h[0] + pad * 2, HS_W)};height:${hsPct(h[3] - h[1] + pad * 2, HS_H)}`; }
+function hsDot(x, y, bad){
+  const d = document.createElement("div"); d.className = "hs-dot" + (bad ? " bad" : "");
+  d.style.left = hsPct(x, HS_W); d.style.top = hsPct(y, HS_H); $("hs-stage").appendChild(d); setTimeout(() => d.remove(), 700);
+}
+function hsRing(h){ if (!$("hs-stage").querySelector(".hs-ring")) $("hs-stage").insertAdjacentHTML("beforeend", `<div class="hs-ring" style="${hsBox(h)}"></div>`); }
+// Move on without the feedback panel (videos, "Got it" steps).
+function hsNext(){ L.checked = true; $("check-btn").onclick(); }
+function hsStep(){ const n = L.lesson.exercises.length; return `Step ${L.i + 1} of ${n}`; }
+
+function renderHsWatch(box, ex){
+  box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Watch first</span>${esc(ex.prompt)}</div></div>
+    <div class="hs-video"><div class="hs-vload" id="hs-vload">Loading the video…</div><video id="hs-vid" controls playsinline preload="auto" hidden></video></div>
+    ${ex.why ? `<p class="sub" style="margin-top:10px">${esc(ex.why)}</p>` : ""}
+    <button class="teachskip" id="hs-skip" type="button">Skip the video</button>`;
+  setCheck("Watch to the end", false);
+  L.hsWatched = false;
+  $("hs-skip").onclick = () => { if (L.checked) return; record(false, { skipped: true }); hsNext(); };
+  const at = L.i;
+  const play = (url) => {
+    if (L.i !== at || !$("hs-vid")) return;
+    const v = $("hs-vid"); v.src = url; v.hidden = false; $("hs-vload").remove();
+    const ok = () => { if (L.hsWatched) return; L.hsWatched = true; setCheck("I watched it", true); };
+    v.addEventListener("ended", ok);
+    v.addEventListener("timeupdate", () => { if (v.duration && v.currentTime / v.duration >= 0.9) ok(); });
+  };
+  if (HS_VIDEO[ex.video]) return play(HS_VIDEO[ex.video]);
+  api("/api/hs-media?video=" + encodeURIComponent(ex.video)).then((r) => {
+    const bin = atob(r.video), bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    HS_VIDEO[ex.video] = URL.createObjectURL(new Blob([bytes], { type: "video/mp4" }));
+    play(HS_VIDEO[ex.video]);
+  }).catch((e) => {
+    if (L.i !== at || !$("hs-vload")) return;
+    $("hs-vload").textContent = "The video didn't load. " + e.message;
+    L.hsWatched = true; setCheck("Continue without it", true); // not the rep's fault: it still counts
+  });
+}
+
+function renderHsSpot(box, ex){
+  const img = (HS_MEDIA[L.lesson.id] || {})[ex.img];
+  const kind = ex.want ? "Type it" : ex.hot ? "Click it" : "Look";
+  box.innerHTML = `<div class="coachrow">${Art.mascot(ex.hot || ex.want ? "think" : "happy", 64)}<div class="speech"><span class="k">${kind} · ${hsStep()}</span>${esc(ex.prompt)}</div></div>
+    <div class="hs-stage" id="hs-stage">${img ? `<img alt="HubSpot screen" src="data:image/webp;base64,${img}">` : `<div class="hs-vload" style="color:var(--ink)">The picture didn't load. Close the lesson and open it again.</div>`}</div>
+    <div class="hint" id="hs-hint">${ex.hot ? "Click on the picture, right where you'd click in HubSpot." : ex.want ? "Type in the yellow box, then tap Check." : ""}</div>
+    ${innerWidth < 700 ? `<p class="hs-small">Tip: these steps are easier on a computer.</p>` : ""}`;
+  L.spotMiss = 0;
+  if (ex.want){
+    $("hs-stage").insertAdjacentHTML("beforeend", `<input class="hs-type" id="hs-type" aria-label="Type here" placeholder="${ex.want === "*" ? "Type a short note…" : "Type here…"}" style="${hsBox(ex.box, 0)}">`);
+    const inp = $("hs-type");
+    inp.oninput = () => setCheck("Check", inp.value.trim().length > 0);
+    inp.onkeydown = (e) => { if (e.key === "Enter" && inp.value.trim()) $("check-btn").onclick(); };
+    setTimeout(() => inp.focus(), 50);
+    setCheck("Check", false);
+  } else if (ex.hot){
+    setCheck("Click the picture", false);
+    $("hs-stage").onclick = (e) => {
+      if (L.checked) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width * HS_W, y = (e.clientY - r.top) / r.height * HS_H, h = ex.hot, pad = 10;
+      if (x >= h[0] - pad && x <= h[2] + pad && y >= h[1] - pad && y <= h[3] + pad){
+        hsDot(x, y); L.checked = true;
+        const right = L.spotMiss === 0; record(right, { misses: L.spotMiss });
+        feedback(right, right ? "Nice. That's it." : "Got it", right ? "" : `<p>That's the spot. You'll find it faster next time.</p>`);
+      } else {
+        hsDot(x, y, true); L.spotMiss += 1; hsRing(h);
+        $("hs-hint").textContent = "Not quite. Click inside the yellow box.";
+      }
+    };
+  } else {
+    setCheck("Got it", true);
+  }
+}
+function checkHsSpot(ex){
+  if (!ex.want){ record(true, {}); return hsNext(); }
+  const v = ($("hs-type").value || "").trim().replace(/\s+/g, " ");
+  const ok = ex.want === "*" ? v.length >= 8 : v.toLowerCase() === ex.want.toLowerCase();
+  if (!ok){
+    L.spotMiss += 1;
+    $("hs-hint").textContent = ex.want === "*" ? "Type a little more about what happened." : `Check the spelling. Type: ${ex.want}`;
+    return;
+  }
+  L.checked = true; $("hs-type").disabled = true;
+  record(L.spotMiss === 0, { typed: v });
+  feedback(L.spotMiss === 0, L.spotMiss === 0 ? "Nice. That's it." : "Got it", "");
+}
+
+function renderHsTask(box, ex){
+  box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Do it for real</span>${esc(ex.prompt)}</div></div>
+    <div class="teach hs-task"><ol>${(ex.steps || []).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>
+    ${ex.link ? `<p style="margin-top:12px"><button class="btn btn-ghost" id="hs-link" type="button">Open the Chrome Web Store</button></p>` : ""}</div>
+    ${ex.why ? `<p class="sub" style="margin-top:10px">${esc(ex.why)}</p>` : ""}
+    <div class="hint" id="hs-hint"></div>
+    <button class="teachskip" id="hs-skip" type="button" hidden>Skip for now</button>`;
+  if (ex.link) $("hs-link").onclick = () => window.open(ex.link, "_blank", "noopener");
+  L.taskTries = 0;
+  $("hs-skip").onclick = () => { if (L.checked) return; record(false, { check: "skipped" }); hsNext(); };
+  setCheck(ex.check === "phone" ? "I made the task" : "I did it", true);
+}
+async function checkHsTask(ex){
+  if (ex.check === "phone"){
+    setCheck("Checking HubSpot…", false);
+    let r = { found: null };
+    try { r = await api("/api/hs-check", { what: "phone" }); } catch (e) {}
+    if (r.found === false){
+      L.taskTries += 1;
+      $("hs-hint").textContent = "We couldn't find a task called App installed yet. Make it in the phone app, wait a minute, then tap the button again.";
+      if (L.taskTries >= 2) $("hs-skip").hidden = false;
+      return setCheck("I made the task", true);
+    }
+    L.checked = true; record(true, { check: r.found ? "found in HubSpot" : "rep's word" });
+    return feedback(true, "Your phone app works!", `<p>${r.found ? "We found your App installed task in HubSpot. Go ahead and mark it done in the app." : "Nice. Keep the app handy for your next farm visit."}</p>`);
+  }
+  L.checked = true; record(true, { check: "rep's word" });
+  feedback(true, "You're set up!", "<p>Look for the orange HubSpot icon at the top right of Chrome. Click it any time to see the grower you're emailing.</p>");
 }
 
 // Training examples (phishing emails, texts, sign-in pages) drawn as flat cards: nothing in them can be clicked or typed into.
@@ -2153,6 +2338,9 @@ $("check-btn").onclick = async () => {
   } else if (ex.type === "order"){
     const right = L.order.every((k,n)=>k===n); L.checked = true; record(right, { order: L.order.slice() });
     feedback(right, right ? "Exactly right!" : "Close. Here's the order:", right ? `<p>${esc(ex.why)}</p>` : `<ul>${ex.items.map((t)=>`<li>${esc(t)}</li>`).join("")}</ul><p>${esc(ex.why)}</p>`);
+  } else if (ex.type === "watch"){ if (!L.hsWatched) return; record(true, { watched: true }); hsNext();
+  } else if (ex.type === "spot"){ checkHsSpot(ex);
+  } else if (ex.type === "task"){ await checkHsTask(ex);
   } else {
     if (L.grading) return; // already being graded: a second tap (or the mic finishing) must not grade it twice
     L.grading = true;
@@ -2202,27 +2390,73 @@ $("done-review").onclick = () => { stopSpeaking(); openHistory(state.lastLessonI
 async function getBriefing(){
   $("setup-err").textContent = "";
   try {
-    const r = await api("/api/start", { farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" });
+    const r = state.visit
+      ? await api("/api/visit-start", { companyId: state.visit.id, farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" })
+      : await api("/api/start", { farmerId: state.farmerId, toughness: state.toughness, playId: state.callPlay || "play1" });
     state.callPlayName = r.play ? `${r.play.name}: ${r.play.short}` : "";
     $("brief-mission").innerHTML = ((r.play && r.play.mission) || []).map((m) => `<li>${esc(m)}</li>`).join("");
     state.rollToken = r.rollToken; state.farmerName = r.farmerName; state.scene = r.scene;
     // Get the farmer's first line (and voice) ready while the rep reads the briefing.
-    state.firstTurn = liveAvailable() ? null : api("/api/turn", { rollToken: r.rollToken, transcript: [], voice: true }).catch(() => null);
+    // Made after the coach's briefing voice comes back, so the two voice requests don't compete.
+    const prefetchFirstTurn = () => { if (!liveAvailable() && state.rollToken === r.rollToken && !state.firstTurn) state.firstTurn = api("/api/turn", { rollToken: r.rollToken, transcript: [], voice: true }).catch(() => null); };
+    state.firstTurn = null;
     $("brief-kicker").textContent = (state.checkpoint ? "Checkpoint call · score 70+ to pass · " : "") + (r.play ? (r.play.short && r.play.short !== r.play.name ? `${r.play.name} · ${r.play.short}` : r.play.name) : "Your call");
     $("brief-name").innerHTML = "";
     $("brief-text").innerHTML = sceneCard(r.scene, true) + `<p style="margin:6px 0 0">${esc(r.briefing)}</p>`;
     $("brief-tough").textContent = `How tough: ${r.toughness}. Say "coach me" any time for a quick tip.`;
-    show("s-brief"); say(r.briefing, "coach");
+    show("s-brief"); say(r.briefing, "coach", undefined, prefetchFirstTurn);
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
-function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; }
+function showPick(){ state.prView = "pick"; $("pr-head").hidden = false; $("pr-pick").hidden = false; $("pr-goal").hidden = false; $("pr-match").hidden = true; $("pr-realpick").hidden = true; renderRealBar(); }
+// ---- Practice a real visit: pick one of your own accounts, then a play; the card comes from HubSpot and NetSuite ----
+let realAccounts = null, realSeq = 0;
+function renderRealBar(){
+  const v = state.visit;
+  $("pr-realbar").hidden = !v;
+  if (v) { $("pr-realbar").innerHTML = `${icon("pin")}<span>Real visit: <b>${esc(v.name)}</b>${v.town ? " · " + esc(v.town) : ""}. Now pick a play.</span><button class="linkbtn" type="button" id="pr-real-cancel">Cancel</button>`;
+    $("pr-real-cancel").onclick = () => { state.visit = null; renderRealBar(); }; }
+  if (state.realReady) $("pr-real").hidden = !!v;
+  $("pr-suggest").style.display = v ? "none" : ""; // one choice at a time: the suggested call would drop the account
+}
+async function probeRealVisits(){
+  if (state.realReady !== undefined) { $("pr-real").hidden = !state.realReady; return; }
+  try { const r = await api("/api/visit-accounts", { probe: true }); state.realReady = !!(r && r.ready); } catch { state.realReady = false; }
+  $("pr-real").hidden = !state.realReady || !!state.visit;
+  $("pr-real").querySelector(".rico").innerHTML = icon("pin");
+}
+function listRealAccounts(){
+  const q = $("pr-real-q").value.trim().toLowerCase(), list = $("pr-real-list");
+  const rows = (realAccounts && realAccounts.accounts || []).filter((a) => !q || realAccounts.all || (a.name + " " + a.town).toLowerCase().includes(q));
+  list.innerHTML = "";
+  if (!realAccounts) { list.innerHTML = `<div class="empty">Loading your accounts…</div>`; return; }
+  if (realAccounts.recent && !q) list.insertAdjacentHTML("beforeend", `<div class="empty">Most recently active accounts. Type to search all of HubSpot.</div>`);
+  if (!rows.length) { list.innerHTML = `<div class="empty">${esc(realAccounts.why || (q ? "No account matches that." : "No accounts are assigned to you in HubSpot yet."))}</div>`; return; }
+  for (const a of rows.slice(0, 200)){
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `<b>${esc(a.name)}</b>${a.town ? `<span>${esc(a.town)}</span>` : ""}`;
+    b.onclick = () => { state.visit = a; showPick(); window.scrollTo(0, 0); };
+    list.appendChild(b);
+  }
+}
+async function loadRealAccounts(q){
+  const my = ++realSeq; realAccounts = null; listRealAccounts();
+  try { const r = await api("/api/visit-accounts", q ? { q } : {}); if (my === realSeq) { realAccounts = r || { accounts: [] }; listRealAccounts(); } }
+  catch (e) { if (my === realSeq) { realAccounts = { accounts: [], why: e.message }; listRealAccounts(); } }
+}
+$("pr-real").onclick = () => {
+  state.prView = "real"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = true; $("pr-realpick").hidden = false;
+  $("pr-real-q").value = ""; loadRealAccounts(""); window.scrollTo(0, 0);
+};
+$("pr-real-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
+let realQT = null;
+$("pr-real-q").oninput = () => { if (realAccounts && realAccounts.all) { clearTimeout(realQT); realQT = setTimeout(() => loadRealAccounts($("pr-real-q").value.trim()), 350); } else listRealAccounts(); };
 $("pr-back").onclick = () => { showPick(); window.scrollTo(0, 0); };
 // Step 2: the matchup. Farmer faces in a row, his card with the score to beat, the toughness toggle and Start.
 function openMatchup(){
   state.prView = "match"; $("pr-head").hidden = true; $("pr-pick").hidden = true; $("pr-goal").hidden = true; $("pr-match").hidden = false; $("setup-err").textContent = "";
   const play = (state.plays || []).find((p) => p.id === state.callPlay) || {};
-  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}`;
+  $("pr-play").innerHTML = `<small>${esc(play.name || "")}</small>${esc(play.short || "")}${state.visit ? `<span class="realnote">${icon("pin")} Real visit: ${esc(state.visit.name)}</span>` : ""}`;
   const list = (state.farmers || []).filter((f) => !!f.dealer === !!play.dealer);
   const opts = play.dealer ? list : [SURPRISE, ...list];
   if (!opts.some((o) => o.id === state.farmerId)) state.farmerId = opts[0].id;
