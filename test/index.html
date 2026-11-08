@@ -1121,7 +1121,7 @@ function show(id){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v9bfbbf1694"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vce24b438f1"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1783,7 +1783,7 @@ function pills(el, options, key){
 const SURPRISE = { id:"surprise", label:"Surprise me", short:"Surprise", emoji:"🎲", quote:"One of the five, picked at random, like a real day of calls." };
 // A persona's face: the drawn farmer portrait with his icon as a badge (Surprise keeps the dice).
 const face = (o, size) => Art.hasPersona(o.id) ? `${Art.persona(o.id, size)}<span class="pbadge" aria-hidden="true">${esc(o.emoji || "")}</span>` : esc(o.emoji || "");
-const PLAY_ICON = { play1:"tractor", play2:"steps", play3:"grid", play4:"bolt", play6:"target", play7:"sprout", play8:"mega", roi:"sprout" };
+const PLAY_ICON = { play1:"tractor", play2:"steps", play3:"grid", play4:"bolt", play6:"target", play7:"sprout", play8:"mega", roi:"sprout", foundation:"steps" };
 const playIcon = (id) => ((state.path && state.path.units || []).find((u) => u.id === id) || {}).icon || PLAY_ICON[id] || "phone";
 const firstWord = (l) => String(l || "").split(" ").pop(); // "Controlling Carl" -> "Carl"
 // The rep's best graded score on a play (any farmer, any toughness), from the high-score boards.
