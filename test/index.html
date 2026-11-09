@@ -1147,7 +1147,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v4ddab6e426"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v85c2eee40d"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2899,11 +2899,15 @@ function liveConnect(pass, reconnect){
       if (m.goAway){ liveLog("goAway " + JSON.stringify(m.goAway).slice(0, 80)); liveReconnect("time limit (goAway)"); return; }
       if (m.setupComplete){
         ready = true; live.on = true; resolve();
-        if (!reconnect) ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
+        if (!reconnect){
+          ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
+          // If he hasn't picked up in 6 seconds and the rep hasn't spoken, ring once more.
+          setTimeout(() => { if (live.ws === ws && ws.readyState === 1 && !state.ended && !state.transcript.length){ liveLog("no answer after 6s; ringing again"); ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } })); } }, 6000);
+        }
         else { const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep") ws.send(JSON.stringify({ realtimeInput: { text: "[The line cut out for a second and is back. Answer what the rep just said.]" } })); }
         return;
       }
-
+      const sc = m.serverContent; if (!sc) return;
       if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
       if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
       if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
