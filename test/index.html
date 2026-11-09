@@ -663,6 +663,41 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
   #learn h3.section{margin-top:28px}
 }
 
+/* Nov 9 UAT fixes. */
+/* Toasts span the screen (not half of it) and JS lifts them above any bottom bar. */
+.toast{width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box}
+/* Pick-farmer card: room under the sticky Start so Live voice scrolls fully clear of it (iPhone home bar included). */
+main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+#pr-match{padding-bottom:28px}
+#pr-match .toggle{scroll-margin-bottom:calc(180px + env(safe-area-inset-bottom))}
+/* Narrow phones (iPhone SE / mini): header, farmer faces, call controls and the type box all fit. */
+@media (max-width:400px){
+  .topbar .wrap{gap:8px}
+  .brand{gap:6px}
+  .brand img{height:22px!important}
+  .brandsub{font-size:11.5px;padding-left:6px}
+  .chips{gap:4px}
+  .chip{padding:4px 7px;font-size:13px;gap:3px}
+  .chip svg.i{width:15px;height:15px}
+  .faces{gap:2px}
+  .face{font-size:10px}
+  .face .fe{width:40px;height:40px}
+  .face .fe svg{width:36px;height:36px}
+  .pbadge{width:18px;height:18px;font-size:10px;right:-4px;bottom:-3px}
+  .round{width:50px;height:50px}
+  .round svg.i{width:22px;height:22px}
+  .ctl{font-size:11px}
+  .typerow{gap:6px}
+  .typerow input{padding:12px 10px}
+  .typerow .btn{padding-left:14px;padding-right:14px}
+}
+/* Smallest phones: "Sales Coach" sits under the logo instead of beside it, so the chips never cover it. */
+@media (max-width:360px){
+  .brand{flex-direction:column;align-items:flex-start;gap:1px}
+  .brand img{height:20px!important}
+  .brandsub{border-left:0;padding-left:0;font-size:11px;line-height:1.1}
+}
+
 /* HubSpot unit */
 .hs-stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff;cursor:pointer;margin-top:10px;user-select:none}
 .hs-stage img{display:block;width:100%;height:auto}
@@ -932,7 +967,7 @@ h1,h2,h3,.q,.unit h2,h3.section{color:var(--char);letter-spacing:-.02em}
     <p class="caption" id="caption"></p>
   </div>
   <div class="calldock"><div class="wrap">
-    <div class="typerow" id="typerow" hidden><button class="round" id="talk-btn" aria-label="Talk"><svg class="i"><use href="#i-mic"/></svg></button><input id="typed" placeholder="Tap here, then your keyboard's mic" enterkeyhint="send"><button class="btn btn-primary" id="typed-send">Send</button></div>
+    <div class="typerow" id="typerow" hidden><button class="round" id="talk-btn" aria-label="Talk"><svg class="i"><use href="#i-mic"/></svg></button><input id="typed" placeholder="Type a reply" enterkeyhint="send"><button class="btn btn-primary" id="typed-send">Send</button></div>
     <button class="btn btn-ok donebtn" id="done-talk" hidden>I'm done talking</button>
     <div class="controls">
       <div class="ctl"><button class="round" id="mute-btn" aria-pressed="false" aria-label="Mute"><svg class="i"><use href="#i-mic"/></svg></button><span id="mute-lbl">Mute</span></div>
@@ -1147,7 +1182,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vc58970cb83"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v877f08705e"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1241,7 +1276,12 @@ async function apiRaw(path, data){
 }
 function signOut(){ store.del("sc_token"); store.del("sc_name"); state.token=null; state.name=null; show("s-signin"); }
 
-function toast(msg, ms){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms || 3500); }
+function toast(msg, ms){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg;
+  // Sit above whatever bottom bar is showing (Start / Not now, Check, the call controls) so the toast never covers a button.
+  let lift = 0;
+  for (const d of document.querySelectorAll(".dock,.calldock,.tabs")){ const r = d.getBoundingClientRect(); if (r.height && r.height < innerHeight / 2 && r.bottom >= innerHeight - 2 && r.top < innerHeight) lift = Math.max(lift, innerHeight - r.top); }
+  if (lift) t.style.bottom = Math.round(lift + 12) + "px";
+  document.body.appendChild(t); setTimeout(()=>t.remove(), ms || 3500); }
 function confetti(){
   const box = $("confetti"); box.innerHTML = "";
   const colors = ["#F9CD37","#0017CA","#184EFF","#F9CD37","#0017CA"];
@@ -1873,7 +1913,8 @@ function renderBoard(){
     box.innerHTML = `<div class="lockcard">${Art.mascot("happy", 90)}<p style="font-weight:800;color:var(--char);margin:8px 0 4px">Unlock the leaderboard</p><p class="sub" style="margin:0">Finish ${left} more lesson${left === 1 ? "" : "s"} or practice call${left === 1 ? "" : "s"} to start competing.</p></div>`; return; }
   const kind = state.boardKind;
   $("lb-tabs").hidden = kind === "high"; $("hs-plays").hidden = kind !== "high"; $("hs-tough").hidden = kind !== "high"; $("hs").hidden = kind !== "high"; box.hidden = kind === "high";
-  $("lb-note").hidden = kind === "points";
+  $("lb-note").hidden = kind === "points" && state.boardTab !== "improved";
+  if (kind === "points" && state.boardTab === "improved") $("lb-note").textContent = "Most improved: the average of each rep's graded calls this week compared with their 5 calls before this week. 1 call this week and 1 before to get on the board.";
   if (kind === "high") return renderHighScores();
   if (kind === "calls"){
     // Same three tabs as Points: this week, all time, most improved.
