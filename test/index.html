@@ -1147,7 +1147,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v1278255ed5"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v5f407a824b"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2735,7 +2735,7 @@ async function startCall(){
   state.voice = "standard"; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
   if (liveAvailable()){
     try { await startLive(); state.voice = "live"; return; }
-    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); state.dropReason = ("live didn't start: " + e.message).slice(0, 120);
+    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); state.dropReason = ("live did not start: " + e.message).slice(0, 120);
       // A closed or blocked mic prompt is the common case; say what to do, not what broke.
       if (/^mic:.*(dismiss|denied|not ?allowed|permission)/i.test(e.message)) toast("The Sales Coach needs your microphone. When your browser asks, click Allow. (If you blocked it, click the lock icon by the address, then Microphone, then Allow.)", 10000);
       else toast(`Live voice didn't connect (${e.message}), so this call uses standard voice.`); }
@@ -2845,7 +2845,7 @@ function stopLive(){
 function liveFallback(why){
   if (state.ended) return;
   liveLog("dropped: " + why);
-  state.voice = "live→standard"; state.dropReason = String(why).slice(0, 120);
+  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120);
   try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
   stopLive();
   toast("Live voice dropped, so the call continues with standard voice. Keep going.");
