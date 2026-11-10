@@ -721,7 +721,6 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .hs-device button{border:0;border-radius:99px;min-height:40px;padding:6px 14px;background:transparent;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
 .hs-device button[aria-pressed="true"]{background:var(--brand,#2b3a8c);color:#fff}
 .hs-missing{display:inline-block;text-align:left;margin:8px 0 0;padding-left:20px}
-.hs-sbx{margin-top:16px;width:100%}
 </style>
 </head>
 <body>
@@ -926,8 +925,6 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <div class="t3"><small>Streak</small><b id="done-streak">0</b></div>
     </div>
     <div class="badgegrid" id="done-badges" style="width:100%;margin-top:20px"></div>
-    <div class="hs-sbx" id="done-sbx" hidden><button class="btn btn-ghost" id="done-sbx-btn" type="button" style="width:100%">Try it in the practice HubSpot</button>
-      <p class="hs-small" style="text-align:center">Optional. Practice HubSpot has made-up farms, so nothing you do there touches real growers.</p></div>
   </div>
   <div class="dock"><div class="wrap" style="display:flex;gap:10px"><button class="btn btn-ghost" id="done-review">Review answers</button><button class="btn btn-primary" id="done-btn">Continue</button></div></div>
 </section>
@@ -1182,7 +1179,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v877f08705e"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vf519700c3b"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2224,8 +2221,6 @@ function renderExerciseBody(){
 // ---------------- HubSpot unit: watch / spot / task ----------------
 const HS_W = 1434, HS_H = 744; // computer pictures; phone pictures carry their own w/h (612 x 1344)
 const HS_MEDIA = {}, HS_VIDEO = {};
-// Practice HubSpot (sandbox portal "Rep Training"), the same link the HubSpot training app uses.
-const HS_SANDBOX = "https://app-na2.hubspot.com/contacts/247869555/objects/0-1/views/all/list";
 // Computer or phone for the HubSpot lessons. Phone under 700 px wide unless the rep picked; remembered on this device.
 function hsDevice(){ const d = store.get("sc_hs_device"); return d === "phone" || d === "computer" ? d : innerWidth < 700 ? "phone" : "computer"; }
 // The lesson as this rep sees it: the phone version swaps in phoneExercises. Either version finishes the lesson.
@@ -2375,33 +2370,9 @@ function renderHsTask(box, ex){
   if (ex.guide) $("hs-guide").onclick = () => window.open(ex.guide, "_blank", "noopener");
   L.taskTries = 0;
   $("hs-skip").onclick = () => { if (L.checked) return; record(false, { check: "skipped" }); hsNext(); };
-  setCheck(ex.check === "phone" ? "I made the task" : ex.check === "sandbox" ? "Check my work" : "I did it", true);
+  setCheck(ex.check === "phone" ? "I made the task" : "I did it", true);
 }
-// What's left in practice HubSpot, in plain words.
-const SBX_MISSING = { deal: "A new deal of yours in the Equipment or Inputs pipeline", farm: "The deal linked to a practice farm", note: "A note on the deal", stage: "The deal moved to Propose" };
 async function checkHsTask(ex){
-  if (ex.check === "sandbox"){
-    // Graded for real: the server looks in practice HubSpot. "Skip for now" finishes the lesson without HubSpot Ready.
-    setCheck("Checking practice HubSpot…", false);
-    let r = { found: null, why: "error" };
-    try { r = await api("/api/hs-check", { what: "sandbox" }); } catch (e) {}
-    if (r.found === true){
-      L.checked = true; record(true, { check: "found in practice HubSpot" });
-      return feedback(true, "You did it for real!", "<p>We found your deal in practice HubSpot, with its farm, a note and a new stage.</p>");
-    }
-    L.taskTries += 1;
-    if (r.found === false){
-      const left = (r.missing || []).map((k) => SBX_MISSING[k]).filter(Boolean);
-      $("hs-hint").innerHTML = (r.why === "no user" ? "We couldn't find your practice HubSpot user under your work email. Ask Bryant to check your practice HubSpot invite." : "Almost there. Still to do in practice HubSpot:")
-        + (left.length && r.why !== "no user" ? `<ul class="hs-missing">${left.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "")
-        + (r.why === "no user" ? "" : "<p style=\"margin:6px 0 0\">Then tap Check my work again.</p>");
-      if (L.taskTries >= 2 || r.why === "no user") $("hs-skip").hidden = false;
-    } else {
-      $("hs-hint").textContent = r.why === "not set up" ? "We can't check this yet. Practice HubSpot isn't connected to Sales coach. You can skip for now and come back to this lesson later." : "We couldn't reach practice HubSpot. Wait a minute and tap Check my work again, or skip for now.";
-      $("hs-skip").hidden = false;
-    }
-    return setCheck("Check my work", true);
-  }
   if (ex.check === "phone"){
     setCheck("Checking HubSpot…", false);
     let r = { found: null };
@@ -2532,13 +2503,10 @@ async function finishLesson(){
     $("done-xp").textContent = "+" + r.points; $("done-acc").textContent = Math.round(r.correct/r.total*100) + "%"; $("done-streak").textContent = r.streak;
     badgeTiles($("done-badges"), r.newBadges.map((b)=>({...b, earned:true})), r.newBadges.map((b)=>b.id));
     $("done-art").innerHTML = Art.mascot("cheer", 150);
-    // HubSpot training lessons: an optional try in practice HubSpot (shown, not graded).
-    $("done-sbx").hidden = !(L.base && L.base.phoneExercises);
     show("s-done"); confetti();
     say(`Lesson complete. ${r.points} points.${r.newBadges.length ? " New badge: " + r.newBadges.map((b)=>b.name).join(" and ") + "." : ""}`, "coach");
   } catch (e) { setCheck("Try again", true); L.review = true; L.reviewQueue = []; L.checked = true; toast(e.message); }
 }
-$("done-sbx-btn").onclick = () => window.open(HS_SANDBOX, "_blank", "noopener");
 $("done-btn").onclick = () => { stopSpeaking(); state.tab = "learn"; loadHome(); };
 $("done-review").onclick = () => { stopSpeaking(); openHistory(state.lastLessonId, "done"); };
 
@@ -2775,9 +2743,11 @@ async function startCall(){
   $("call-sub").textContent = state.checkpoint ? "Checkpoint call" : "Practice call";
   state.callT0 = Date.now(); tick(); clearInterval(state.timer); state.timer = setInterval(tick, 1000);
   show("s-call"); caption(""); setStatus("Calling…");
+  // Which voice the call used, saved with the graded call so voice problems can be traced later.
+  state.voice = "standard"; state.reconnects = 0; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
   if (liveAvailable()){
-    try { await startLive(); return; }
-    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message);
+    try { await startLive(); state.voice = "live"; return; }
+    catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); state.dropReason = ("live did not start: " + e.message).slice(0, 120);
       // A closed or blocked mic prompt is the common case; say what to do, not what broke.
       if (/^mic:.*(dismiss|denied|not ?allowed|permission)/i.test(e.message)) toast("The Sales Coach needs your microphone. When your browser asks, click Allow. (If you blocked it, click the lock icon by the address, then Microphone, then Allow.)", 10000);
       else toast(`Live voice didn't connect (${e.message}), so this call uses standard voice.`); }
@@ -2880,13 +2850,14 @@ function stopLive(){
   // Always release the mic, including one that arrived after the call failed to start.
   for (const st of [live.stream, live.pendingStream]) try { st && st.getTracks().forEach((t) => t.stop()); } catch {}
   try { live.ctx && live.ctx.close(); } catch {}
-  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.lagLogged = false; live.paused = false;
+  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.lagLogged = false; live.paused = false; live.handle = null; live.reconnecting = false;
   audioMode("playback");
 }
 // Live voice failed mid-call (signal, Gemini's time limit, phone stopped the audio): keep going with standard voice.
 function liveFallback(why){
   if (state.ended) return;
   liveLog("dropped: " + why);
+  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120);
   try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
   stopLive();
   toast("Live voice dropped, so the call continues with standard voice. Keep going.");
@@ -2895,10 +2866,22 @@ function liveFallback(why){
   if (last && last.role === "rep") farmerTurn(); else callListen();
 }
 // iPhones pause the call's audio for a phone call, Siri, the lock screen or AirPods. Offer a one-tap resume.
+// The phone stopped the mic (a phone call, another app): ask for it again once, then fall back.
+async function liveRemic(){
+  if (live.remic || state.ended) return; live.remic = true;
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, voiceIsolation: true } });
+    if (state.ended || !live.ctx) { s.getTracks().forEach((t) => t.stop()); return; }
+    try { live.stream && live.stream.getTracks().forEach((t) => t.stop()); } catch {}
+    live.stream = s; live.ctx.createMediaStreamSource(s).connect(live.node);
+    liveLog("mic ended; got it back");
+  } catch (e) { liveFallback("mic ended"); }
+  finally { live.remic = false; }
+}
 function liveCheckAudio(){
   if (!live.ctx || !live.on || state.ended) return;
   const track = live.stream && live.stream.getAudioTracks()[0];
-  if (track && track.readyState === "ended") return liveFallback("mic ended");
+  if (track && track.readyState === "ended") return liveRemic();
   if (live.ctx.state === "running"){ if (live.paused){ live.paused = false; phase("you"); $("done-talk").hidden = true; setStatus("Your turn. Just talk.", "you"); } return; }
   // iPhones pause the call's audio for banners, Siri or a phone call. Try to pick it back up on our own once the
   // rep is back; only ask for a tap if the phone won't allow it.
@@ -2910,6 +2893,70 @@ function liveCheckAudio(){
   }, 700);
 }
 // Called right from the "Start the call" tap: the audio and mic must start on the tap itself.
+// Opens the Gemini line with a pass. On a reconnect the mic, audio and transcript carry on; only the line is new.
+function liveConnect(pass, reconnect){
+  return new Promise((resolve, reject) => {
+    let ready = false;
+    const ws = live.ws = new WebSocket(LIVE_WS + encodeURIComponent(pass.token));
+    setTimeout(() => { if (!ready) { reject(new Error("setup timed out")); if (live.ws === ws) { ws.onclose = null; try { ws.close(); } catch {} } } }, 12000);
+    ws.onopen = () => ws.send(JSON.stringify({ setup: { model: pass.model } }));
+    ws.onerror = () => { if (!ready) reject(new Error("socket error")); };
+    ws.onclose = (e) => { const why = `socket closed ${e.code} ${e.reason || ""}`.trim(); if (!ready) return reject(new Error(why)); if (live.ws === ws) liveReconnect(why); };
+    ws.onmessage = async (ev) => {
+      let m;
+      try { m = JSON.parse(typeof ev.data === "string" ? ev.data : await ev.data.text()); } catch { return; }
+      if (!live.ws || live.ws !== ws) return;
+      if (m.sessionResumptionUpdate && m.sessionResumptionUpdate.resumable && m.sessionResumptionUpdate.newHandle) live.handle = m.sessionResumptionUpdate.newHandle;
+      // Gemini is about to end this connection (its time limit): move to a fresh one now, on the same conversation.
+      if (m.goAway){ liveLog("goAway " + JSON.stringify(m.goAway).slice(0, 80)); liveReconnect("time limit (goAway)"); return; }
+      if (m.setupComplete){
+        ready = true; live.on = true; resolve();
+        if (!reconnect){
+          ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
+          // If he hasn't picked up in 6 seconds and the rep hasn't spoken, ring once more.
+          setTimeout(() => { if (live.ws === ws && ws.readyState === 1 && !state.ended && !state.transcript.length){ liveLog("no answer after 6s; ringing again"); ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } })); } }, 6000);
+        }
+        else { const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep") ws.send(JSON.stringify({ realtimeInput: { text: "[The line cut out for a second and is back. Answer what the rep just said.]" } })); }
+        return;
+      }
+      const sc = m.serverContent; if (!sc) return;
+      if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
+      if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
+      if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
+      for (const part of (sc.modelTurn && sc.modelTurn.parts) || []) if (part.inlineData && part.inlineData.data && !live.junk) livePlay(part.inlineData.data);
+      if (sc.turnComplete){ liveCloseTurn("farmer"); live.farmerOpen = false; }
+    };
+  });
+}
+// The call so far, for a reconnect without a resume handle.
+function liveContext(){ return state.transcript.filter((m) => m.text && m.text.trim()).slice(-24).map((m) => (m.role === "rep" ? "Rep: " : "You: ") + m.text.trim()).join("\n").slice(-7000); }
+// The line dropped mid-call (Gemini closed it, signal, its time limit): reconnect in the same voice and carry on.
+// Two tries; only then fall back to standard voice.
+async function liveReconnect(why){
+  if (state.ended || !live.ctx || live.reconnecting) return;
+  live.reconnecting = true;
+  const old = live.ws; live.ws = null;
+  if (old){ old.onopen = old.onmessage = old.onerror = old.onclose = null; try { old.close(); } catch {} }
+  liveStopPlayback(); try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
+  live.drops = (live.drops || 0) + 1; state.dropReason = String(why).slice(0, 120);
+  liveLog("dropped: " + why + " (reconnecting)");
+  phase("ready"); setStatus("Reconnecting…", "you");
+  let lastErr = "";
+  for (let t = 1; t <= 2 && !state.ended && live.drops <= 6; t++){
+    try {
+      const handle = live.handle;
+      const pass = await api("/api/live", { rollToken: state.rollToken, resumeHandle: handle || undefined, context: handle ? undefined : liveContext() });
+      if (state.ended) break;
+      await liveConnect(pass, true);
+      live.reconnecting = false; state.voice = "live-reconnected"; state.reconnects = (state.reconnects || 0) + 1;
+      liveLog("reconnected after: " + why + (handle ? " (resumed)" : " (replayed)") + ", try " + t);
+      phase("you"); $("done-talk").hidden = true; setStatus("Your turn. Just talk.", "you");
+      return;
+    } catch (e) { lastErr = (e && e.message) || String(e); if (live.ws){ live.ws.onclose = null; try { live.ws.close(); } catch {} live.ws = null; } live.handle = null; }
+  }
+  live.reconnecting = false;
+  if (!state.ended) liveFallback(why + "; reconnect failed: " + lastErr);
+}
 async function startLive(){
   const step = (name, p) => Promise.resolve(p).catch((e) => { throw new Error(`${name}: ${(e && (e.message || e.name)) || e}`); });
   // iPhones refuse the mic while the page is in "playback" mode (set for the briefing voice), so switch first.
@@ -2941,30 +2988,8 @@ async function startLive(){
     liveLog("worklet fallback: " + (e && e.message));
   }
   src.connect(live.node); live.node.connect(sink);
-  await new Promise((resolve, reject) => {
-    const ws = live.ws = new WebSocket(LIVE_WS + encodeURIComponent(pass.token));
-    setTimeout(() => { if (!live.on) reject(new Error("setup timed out")); }, 12000);
-    ws.onopen = () => ws.send(JSON.stringify({ setup: { model: pass.model } }));
-    ws.onerror = () => reject(new Error("socket error"));
-    ws.onclose = (e) => { if (!live.on) return reject(new Error(`socket closed ${e.code} ${e.reason || ""}`.trim())); liveFallback(`socket closed ${e.code} ${e.reason || ""}`.trim()); };
-    ws.onmessage = async (ev) => {
-      let m;
-      try { m = JSON.parse(typeof ev.data === "string" ? ev.data : await ev.data.text()); } catch { return; }
-      if (!live.ws || live.ws !== ws) return;
-      if (m.goAway){ toast("Live voice is about to time out; the call will switch to standard voice. Start wrapping up."); return; }
-      if (m.setupComplete){
-        live.on = true; resolve();
-        ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
-        return;
-      }
-      const sc = m.serverContent; if (!sc) return;
-      if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
-      if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
-      if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
-      for (const part of (sc.modelTurn && sc.modelTurn.parts) || []) if (part.inlineData && part.inlineData.data && !live.junk) livePlay(part.inlineData.data);
-      if (sc.turnComplete){ liveCloseTurn("farmer"); live.farmerOpen = false; }
-    };
-  });
+  live.drops = 0; live.tries = 0; live.handle = null;
+  await liveConnect(pass, false);
   // Show who's talking: him while his audio is playing, you otherwise.
   live.ui = setInterval(() => {
     if (!live.ctx || state.ended || live.paused) return;
@@ -3005,13 +3030,13 @@ $("end-yes").onclick = async () => {
   $("grading-art").innerHTML = Art.mascot("think", 110); $("grading").hidden = false;
   state.saveId = state.saveId || newId();
   const job = { rollToken: state.rollToken, transcript: state.transcript, startedAt: state.startedAt, checkpoint: state.checkpoint, saveId: state.saveId,
-    farmerName: state.farmerName, callPlayName: state.callPlayName, at: Date.now() };
+    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: state.voice || null, dropReason: state.dropReason || null, reconnects: state.reconnects || 0, at: Date.now() };
   store.set("sc_pending_call", JSON.stringify(job));
   try { renderResults(await api("/api/grade", gradeBody(job))); store.del("sc_pending_call"); }
   catch (e) { state.ended = false; state.timer = setInterval(tick, 1000); setStatus(e.message, "err"); phase("idle"); toast(e.message); }
   finally { $("grading").hidden = true; }
 };
-const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId });
+const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects });
 function newId(){ try { return crypto.randomUUID(); } catch { return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12); } }
 // A call that ended but never got graded (app closed, connection dropped) stays on the phone and can be graded later.
 function pendingCall(){ try { const j = JSON.parse(store.get("sc_pending_call") || "null"); return j && j.rollToken && Array.isArray(j.transcript) && Date.now() - j.at < 3 * 864e5 ? j : null; } catch { return null; } }
