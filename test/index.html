@@ -1188,7 +1188,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vd73b876a32"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v44813e3f70"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2322,7 +2322,11 @@ function renderExerciseBody(){
 
 // ---------------- HubSpot unit: watch / spot / task ----------------
 const HS_W = 1434, HS_H = 744; // computer pictures; phone pictures carry their own w/h (612 x 1344)
-const HS_MEDIA = {}, HS_VIDEO = {}, HS_POSTER = {};
+const HS_MEDIA = {}, HS_VIDEO = {}, HS_POSTER = {}, HS_VIDEO_AT = {};
+// A video this tab already loaded is reused for 5 minutes. After that it's checked with the server again, so a video
+// swapped in Drive reaches tabs that stay open all day (Nov 10 2026: an open tab kept playing an old copy).
+const HS_VIDEO_FRESH_MS = 5 * 60 * 1000;
+const hsVideoFresh = (name) => !!HS_VIDEO[name] && Date.now() - (HS_VIDEO_AT[name] || 0) < HS_VIDEO_FRESH_MS;
 // Computer or phone for the HubSpot lessons. Phone under 700 px wide unless the rep picked; remembered on this device.
 function hsDevice(){ const d = store.get("sc_hs_device"); return d === "phone" || d === "computer" ? d : innerWidth < 700 ? "phone" : "computer"; }
 // The lesson as this rep sees it: the phone version swaps in phoneExercises. Either version finishes the lesson.
@@ -2380,7 +2384,7 @@ function hsPrefetch(){
     const conn = navigator.connection || {};
     if (innerWidth >= 700 && !conn.saveData) {
       const vid = ((next.questions || []).find((q) => q.video) || {}).video;
-      if (vid && !HS_VIDEO[vid]) hsVideoUrl(vid, true).catch(() => {});
+      if (vid && !hsVideoFresh(vid)) hsVideoUrl(vid, true).catch(() => {});
     }
   } catch {}
 }
@@ -2402,7 +2406,7 @@ function hsStep(){ const n = L.lesson.exercises.length; return `Step ${L.i + 1} 
 const HS_VIDEO_P = {};
 const b64bytes = (s) => { const bin = atob(s), out = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) out[k] = bin.charCodeAt(k); return out; };
 function hsVideoUrl(name, quiet){
-  if (HS_VIDEO[name]) return Promise.resolve(HS_VIDEO[name]);
+  if (hsVideoFresh(name)) return Promise.resolve(HS_VIDEO[name]);
   if (HS_VIDEO_P[name]) return HS_VIDEO_P[name];
   return (HS_VIDEO_P[name] = (async () => {
     const kept = await vidGet(name);
@@ -2413,6 +2417,7 @@ function hsVideoUrl(name, quiet){
       blob = new Blob([b64bytes(r.video)], { type: "video/mp4" });
       if (r.updated) vidPut(name, { updated: r.updated, blob });
     }
+    HS_VIDEO_AT[name] = Date.now();
     return (HS_VIDEO[name] = URL.createObjectURL(blob));
   })().finally(() => { delete HS_VIDEO_P[name]; }));
 }
@@ -2425,7 +2430,7 @@ function hsPrefetchAfter(id){
     const u = ((state.path && state.path.units) || []).find((x) => x.id === "hubspot"); if (!u) return;
     const ls = u.lessons || [], at = ls.findIndex((l) => l.id === id), next = at >= 0 ? ls[at + 1] : null; if (!next) return;
     const vid = ((next.questions || []).find((q) => q.video) || {}).video;
-    if (vid && !HS_VIDEO[vid]) hsVideoUrl(vid, true).catch(() => {});
+    if (vid && !hsVideoFresh(vid)) hsVideoUrl(vid, true).catch(() => {});
   } catch {}
 }
 function renderHsWatch(box, ex){
@@ -2441,7 +2446,7 @@ function renderHsWatch(box, ex){
   // toward 90% over the usual wait, so the rep sees it moving. A device copy plays at once and shows none of this.
   let shown = 0, timer = null;
   const tick = () => { if (L.i !== at || !$("hs-vbar")) return clearInterval(timer); shown += (0.9 - shown) * 0.06; $("hs-vbar").style.width = Math.round(shown * 100) + "%"; };
-  if (!HS_VIDEO[ex.video]) {
+  if (!hsVideoFresh(ex.video)) {
     timer = setInterval(tick, 250);
     if (!HS_POSTER[ex.video]) HS_POSTER[ex.video] = apiRaw("/api/hs-media?poster=" + encodeURIComponent(ex.video)).then((r) => r.img).catch(() => null);
     HS_POSTER[ex.video].then((img) => { if (L.i !== at || !img || !$("hs-vload")) return; $("hs-vload").classList.add("still"); $("hs-vload").style.backgroundImage = `url(data:image/jpeg;base64,${img})`; });
@@ -2458,7 +2463,7 @@ function renderHsWatch(box, ex){
     v.addEventListener("ended", ok);
     v.addEventListener("timeupdate", () => { if (v.duration && v.currentTime / v.duration >= 0.9) ok(); });
   };
-  if (HS_VIDEO[ex.video]) return play(HS_VIDEO[ex.video]);
+  if (hsVideoFresh(ex.video)) return play(HS_VIDEO[ex.video]);
   hsVideoUrl(ex.video).then(play).catch((e) => {
     clearInterval(timer);
     if (L.i !== at || !$("hs-vload")) return;
