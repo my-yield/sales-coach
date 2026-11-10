@@ -1188,7 +1188,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v055fd1b5fa"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vd73b876a32"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2322,7 +2322,7 @@ function renderExerciseBody(){
 
 // ---------------- HubSpot unit: watch / spot / task ----------------
 const HS_W = 1434, HS_H = 744; // computer pictures; phone pictures carry their own w/h (612 x 1344)
-const HS_MEDIA = {}, HS_VIDEO = {};
+const HS_MEDIA = {}, HS_VIDEO = {}, HS_POSTER = {};
 // Computer or phone for the HubSpot lessons. Phone under 700 px wide unless the rep picked; remembered on this device.
 function hsDevice(){ const d = store.get("sc_hs_device"); return d === "phone" || d === "computer" ? d : innerWidth < 700 ? "phone" : "computer"; }
 // The lesson as this rep sees it: the phone version swaps in phoneExercises. Either version finishes the lesson.
@@ -2397,42 +2397,24 @@ function hsNext(){ L.checked = true; $("check-btn").onclick(); }
 function hsStep(){ const n = L.lesson.exercises.length; return `Step ${L.i + 1} of ${n}`; }
 
 // A video's playable address: this page's copy, else this device's saved copy (same Drive version), else a download.
-// The download comes in pieces (a few at a time) so the lesson can show real progress and the still picture first
-// (Nov 10 2026, Sarah: videos took too long). onInfo(poster base64 | null) and onProgress(0..1) are optional.
-const HS_VIDEO_P = {}, HS_VIDEO_WATCH = {};
+// One request per video: each Apps Script call costs about 2.5 s on its own, so splitting a video into pieces was slower
+// (Nov 10 2026 timing).
+const HS_VIDEO_P = {};
 const b64bytes = (s) => { const bin = atob(s), out = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) out[k] = bin.charCodeAt(k); return out; };
-function hsVideoUrl(name, quiet, onInfo, onProgress){
+function hsVideoUrl(name, quiet){
   if (HS_VIDEO[name]) return Promise.resolve(HS_VIDEO[name]);
-  // Someone already started this one (the prefetch): listen in on its progress.
-  const w = (HS_VIDEO_WATCH[name] = HS_VIDEO_WATCH[name] || { info: [], prog: [], poster: undefined, pct: 0 });
-  if (onInfo) { w.info.push(onInfo); if (w.poster !== undefined) onInfo(w.poster); }
-  if (onProgress) { w.prog.push(onProgress); if (w.pct) onProgress(w.pct); }
   if (HS_VIDEO_P[name]) return HS_VIDEO_P[name];
-  const call = quiet ? apiRaw : api, base = "/api/hs-media?video=" + encodeURIComponent(name);
-  const tell = (pct) => { w.pct = pct; w.prog.forEach((f) => { try { f(pct); } catch {} }); };
   return (HS_VIDEO_P[name] = (async () => {
     const kept = await vidGet(name);
-    const r = await call(base + "&info=1" + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
+    const r = await (quiet ? apiRaw : api)("/api/hs-media?video=" + encodeURIComponent(name) + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
     let blob;
     if (r.same && kept) blob = kept.blob;
-    else if (r.video) blob = new Blob([b64bytes(r.video)], { type: "video/mp4" }); // an older server: the whole file came back
     else {
-      w.poster = r.poster || null; w.info.forEach((f) => { try { f(w.poster); } catch {} });
-      const n = Math.ceil(r.size / r.part), parts = new Array(n); let got = 0, next = 0;
-      tell(0.02);
-      const worker = async () => {
-        while (next < n) {
-          const i = next++;
-          let p; for (let tryN = 0; ; tryN++) { try { p = await apiRaw(base + "&part=" + i + "&v=" + encodeURIComponent(r.updated)); break; } catch (e) { if (tryN >= 1) throw e; } }
-          parts[i] = b64bytes(p.data); got += parts[i].length; tell(Math.max(0.02, got / r.size));
-        }
-      };
-      await Promise.all(Array.from({ length: Math.min(3, n) }, worker));
-      blob = new Blob(parts, { type: "video/mp4" });
+      blob = new Blob([b64bytes(r.video)], { type: "video/mp4" });
       if (r.updated) vidPut(name, { updated: r.updated, blob });
     }
     return (HS_VIDEO[name] = URL.createObjectURL(blob));
-  })().finally(() => { delete HS_VIDEO_P[name]; delete HS_VIDEO_WATCH[name]; }));
+  })().finally(() => { delete HS_VIDEO_P[name]; }));
 }
 // While the rep watches one lesson's video, quietly fetch the next HubSpot lesson's video (computers, or phones on
 // Wi-Fi, never with Data Saver on), so the next lesson starts right away.
@@ -2455,10 +2437,18 @@ function renderHsWatch(box, ex){
   L.hsWatched = false;
   $("hs-skip").onclick = () => { if (L.checked) return; record(false, { skipped: true }); hsNext(); };
   const at = L.i, lessonId = L.lesson.id;
-  const onInfo = (poster) => { if (L.i !== at || !poster || !$("hs-vload")) return; $("hs-vload").classList.add("still"); $("hs-vload").style.backgroundImage = `url(data:image/jpeg;base64,${poster})`; };
-  const onProgress = (pct) => { if (L.i !== at || !$("hs-vbar")) return; $("hs-vbar").style.width = Math.round(pct * 100) + "%"; $("hs-vtxt").textContent = "Loading the video… " + Math.round(pct * 100) + "%"; };
+  // While it loads: the video's first frame (a small separate request, back before the video) and a bar that eases
+  // toward 90% over the usual wait, so the rep sees it moving. A device copy plays at once and shows none of this.
+  let shown = 0, timer = null;
+  const tick = () => { if (L.i !== at || !$("hs-vbar")) return clearInterval(timer); shown += (0.9 - shown) * 0.06; $("hs-vbar").style.width = Math.round(shown * 100) + "%"; };
+  if (!HS_VIDEO[ex.video]) {
+    timer = setInterval(tick, 250);
+    if (!HS_POSTER[ex.video]) HS_POSTER[ex.video] = apiRaw("/api/hs-media?poster=" + encodeURIComponent(ex.video)).then((r) => r.img).catch(() => null);
+    HS_POSTER[ex.video].then((img) => { if (L.i !== at || !img || !$("hs-vload")) return; $("hs-vload").classList.add("still"); $("hs-vload").style.backgroundImage = `url(data:image/jpeg;base64,${img})`; });
+  }
   const play = (url) => {
     if (L.i !== at || !$("hs-vid")) return;
+    clearInterval(timer);
     const v = $("hs-vid"); v.src = url; v.hidden = false; $("hs-vload").remove();
     // Start on its own (Sarah, Nov 10 2026). The tap that opened the lesson usually lets the browser play with sound;
     // if it says no (some phones), the play button is right there, same as before.
@@ -2469,7 +2459,8 @@ function renderHsWatch(box, ex){
     v.addEventListener("timeupdate", () => { if (v.duration && v.currentTime / v.duration >= 0.9) ok(); });
   };
   if (HS_VIDEO[ex.video]) return play(HS_VIDEO[ex.video]);
-  hsVideoUrl(ex.video, false, onInfo, onProgress).then(play).catch((e) => {
+  hsVideoUrl(ex.video).then(play).catch((e) => {
+    clearInterval(timer);
     if (L.i !== at || !$("hs-vload")) return;
     $("hs-vload").classList.remove("still"); $("hs-vload").style.backgroundImage = "";
     $("hs-vload").textContent = "The video didn't load. " + e.message;
