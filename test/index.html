@@ -258,6 +258,9 @@ textarea.said:focus{border-color:var(--blue)}
 .tri .t1{border-color:var(--gold);background:var(--gold-50)} .tri .t1 b{color:var(--gold-ink)}
 .tri .t2{border-color:var(--ok)} .tri .t2 b{color:var(--ok-d)}
 .tri .t3{border-color:var(--gold);background:var(--gold-50)} .tri .t3 b{color:var(--gold-ink)}
+.relaylost{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:40;width:min(440px,calc(100vw - 32px));box-sizing:border-box;background:#fff;color:var(--ink);border:2px solid var(--gold);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);font-size:15px;line-height:1.4}
+.relaylost p{margin:0 0 10px}
+.relaylost .btn{width:100%}
 .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:var(--ink);color:#fff;font-weight:600;font-size:14px;padding:12px 16px;border-radius:14px;z-index:30;max-width:90vw;box-shadow:var(--shadow)}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
 .confetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall 1.8s ease-in forwards}
@@ -1179,17 +1182,25 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vf519700c3b"; // stamped by appsscript/build.mjs
+const APP_VERSION = "ve7a1e70697"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
 const GAS_PEER = /^https:\/\/n-[a-z0-9-]+-script\.googleusercontent\.com$/;
-let relayPeer = null, relaySeq = 0, relayAcks = false, relayVersion = "";
+// The Sales Coach link this page belongs to (build.mjs swaps in the test link for test builds). The server's own
+// address (from /api/whoami) wins when we have it. Used by Reconnect when the Apps Script tab is gone.
+const HOME_LINK = "https://script.google.com/a/macros/empoweringfarmers.com/s/AKfycbw-2Q-de9rkdLq4XOP-Us9Zhnt0TKV-TcgPF2cpArc/dev";
+const homeKey = () => "sc_home" + location.pathname;
+const homeLink = () => store.get(homeKey()) || HOME_LINK;
+// relayWin is whichever Apps Script tab last said hello: the one that opened this page, or one opened by Reconnect.
+let relayPeer = null, relayWin = null, relaySeq = 0, relayAcks = false, relayVersion = "";
 // google.script.run failures are not network problems most of the time. Say what actually went wrong.
 function serverErrorText(err){
   const m = String((err && (err.message || err)) || "");
-  if (/PERMISSION_DENIED|unable to open|signed in to (more than one|multiple)|authuser|ScriptError.*(permission|authoriz)/i.test(m))
-    return "Google got confused about which account you're using. Open your Sales Coach link in a window signed in only to your My Yield work account (or a private/incognito window).";
+  // "reading from storage ... INTERNAL" shows up when the browser is signed in to more than one Google account
+  // (seen Nov 10 2026: switching to the work Chrome profile fixed it), so treat it as the same account mix-up.
+  if (/PERMISSION_DENIED|unable to open|signed in to (more than one|multiple)|authuser|reading from storage|Error code INTERNAL|ScriptError.*(permission|authoriz)/i.test(m))
+    return "Google mixed up which account you're using. Open your Sales Coach link in the Chrome profile (or window) signed in only to your My Yield work account, or in a private/incognito window.";
   if (/authoriz/i.test(m)) return "The Sales Coach needs to be re-approved by an admin. Let your admin know you saw this.";
   if (/too many times|quota|invoked too many/i.test(m)) return "Practice is paused for a bit (too much at once). Try again in a few minutes.";
   if (/timed out|exceeded maximum execution time/i.test(m)) return "The coach took too long. Try again.";
@@ -1199,12 +1210,86 @@ function serverErrorText(err){
 function reportError(where, err){
   try { if (GAS || RELAY) api("/api/clientlog", { msg: (where + ": " + String((err && (err.message || err)) || "")).slice(0, 280), ua: navigator.userAgent, v: APP_VERSION }).catch(() => {}); } catch {}
 }
+// ---- When the Apps Script tab is gone (closed, reloaded, or put to sleep by the browser) ----
+// Nothing the page has is lost: a finished lesson waits on this device (sc_pending_lesson) and saves on reconnect.
+const RELAY_LOST_MSG = "Lost the connection to your Sales Coach tab. Tap Reconnect. Your progress is kept.";
+let relayLostAt = 0;
+let relayOkAt = 0;
+function relayLost(route){
+  if (!relayLostAt){
+    relayLostAt = Date.now();
+    // How it went: no opener at all, or a closed one (the browser closed, reloaded or discarded the Apps Script tab).
+    let how = "closed"; try { how = !window.opener ? "no-opener" : window.opener.closed ? "opener-closed" : relayWin && relayWin.closed ? "peer-closed" : "no-peer"; } catch {}
+    const idle = relayOkAt ? Math.round((Date.now() - relayOkAt) / 1000) + "s" : "?";
+    try { const log = JSON.parse(store.get("sc_relaylog") || "[]"); log.push({ at: new Date().toISOString(), route: String(route || "").slice(0, 40) + " " + how + " idle " + idle }); store.set("sc_relaylog", JSON.stringify(log.slice(-10))); } catch {}
+  }
+  showReconnect();
+  const e = new Error(RELAY_LOST_MSG); e.relayLost = true; return e;
+}
+function showReconnect(msg){
+  if (!RELAY) return;
+  let b = $("relay-lost");
+  if (!b){
+    b = document.createElement("div"); b.id = "relay-lost"; b.className = "relaylost"; b.setAttribute("role", "alert");
+    b.innerHTML = '<p id="relay-lost-msg"></p><button class="btn" id="relay-reconnect" type="button">Reconnect</button>';
+    document.body.appendChild(b);
+    $("relay-reconnect").onclick = () => {
+      const w = window.open(homeLink(), "_blank");
+      $("relay-lost-msg").textContent = w ? "A Sales Coach tab opened. If it shows an Open Sales Coach button, tap it: your finished lesson saves there."
+        : "Your browser blocked the new tab. Allow pop-ups for this page, then tap Reconnect again.";
+    };
+  }
+  $("relay-lost-msg").textContent = msg || "Your Sales Coach tab closed, so this page can't reach the coach. Tap Reconnect. Your progress is kept.";
+  $("relay-reconnect").hidden = false; b.hidden = false;
+}
+// Notice a lost Sales Coach tab as soon as it happens (Chrome can discard a background tab to save memory), not only
+// when the next answer tries to save. Answers already given are kept on this device either way.
+if (RELAY) setInterval(() => {
+  if (!relayPeer || relayLostAt || waitingForHome) return;
+  let gone = !relayWin; try { gone = gone || relayWin.closed; } catch { gone = true; }
+  if (gone) relayLost("watch");
+}, 3000);
+// The voice page has no Sales Coach tab to work through (refreshed, or opened on its own).
+let waitingForHome = false;
+function showOpenHome(){
+  waitingForHome = true;
+  show("s-signin");
+  $("code").closest(".field").hidden = true; $("name").closest(".field").hidden = true; $("signin-art").innerHTML = Art.icon(96);
+  $("signin-err").style.color = "inherit"; $("signin-err").textContent = "Your progress is kept.";
+  const b = $("signin-btn"); b.hidden = false; b.textContent = "Open Sales Coach";
+  b.onclick = () => {
+    const w = window.open(homeLink(), "_blank");
+    $("signin-err").textContent = w ? "Sales Coach opened in a new tab. If it shows an Open Sales Coach button, tap it." : "Your browser blocked the new tab. Allow pop-ups for this page, then tap again.";
+  };
+}
+function relayBack(){
+  relayLostAt = 0;
+  if ($("relay-lost")) $("relay-lost").hidden = true;
+  toast("Reconnected.");
+  flushRelayLog();
+  const p = pendingLesson();
+  if (p && L && L.lesson && L.lesson.id === p.body.lessonId && !$("s-lesson").hidden) finishLesson(); else sendPendingLesson();
+}
+// Another tab (opened by Reconnect) finished the save: this one can be closed.
+window.addEventListener("storage", (e) => {
+  if (!RELAY || !relayLostAt || e.key !== pendingLessonKey() || e.newValue) return;
+  showReconnect("Your lesson was saved in your other Sales Coach tab. You can close this one.");
+  $("relay-reconnect").hidden = true;
+});
+function flushRelayLog(){
+  let log = []; try { log = JSON.parse(store.get("sc_relaylog") || "[]"); } catch {}
+  if (!log.length) return;
+  store.del("sc_relaylog");
+  api("/api/clientlog", { msg: "relay lost: " + log.map((x) => x.at.slice(11, 19) + " " + x.route).join(", ").slice(0, 260), ua: navigator.userAgent, v: APP_VERSION }).catch(() => {});
+}
 const relayWait = {};
 function relayCall(route, data){
   return new Promise((resolve, reject) => {
-    if (!window.opener || window.opener.closed || !relayPeer) return reject(new Error("The Sales Coach tab that opened this page is closed. Open your Sales Coach link again."));
+    let gone = !relayPeer || !relayWin;
+    try { gone = gone || relayWin.closed; } catch { gone = true; }
+    if (gone) return reject(relayLost(route));
     const id = ++relaySeq; relayWait[id] = resolve;
-    window.opener.postMessage({ t: "sc-call", id, route, data }, relayPeer);
+    try { relayWin.postMessage({ t: "sc-call", id, route, data }, relayPeer); } catch { delete relayWait[id]; return reject(relayLost(route)); }
     // An up-to-date Sales Coach tab answers "got it" right away. If it doesn't, the phone has frozen or closed that tab:
     // say so in seconds instead of waiting minutes.
     if (relayAcks){
@@ -1219,12 +1304,19 @@ const relayAckWait = {};
 if (RELAY) window.addEventListener("message", (e) => {
   if (!GAS_PEER.test(e.origin) || !e.data) return;
   if (e.data.t === "sc-hello"){
-    relayPeer = e.origin; relayAcks = !!e.data.ack; relayVersion = String(e.data.v || "");
+    let alive = false; try { alive = !!relayWin && !relayWin.closed && relayPeer === e.origin; } catch {}
+    if (alive && e.source !== relayWin) return; // already connected to a working tab
+    const back = !!relayLostAt;
+    relayPeer = e.origin; relayWin = e.source; relayAcks = !!e.data.ack; relayVersion = String(e.data.v || "");
+    try { e.source.postMessage({ t: "sc-joined" }, e.origin); } catch {}
+    if (waitingForHome){ waitingForHome = false; googleBoot(); return; }
+    if (back) relayBack();
     if (relayVersion && relayVersion !== APP_VERSION && !APP_VERSION.startsWith("__")) toast("The Sales Coach was just updated. Close this tab and open your Sales Coach link again.");
     return;
   }
   if (e.origin !== relayPeer) return;
   if (e.data.t === "sc-ack"){ clearTimeout(relayAckWait[e.data.id]); delete relayAckWait[e.data.id]; return; }
+  if (e.data.t === "sc-reply") relayOkAt = Date.now();
   if (e.data.t === "sc-reply" && relayWait[e.data.id]){ const done = relayWait[e.data.id]; delete relayWait[e.data.id]; done(e.data.raw); }
 });
 // The Apps Script tab answers the voice page, only for the coach's own requests and only from the voice page's address.
@@ -1233,6 +1325,7 @@ const RELAY_ALLOWED = (route) => /^\/api\/[a-z-]+$/.test(route) && !/^\/api\/rep
 if (GAS) window.addEventListener("message", (e) => {
   if (e.origin !== VOICE_ORIGIN || !e.data) return;
   if (e.data.t === "sc-ready") return e.source.postMessage({ t: "sc-hello", ack: true, v: APP_VERSION }, e.origin);
+  if (e.data.t === "sc-joined"){ $("launch-msg").textContent = "Connected. Keep this tab open while you practice in the Sales Coach tab."; return; }
   if (e.data.t !== "sc-call") return;
   e.source.postMessage({ t: "sc-ack", id: e.data.id }, e.origin);
   const reply = (raw) => e.source.postMessage({ t: "sc-reply", id: e.data.id, raw }, e.origin);
@@ -2495,17 +2588,43 @@ async function finishLesson(){
   setCheck("Saving…", false);
   try {
     L.saveId = L.saveId || newId();
-    const r = await api("/api/lesson", { lessonId: L.lesson.id, results: L.results, answers: L.answers, device: L.device || undefined, saveId: L.saveId, v: APP_VERSION });
-    state.path = r.path; state.lastLessonId = r.id; $("done-review").hidden = !r.id;
-    store.del(progressKey(L.lesson.id));
-    $("done-title").textContent = r.stars === 3 ? "Perfect lesson!" : "Lesson complete!";
-    $("done-sub").innerHTML = `<span style="color:var(--gold-d);font-size:22px;letter-spacing:4px">${"★".repeat(r.stars)}</span><span style="color:var(--line);font-size:22px;letter-spacing:4px">${"★".repeat(3-r.stars)}</span><br>${esc(L.lesson.title)}`;
-    $("done-xp").textContent = "+" + r.points; $("done-acc").textContent = Math.round(r.correct/r.total*100) + "%"; $("done-streak").textContent = r.streak;
-    badgeTiles($("done-badges"), r.newBadges.map((b)=>({...b, earned:true})), r.newBadges.map((b)=>b.id));
-    $("done-art").innerHTML = Art.mascot("cheer", 150);
-    show("s-done"); confetti();
-    say(`Lesson complete. ${r.points} points.${r.newBadges.length ? " New badge: " + r.newBadges.map((b)=>b.name).join(" and ") + "." : ""}`, "coach");
-  } catch (e) { setCheck("Try again", true); L.review = true; L.reviewQueue = []; L.checked = true; toast(e.message); }
+    const body = { lessonId: L.lesson.id, results: L.results, answers: L.answers, device: L.device || undefined, saveId: L.saveId, v: APP_VERSION };
+    store.set(pendingLessonKey(), JSON.stringify({ body, title: L.lesson.title, at: Date.now() }));
+    const r = await api("/api/lesson", body);
+    store.del(pendingLessonKey());
+    showLessonDone(r, L.lesson.title);
+  } catch (e) { setCheck("Try again", true); L.review = true; L.reviewQueue = []; L.checked = true; if (!e.relayLost) toast(e.message); }
+}
+function showLessonDone(r, title){
+  state.path = r.path; state.lastLessonId = r.id; $("done-review").hidden = !r.id;
+  $("done-title").textContent = r.stars === 3 ? "Perfect lesson!" : "Lesson complete!";
+  $("done-sub").innerHTML = `<span style="color:var(--gold-d);font-size:22px;letter-spacing:4px">${"★".repeat(r.stars)}</span><span style="color:var(--line);font-size:22px;letter-spacing:4px">${"★".repeat(3-r.stars)}</span><br>${esc(title)}`;
+  $("done-xp").textContent = "+" + r.points; $("done-acc").textContent = Math.round(r.correct/r.total*100) + "%"; $("done-streak").textContent = r.streak;
+  badgeTiles($("done-badges"), r.newBadges.map((b)=>({...b, earned:true})), r.newBadges.map((b)=>b.id));
+  $("done-art").innerHTML = Art.mascot("cheer", 150);
+  show("s-done"); confetti();
+  say(`Lesson complete. ${r.points} points.${r.newBadges.length ? " New badge: " + r.newBadges.map((b)=>b.name).join(" and ") + "." : ""}`, "coach");
+}
+// A finished lesson that couldn't save yet (connection lost) waits here for a day and saves the next time the app
+// can reach the coach, in this tab or a new one. The same saveId means the server never counts it twice.
+const pendingLessonKey = () => "sc_pending_lesson_" + (state.name || "");
+function pendingLesson(){
+  try { const p = JSON.parse(store.get(pendingLessonKey()) || "null"); return p && p.body && p.body.lessonId && Date.now() - p.at < 864e5 ? p : null; } catch { return null; }
+}
+let sendingPending = false;
+async function sendPendingLesson(){
+  const p = pendingLesson();
+  if (!p || sendingPending || (L && !L.practice && !$("s-lesson").hidden)) return;
+  sendingPending = true;
+  try {
+    const r = await api("/api/lesson", p.body);
+    store.del(pendingLessonKey()); store.del(progressKey(p.body.lessonId));
+    showLessonDone(r, p.title || "Lesson");
+  } catch (e) {
+    if (e.relayLost) return;
+    if (/still locked|finish cleanly|Unknown/i.test(e.message)) store.del(pendingLessonKey()); // can't ever save: don't keep retrying
+    toast(e.message);
+  } finally { sendingPending = false; }
 }
 $("done-btn").onclick = () => { stopSpeaking(); state.tab = "learn"; loadHome(); };
 $("done-review").onclick = () => { stopSpeaking(); openHistory(state.lastLessonId, "done"); };
@@ -3113,7 +3232,7 @@ $("app-version").textContent = $("launch-version").textContent = "Version " + (A
 function googleBoot(){
   // Google already knows who this is; we only need a display name if the directory lookup fails.
   $("code").closest(".field").hidden = true; $("signout").hidden = true;
-  api("/api/whoami").then((r) => { if (r.name){ state.token = "google"; state.name = r.name; loadHome(); } else show("s-signin"); })
+  api("/api/whoami").then((r) => { if (r.home && RELAY) store.set(homeKey(), r.home); if (r.name){ state.token = "google"; state.name = r.name; loadHome().then(() => { flushRelayLog(); sendPendingLesson(); }); } else show("s-signin"); })
     .catch((e) => { show("s-signin"); $("signin-err").textContent = e.message; });
 }
 if (GAS){
@@ -3127,14 +3246,22 @@ if (GAS){
     $("launch-btn").textContent = "Open it again";
   };
   $("launch-here").onclick = googleBoot;
+  // Opened by Reconnect on a voice page whose Apps Script tab was gone: connect straight back to it. If the browser
+  // doesn't let us reach it, the rep taps Open Sales Coach and the new voice tab saves the waiting lesson.
+  try { const o = window.top.opener; if (o) o.postMessage({ t: "sc-hello", ack: true, v: APP_VERSION }, VOICE_ORIGIN); } catch {}
+  // Measure how often the browser throws this tab away in the background (it reloads when the rep comes back to it).
+  let discarded = false; try { discarded = !!(document.wasDiscarded || window.top.document.wasDiscarded); } catch { discarded = !!document.wasDiscarded; }
+  if (discarded) google.script.run.api("/api/clientlog", { msg: "apps script tab was discarded by the browser and reloaded", ua: navigator.userAgent, v: APP_VERSION });
 } else if (RELAY){
   $("code").closest(".field").hidden = true;
-  if (!window.opener){ show("s-signin"); $("signin-err").textContent = "Open Sales Coach from your My Yield link."; $("name").closest(".field").hidden = true; $("signin-btn").hidden = true; }
+  // Refreshed, or opened without its Sales Coach tab: one button that opens the Sales Coach link, no error text.
+  if (!window.opener || window.opener.closed) showOpenHome();
   else {
     // Say hello until the Apps Script tab answers, then sign in through it.
     let tries = 0;
-    const knock = () => { if (relayPeer) return googleBoot(); if (++tries > 40){ show("s-signin"); $("signin-err").textContent = "Couldn't connect to the Sales Coach tab. Open your Sales Coach link again."; return; }
-      window.opener.postMessage({ t: "sc-ready" }, "*"); setTimeout(knock, 250); };
+    const knock = () => { if (relayPeer) return googleBoot(); if (++tries > 40) return showOpenHome();
+      try { window.opener.postMessage({ t: "sc-ready" }, "*"); } catch { return showOpenHome(); }
+      setTimeout(knock, 250); };
     knock();
   }
 } else if (state.token) loadHome().catch(()=>show("s-signin")); else show("s-signin");
