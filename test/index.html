@@ -712,6 +712,12 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .hs-video{margin-top:10px;border-radius:12px;overflow:hidden;background:#0b1030;min-height:120px;position:relative}
 .hs-video video{display:block;width:100%;height:auto;background:#0b1030}
 .hs-vload{color:#fff;padding:40px 16px;text-align:center;font-weight:600}
+/* While a video downloads: its first frame, dimmed, with a progress bar (Nov 10 2026) */
+.hs-vload.still{aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;background-size:cover;background-position:center;box-shadow:inset 0 0 0 2000px rgba(11,16,48,.55);text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.hs-video.phone .hs-vload.still{aspect-ratio:9/16}
+.hs-vload.still #hs-vtxt{background:rgba(11,16,48,.85);padding:8px 14px;border-radius:99px}
+.hs-vbar{width:min(260px,70%);height:8px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;margin:12px auto 0}
+.hs-vbar i{display:block;height:100%;width:0;background:#ffe14d;border-radius:99px;transition:width .3s}
 .hs-task ol{margin:10px 0 0;padding-left:22px;line-height:1.5}
 .hs-task li{margin:6px 0}
 #s-lesson.hs-wide .wrap{max-width:1180px}
@@ -1182,7 +1188,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "ve7a1e70697"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v055fd1b5fa"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1674,6 +1680,7 @@ async function loadHome(){
     state.me = me.stats; state.board = me.leaderboard; state.high = me.highScores || {}; state.path = path;
     renderChips(); renderToday(); renderPath(); renderPractice(opts); renderBoard(); renderRailBoard(); renderSideUnits(); renderMe(); placeToday();
     offerPendingCall();
+    setTimeout(hsPrefetch, 1500);
   } catch (e) {
     if (/Tell us your name/.test(e.message)) return; // the sign-in screen is already showing
     $("home-err-msg").textContent = e.message;
@@ -2180,7 +2187,9 @@ function saveProgress(){
   store.set(progressKey(L.lesson.id), JSON.stringify({ i: L.i, results: L.results, answers: L.answers, device: L.device || null, at: Date.now() }));
 }
 async function openLesson(id, opts = {}){
-  try { const base = await api("/api/path?lesson=" + encodeURIComponent(id));
+  try { const early = hsNodeHasSpots(hsPathNode(id)) ? hsMediaFetch(id).catch(() => null) : null;
+    const base = await api("/api/path?lesson=" + encodeURIComponent(id));
+    if (early) await early;
     await hsLoadMedia(base);
     const device = base.phoneExercises ? hsDevice() : null, lesson = hsView(base, device);
     L = { lesson, base, device, i:0, results:[], answers:[], practice: !!opts.practice, combo: 0, review: false, reviewTotal: 0, reviewDone: 0 };
@@ -2339,10 +2348,41 @@ function hsWireDevice(){
     renderExercise();
   };
 }
+// Pictures for a HubSpot lesson. One download per lesson per page load, shared by the prefetch and the lesson itself
+// (Nov 10 2026, Sarah: lessons slow to open). A failed prefetch isn't remembered, so opening the lesson tries again.
+const HS_MEDIA_P = {};
+function hsMediaFetch(id, quiet){
+  if (HS_MEDIA[id]) return Promise.resolve(HS_MEDIA[id]);
+  if (!HS_MEDIA_P[id]) HS_MEDIA_P[id] = (quiet ? apiRaw : api)("/api/hs-media?lesson=" + encodeURIComponent(id))
+    .then((r) => (HS_MEDIA[id] = r.images || {}))
+    .finally(() => { delete HS_MEDIA_P[id]; });
+  return HS_MEDIA_P[id];
+}
+const hsHasSpots = (lesson) => lesson.exercises.concat(lesson.phoneExercises || []).some((e) => e.type === "spot");
 async function hsLoadMedia(lesson){
-  if (!lesson.exercises.concat(lesson.phoneExercises || []).some((e) => e.type === "spot") || HS_MEDIA[lesson.id]) return;
-  try { HS_MEDIA[lesson.id] = (await api("/api/hs-media?lesson=" + encodeURIComponent(lesson.id))).images || {}; }
-  catch (e) { HS_MEDIA[lesson.id] = {}; }
+  if (!hsHasSpots(lesson) || HS_MEDIA[lesson.id]) return;
+  try { await hsMediaFetch(lesson.id); } catch (e) { HS_MEDIA[lesson.id] = {}; }
+}
+// The path already knows each lesson's step types: a lesson with click-through steps can start its picture download
+// at the same time as the lesson itself, instead of after it.
+function hsPathNode(id){
+  for (const u of (state.path && state.path.units) || []) for (const l of u.lessons || []) if (l.id === id) return l;
+  return null;
+}
+const hsNodeHasSpots = (n) => !!(n && (n.questions || []).some((q) => q.type === "spot"));
+// After the home screen loads: quietly fetch the pictures (and, on a computer, the video) of the rep's next HubSpot lesson,
+// so tapping it opens right away. Phones skip the video so nobody burns cell data on a lesson they don't open.
+function hsPrefetch(){
+  try {
+    const u = ((state.path && state.path.units) || []).find((x) => x.id === "hubspot"); if (!u) return;
+    const next = (u.lessons || []).find((l) => l.state === "current"); if (!next) return;
+    if (hsNodeHasSpots(next)) hsMediaFetch(next.id, true).catch(() => {});
+    const conn = navigator.connection || {};
+    if (innerWidth >= 700 && !conn.saveData) {
+      const vid = ((next.questions || []).find((q) => q.video) || {}).video;
+      if (vid && !HS_VIDEO[vid]) hsVideoUrl(vid, true).catch(() => {});
+    }
+  } catch {}
 }
 const hsPct = (v, of) => (v / of * 100) + "%";
 const hsW = (ex) => ex.w || HS_W, hsH = (ex) => ex.h || HS_H;
@@ -2356,39 +2396,82 @@ function hsRing(h, ex){ if (!$("hs-stage").querySelector(".hs-ring")) $("hs-stag
 function hsNext(){ L.checked = true; $("check-btn").onclick(); }
 function hsStep(){ const n = L.lesson.exercises.length; return `Step ${L.i + 1} of ${n}`; }
 
+// A video's playable address: this page's copy, else this device's saved copy (same Drive version), else a download.
+// The download comes in pieces (a few at a time) so the lesson can show real progress and the still picture first
+// (Nov 10 2026, Sarah: videos took too long). onInfo(poster base64 | null) and onProgress(0..1) are optional.
+const HS_VIDEO_P = {}, HS_VIDEO_WATCH = {};
+const b64bytes = (s) => { const bin = atob(s), out = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) out[k] = bin.charCodeAt(k); return out; };
+function hsVideoUrl(name, quiet, onInfo, onProgress){
+  if (HS_VIDEO[name]) return Promise.resolve(HS_VIDEO[name]);
+  // Someone already started this one (the prefetch): listen in on its progress.
+  const w = (HS_VIDEO_WATCH[name] = HS_VIDEO_WATCH[name] || { info: [], prog: [], poster: undefined, pct: 0 });
+  if (onInfo) { w.info.push(onInfo); if (w.poster !== undefined) onInfo(w.poster); }
+  if (onProgress) { w.prog.push(onProgress); if (w.pct) onProgress(w.pct); }
+  if (HS_VIDEO_P[name]) return HS_VIDEO_P[name];
+  const call = quiet ? apiRaw : api, base = "/api/hs-media?video=" + encodeURIComponent(name);
+  const tell = (pct) => { w.pct = pct; w.prog.forEach((f) => { try { f(pct); } catch {} }); };
+  return (HS_VIDEO_P[name] = (async () => {
+    const kept = await vidGet(name);
+    const r = await call(base + "&info=1" + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
+    let blob;
+    if (r.same && kept) blob = kept.blob;
+    else if (r.video) blob = new Blob([b64bytes(r.video)], { type: "video/mp4" }); // an older server: the whole file came back
+    else {
+      w.poster = r.poster || null; w.info.forEach((f) => { try { f(w.poster); } catch {} });
+      const n = Math.ceil(r.size / r.part), parts = new Array(n); let got = 0, next = 0;
+      tell(0.02);
+      const worker = async () => {
+        while (next < n) {
+          const i = next++;
+          let p; for (let tryN = 0; ; tryN++) { try { p = await apiRaw(base + "&part=" + i + "&v=" + encodeURIComponent(r.updated)); break; } catch (e) { if (tryN >= 1) throw e; } }
+          parts[i] = b64bytes(p.data); got += parts[i].length; tell(Math.max(0.02, got / r.size));
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(3, n) }, worker));
+      blob = new Blob(parts, { type: "video/mp4" });
+      if (r.updated) vidPut(name, { updated: r.updated, blob });
+    }
+    return (HS_VIDEO[name] = URL.createObjectURL(blob));
+  })().finally(() => { delete HS_VIDEO_P[name]; delete HS_VIDEO_WATCH[name]; }));
+}
+// While the rep watches one lesson's video, quietly fetch the next HubSpot lesson's video (computers, or phones on
+// Wi-Fi, never with Data Saver on), so the next lesson starts right away.
+function hsPrefetchAfter(id){
+  try {
+    const conn = navigator.connection || {};
+    if (conn.saveData || (innerWidth < 700 && conn.type !== "wifi")) return;
+    const u = ((state.path && state.path.units) || []).find((x) => x.id === "hubspot"); if (!u) return;
+    const ls = u.lessons || [], at = ls.findIndex((l) => l.id === id), next = at >= 0 ? ls[at + 1] : null; if (!next) return;
+    const vid = ((next.questions || []).find((q) => q.video) || {}).video;
+    if (vid && !HS_VIDEO[vid]) hsVideoUrl(vid, true).catch(() => {});
+  } catch {}
+}
 function renderHsWatch(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Watch first</span>${esc(ex.prompt)}</div></div>
-    <div class="hs-video${/^p[0-9]/.test(ex.video || "") ? " phone" : ""}"><div class="hs-vload" id="hs-vload">Loading the video…</div><video id="hs-vid" controls playsinline preload="auto" hidden></video></div>
+    <div class="hs-video${/^p[0-9]/.test(ex.video || "") ? " phone" : ""}"><div class="hs-vload" id="hs-vload"><span id="hs-vtxt">Loading the video…</span><div class="hs-vbar"><i id="hs-vbar"></i></div></div><video id="hs-vid" controls playsinline preload="auto" hidden></video></div>
     ${ex.why ? `<p class="sub" style="margin-top:10px">${esc(ex.why)}</p>` : ""}
     <button class="teachskip" id="hs-skip" type="button">Skip the video</button>`;
   setCheck("Watch to the end", false);
   L.hsWatched = false;
   $("hs-skip").onclick = () => { if (L.checked) return; record(false, { skipped: true }); hsNext(); };
-  const at = L.i;
+  const at = L.i, lessonId = L.lesson.id;
+  const onInfo = (poster) => { if (L.i !== at || !poster || !$("hs-vload")) return; $("hs-vload").classList.add("still"); $("hs-vload").style.backgroundImage = `url(data:image/jpeg;base64,${poster})`; };
+  const onProgress = (pct) => { if (L.i !== at || !$("hs-vbar")) return; $("hs-vbar").style.width = Math.round(pct * 100) + "%"; $("hs-vtxt").textContent = "Loading the video… " + Math.round(pct * 100) + "%"; };
   const play = (url) => {
     if (L.i !== at || !$("hs-vid")) return;
     const v = $("hs-vid"); v.src = url; v.hidden = false; $("hs-vload").remove();
+    // Start on its own (Sarah, Nov 10 2026). The tap that opened the lesson usually lets the browser play with sound;
+    // if it says no (some phones), the play button is right there, same as before.
+    try { const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {}
+    v.addEventListener("playing", () => hsPrefetchAfter(lessonId), { once: true });
     const ok = () => { if (L.hsWatched) return; L.hsWatched = true; setCheck("I watched it", true); };
     v.addEventListener("ended", ok);
     v.addEventListener("timeupdate", () => { if (v.duration && v.currentTime / v.duration >= 0.9) ok(); });
   };
   if (HS_VIDEO[ex.video]) return play(HS_VIDEO[ex.video]);
-  (async () => {
-    // A video this device already has (same name, same Drive copy) skips the download.
-    const kept = await vidGet(ex.video);
-    const r = await api("/api/hs-media?video=" + encodeURIComponent(ex.video) + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
-    let blob;
-    if (r.same && kept) blob = kept.blob;
-    else {
-      const bin = atob(r.video), bytes = new Uint8Array(bin.length);
-      for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
-      blob = new Blob([bytes], { type: "video/mp4" });
-      if (r.updated) vidPut(ex.video, { updated: r.updated, blob });
-    }
-    HS_VIDEO[ex.video] = URL.createObjectURL(blob);
-    play(HS_VIDEO[ex.video]);
-  })().catch((e) => {
+  hsVideoUrl(ex.video, false, onInfo, onProgress).then(play).catch((e) => {
     if (L.i !== at || !$("hs-vload")) return;
+    $("hs-vload").classList.remove("still"); $("hs-vload").style.backgroundImage = "";
     $("hs-vload").textContent = "The video didn't load. " + e.message;
     L.hsWatched = true; setCheck("Continue without it", true); // not the rep's fault: it still counts
   });
@@ -2439,6 +2522,9 @@ function renderHsSpot(box, ex){
 function checkHsSpot(ex){
   if (!ex.want){ record(true, {}); return hsNext(); }
   const v = ($("hs-type").value || "").trim().replace(/\s+/g, " ");
+  // An empty box isn't a wrong answer: the rep just hasn't typed yet (Sarah, Nov 10 2026: Check on an empty box
+  // counted as a miss and cost the step).
+  if (!v){ $("hs-hint").textContent = "Click inside the yellow box and type first, then tap Check."; $("hs-type").focus(); return; }
   if (L.tries.length < 10) L.tries.push(v.slice(0, 200));
   const ok = ex.want === "*" ? v.length >= 8 : v.toLowerCase() === ex.want.toLowerCase();
   if (!ok){
@@ -2453,6 +2539,8 @@ function checkHsSpot(ex){
 
 function renderHsTask(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Do it for real</span>${esc(ex.prompt)}</div></div>
+    ${ex.video ? `<div style="position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0b1530;margin-top:12px"><iframe src="${esc(ex.video)}" title="Video: ${esc(ex.prompt)}" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>
+    <p style="margin-top:8px"><button class="btn btn-ghost" id="hs-vlink" type="button">Video not showing? Open it in a new tab</button></p>` : ""}
     <div class="teach hs-task"><ol>${(ex.steps || []).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>
     ${ex.link ? `<p style="margin-top:12px"><button class="btn btn-ghost" id="hs-link" type="button">${esc(ex.linkLabel || "Open the Chrome Web Store")}</button></p>` : ""}
     ${ex.guide ? `<p style="margin-top:10px"><button class="btn btn-ghost" id="hs-guide" type="button">See every click (step-by-step guide)</button></p>` : ""}</div>
@@ -2460,6 +2548,8 @@ function renderHsTask(box, ex){
     <div class="hint" id="hs-hint"></div>
     <button class="teachskip" id="hs-skip" type="button" hidden>Skip for now</button>`;
   if (ex.link) $("hs-link").onclick = () => window.open(ex.link, "_blank", "noopener");
+  // Sarah's Scribe walkthrough plays right in the step (Nov 10 2026); the button is the fallback if the frame is blocked.
+  if (ex.video) $("hs-vlink").onclick = () => window.open(ex.video, "_blank", "noopener");
   if (ex.guide) $("hs-guide").onclick = () => window.open(ex.guide, "_blank", "noopener");
   L.taskTries = 0;
   $("hs-skip").onclick = () => { if (L.checked) return; record(false, { check: "skipped" }); hsNext(); };
@@ -2480,7 +2570,7 @@ async function checkHsTask(ex){
     return feedback(true, "Your phone app works!", `<p>${r.found ? "We found your App installed task in HubSpot. Go ahead and mark it done in the app." : "Nice. Keep the app handy for your next farm visit."}</p>`);
   }
   L.checked = true; record(true, { check: "rep's word" });
-  if (ex.check === "self") return feedback(true, "Done!", "<p>Nice. That's one less thing to type later.</p>");
+  if (ex.check === "self") return feedback(true, "Done!", `<p>${esc(ex.done || "Nice. That's one less thing to type later.")}</p>`);
   feedback(true, "You're set up!", "<p>Look for the orange HubSpot icon at the top right of Chrome. Click it any time to see the grower you're emailing.</p>");
 }
 
