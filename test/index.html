@@ -1188,7 +1188,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v44813e3f70"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v4450be24be"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2949,7 +2949,7 @@ async function startCall(){
   state.callT0 = Date.now(); tick(); clearInterval(state.timer); state.timer = setInterval(tick, 1000);
   show("s-call"); caption(""); setStatus("Calling…");
   // Which voice the call used, saved with the graded call so voice problems can be traced later.
-  state.voice = "standard"; state.reconnects = 0; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
+  state.voice = "standard"; state.reconnects = 0; state.stalledAt = 0; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
   if (liveAvailable()){
     try { await startLive(); state.voice = "live"; return; }
     catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); state.dropReason = ("live did not start: " + e.message).slice(0, 120);
@@ -2966,6 +2966,8 @@ async function startCall(){
 // The server hands out a one-time pass with his instructions locked in; the turn-by-turn call is the fallback.
 const LIVE_WS = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=";
 const LIVE_WORKLET = `class Cap extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}}registerProcessor("sc-cap",Cap);`;
+const LIVE_SPEECH_RMS = 0.03; // loudness that counts as the rep talking, for the freeze watchdog
+const LIVE_STALL_MS = 9000; // rep talked, then this long with no words or voice back: the line froze
 const LIVE_ECHO_GATE = 0.05; // loudness (0-1) the rep must beat to talk over the farmer
 const live = { on: false, ws: null, ctx: null, stream: null, node: null, nextT: 0, sources: [], muted: false, buf: [], ui: null, farmerOpen: false };
 const liveWanted = () => store.get("sc_live") !== "off";
@@ -3025,6 +3027,8 @@ function liveMic(frame){
   const playing = live.nextT > live.ctx.currentTime - 0.35;
   const rms = Math.sqrt(live.buf.reduce((n, v) => n + v * v, 0) / live.buf.length);
   const chunk = live.buf; live.buf = [];
+  // Freeze watchdog: about 1.5 s of clear talking (not over his voice) with nothing back from Gemini.
+  if (!playing && rms > LIVE_SPEECH_RMS && ++live.loud >= 15) live.repSpokeAt = Date.now();
   // Noise guard: while he's talking, a short burst (a cough, a door, a dog) shouldn't cut him off. Loud audio is
   // held back until it lasts about 0.3 seconds, which real talking does, then sent all at once so no words are lost.
   if (!playing){ liveFlushHeld(); return liveSendPcm(chunk); }
@@ -3062,7 +3066,7 @@ function stopLive(){
 function liveFallback(why){
   if (state.ended) return;
   liveLog("dropped: " + why);
-  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120);
+  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120); state.stalledAt = Date.now();
   try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
   stopLive();
   toast("Live voice dropped, so the call continues with standard voice. Keep going.");
@@ -3115,7 +3119,7 @@ function liveConnect(pass, reconnect){
       // Gemini is about to end this connection (its time limit): move to a fresh one now, on the same conversation.
       if (m.goAway){ liveLog("goAway " + JSON.stringify(m.goAway).slice(0, 80)); liveReconnect("time limit (goAway)"); return; }
       if (m.setupComplete){
-        ready = true; live.on = true; resolve();
+        ready = true; live.on = true; live.heardAt = Date.now(); live.loud = 0; live.repSpokeAt = 0; resolve();
         if (!reconnect){
           ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
           // If he hasn't picked up in 6 seconds and the rep hasn't spoken, ring once more.
@@ -3125,6 +3129,8 @@ function liveConnect(pass, reconnect){
         return;
       }
       const sc = m.serverContent; if (!sc) return;
+      // Any words or voice back from Gemini means the line is alive (the freeze watchdog below counts from here).
+      if ((sc.inputTranscription && sc.inputTranscription.text) || (sc.outputTranscription && sc.outputTranscription.text) || sc.modelTurn || sc.turnComplete){ live.heardAt = Date.now(); live.loud = 0; }
       if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
       if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
       if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
@@ -3143,7 +3149,7 @@ async function liveReconnect(why){
   const old = live.ws; live.ws = null;
   if (old){ old.onopen = old.onmessage = old.onerror = old.onclose = null; try { old.close(); } catch {} }
   liveStopPlayback(); try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
-  live.drops = (live.drops || 0) + 1; state.dropReason = String(why).slice(0, 120);
+  live.drops = (live.drops || 0) + 1; state.dropReason = String(why).slice(0, 120); state.stalledAt = Date.now();
   liveLog("dropped: " + why + " (reconnecting)");
   phase("ready"); setStatus("Reconnecting…", "you");
   let lastErr = "";
@@ -3201,6 +3207,14 @@ async function startLive(){
     const talking = live.nextT > live.ctx.currentTime + 0.05;
     if (talking && state.phase !== "farmer"){ phase("farmer"); setStatus(first() + " is talking"); }
     if (!talking && state.phase === "farmer"){ phase("you"); $("done-talk").hidden = true; setStatus(live.muted ? "You're muted." : "Your turn. Just talk.", live.muted ? "muted" : "you"); }
+    // The line can freeze without closing (Charlie, Nov 11 2026: he talked, the farmer never answered and nothing
+    // was heard). If the rep talked and nothing at all came back for 9 seconds, reconnect on the same conversation.
+    if (!talking && !live.muted && !live.reconnecting && live.repSpokeAt && live.repSpokeAt > (live.heardAt || 0) && Date.now() - live.repSpokeAt > LIVE_STALL_MS){
+      live.repSpokeAt = 0; live.loud = 0; state.stalledAt = Date.now();
+      liveLog("froze: no reply " + Math.round(LIVE_STALL_MS / 1000) + "s after the rep talked");
+      toast("The line froze, so it's reconnecting. Say your last part again.");
+      liveReconnect("froze (no reply)");
+    }
   }, 150);
   phase("you"); $("done-talk").hidden = true; setStatus("Connected. He's picking up…", "you");
 }
@@ -3227,6 +3241,7 @@ $("end-yes").onclick = async () => {
   $("end-sheet").hidden = true;
   if (state.ended) return;
   const pending = heardText(); stopListening(false);
+  const cut = !pending && cutOffEnd(); // before stopLive, which clears the reconnecting flag
   state.ended = true; stopSpeaking(); clearInterval(state.timer);
   if (live.ctx || live.ws) stopLive();
   state.transcript = state.transcript.filter((m) => m.text && m.text.trim()).map((m) => ({ role: m.role, text: m.text.trim() }));
@@ -3235,13 +3250,20 @@ $("end-yes").onclick = async () => {
   $("grading-art").innerHTML = Art.mascot("think", 110); $("grading").hidden = false;
   state.saveId = state.saveId || newId();
   const job = { rollToken: state.rollToken, transcript: state.transcript, startedAt: state.startedAt, checkpoint: state.checkpoint, saveId: state.saveId,
-    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: state.voice || null, dropReason: state.dropReason || null, reconnects: state.reconnects || 0, at: Date.now() };
+    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: state.voice || null, dropReason: state.dropReason || null, reconnects: state.reconnects || 0, cutOff: cut, at: Date.now() };
   store.set("sc_pending_call", JSON.stringify(job));
   try { renderResults(await api("/api/grade", gradeBody(job))); store.del("sc_pending_call"); }
   catch (e) { state.ended = false; state.timer = setInterval(tick, 1000); setStatus(e.message, "err"); phase("idle"); toast(e.message); }
   finally { $("grading").hidden = true; }
 };
-const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects });
+const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects, cutOff: !!j.cutOff });
+// The call ended on the farmer's words right after the line froze or dropped (in the last 90 seconds, or while it was
+// still reconnecting): the rep never got to answer, so the grader is told not to mark him down for the missing end.
+function cutOffEnd(){
+  const last = state.transcript[state.transcript.length - 1];
+  if (!last || last.role !== "farmer") return false;
+  return !!(live.reconnecting || (state.stalledAt && Date.now() - state.stalledAt < 90000));
+}
 function newId(){ try { return crypto.randomUUID(); } catch { return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12); } }
 // A call that ended but never got graded (app closed, connection dropped) stays on the phone and can be graded later.
 function pendingCall(){ try { const j = JSON.parse(store.get("sc_pending_call") || "null"); return j && j.rollToken && Array.isArray(j.transcript) && Date.now() - j.at < 3 * 864e5 ? j : null; } catch { return null; } }
