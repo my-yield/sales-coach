@@ -1182,7 +1182,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "ve7a1e70697"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v5071a37997"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1674,6 +1674,7 @@ async function loadHome(){
     state.me = me.stats; state.board = me.leaderboard; state.high = me.highScores || {}; state.path = path;
     renderChips(); renderToday(); renderPath(); renderPractice(opts); renderBoard(); renderRailBoard(); renderSideUnits(); renderMe(); placeToday();
     offerPendingCall();
+    setTimeout(hsPrefetch, 1500);
   } catch (e) {
     if (/Tell us your name/.test(e.message)) return; // the sign-in screen is already showing
     $("home-err-msg").textContent = e.message;
@@ -2180,7 +2181,9 @@ function saveProgress(){
   store.set(progressKey(L.lesson.id), JSON.stringify({ i: L.i, results: L.results, answers: L.answers, device: L.device || null, at: Date.now() }));
 }
 async function openLesson(id, opts = {}){
-  try { const base = await api("/api/path?lesson=" + encodeURIComponent(id));
+  try { const early = hsNodeHasSpots(hsPathNode(id)) ? hsMediaFetch(id).catch(() => null) : null;
+    const base = await api("/api/path?lesson=" + encodeURIComponent(id));
+    if (early) await early;
     await hsLoadMedia(base);
     const device = base.phoneExercises ? hsDevice() : null, lesson = hsView(base, device);
     L = { lesson, base, device, i:0, results:[], answers:[], practice: !!opts.practice, combo: 0, review: false, reviewTotal: 0, reviewDone: 0 };
@@ -2339,10 +2342,41 @@ function hsWireDevice(){
     renderExercise();
   };
 }
+// Pictures for a HubSpot lesson. One download per lesson per page load, shared by the prefetch and the lesson itself
+// (Nov 10 2026, Sarah: lessons slow to open). A failed prefetch isn't remembered, so opening the lesson tries again.
+const HS_MEDIA_P = {};
+function hsMediaFetch(id, quiet){
+  if (HS_MEDIA[id]) return Promise.resolve(HS_MEDIA[id]);
+  if (!HS_MEDIA_P[id]) HS_MEDIA_P[id] = (quiet ? apiRaw : api)("/api/hs-media?lesson=" + encodeURIComponent(id))
+    .then((r) => (HS_MEDIA[id] = r.images || {}))
+    .finally(() => { delete HS_MEDIA_P[id]; });
+  return HS_MEDIA_P[id];
+}
+const hsHasSpots = (lesson) => lesson.exercises.concat(lesson.phoneExercises || []).some((e) => e.type === "spot");
 async function hsLoadMedia(lesson){
-  if (!lesson.exercises.concat(lesson.phoneExercises || []).some((e) => e.type === "spot") || HS_MEDIA[lesson.id]) return;
-  try { HS_MEDIA[lesson.id] = (await api("/api/hs-media?lesson=" + encodeURIComponent(lesson.id))).images || {}; }
-  catch (e) { HS_MEDIA[lesson.id] = {}; }
+  if (!hsHasSpots(lesson) || HS_MEDIA[lesson.id]) return;
+  try { await hsMediaFetch(lesson.id); } catch (e) { HS_MEDIA[lesson.id] = {}; }
+}
+// The path already knows each lesson's step types: a lesson with click-through steps can start its picture download
+// at the same time as the lesson itself, instead of after it.
+function hsPathNode(id){
+  for (const u of (state.path && state.path.units) || []) for (const l of u.lessons || []) if (l.id === id) return l;
+  return null;
+}
+const hsNodeHasSpots = (n) => !!(n && (n.questions || []).some((q) => q.type === "spot"));
+// After the home screen loads: quietly fetch the pictures (and, on a computer, the video) of the rep's next HubSpot lesson,
+// so tapping it opens right away. Phones skip the video so nobody burns cell data on a lesson they don't open.
+function hsPrefetch(){
+  try {
+    const u = ((state.path && state.path.units) || []).find((x) => x.id === "hubspot"); if (!u) return;
+    const next = (u.lessons || []).find((l) => l.state === "current"); if (!next) return;
+    if (hsNodeHasSpots(next)) hsMediaFetch(next.id, true).catch(() => {});
+    const conn = navigator.connection || {};
+    if (innerWidth >= 700 && !conn.saveData) {
+      const vid = ((next.questions || []).find((q) => q.video) || {}).video;
+      if (vid && !HS_VIDEO[vid]) hsVideoUrl(vid, true).catch(() => {});
+    }
+  } catch {}
 }
 const hsPct = (v, of) => (v / of * 100) + "%";
 const hsW = (ex) => ex.w || HS_W, hsH = (ex) => ex.h || HS_H;
@@ -2356,6 +2390,25 @@ function hsRing(h, ex){ if (!$("hs-stage").querySelector(".hs-ring")) $("hs-stag
 function hsNext(){ L.checked = true; $("check-btn").onclick(); }
 function hsStep(){ const n = L.lesson.exercises.length; return `Step ${L.i + 1} of ${n}`; }
 
+// A video's playable address: this page's copy, else this device's saved copy (same Drive version), else a download.
+const HS_VIDEO_P = {};
+function hsVideoUrl(name, quiet){
+  if (HS_VIDEO[name]) return Promise.resolve(HS_VIDEO[name]);
+  if (HS_VIDEO_P[name]) return HS_VIDEO_P[name];
+  return (HS_VIDEO_P[name] = (async () => {
+    const kept = await vidGet(name);
+    const r = await (quiet ? apiRaw : api)("/api/hs-media?video=" + encodeURIComponent(name) + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
+    let blob;
+    if (r.same && kept) blob = kept.blob;
+    else {
+      const bin = atob(r.video), bytes = new Uint8Array(bin.length);
+      for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+      blob = new Blob([bytes], { type: "video/mp4" });
+      if (r.updated) vidPut(name, { updated: r.updated, blob });
+    }
+    return (HS_VIDEO[name] = URL.createObjectURL(blob));
+  })().finally(() => { delete HS_VIDEO_P[name]; }));
+}
 function renderHsWatch(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Watch first</span>${esc(ex.prompt)}</div></div>
     <div class="hs-video${/^p[0-9]/.test(ex.video || "") ? " phone" : ""}"><div class="hs-vload" id="hs-vload">Loading the video…</div><video id="hs-vid" controls playsinline preload="auto" hidden></video></div>
@@ -2368,26 +2421,15 @@ function renderHsWatch(box, ex){
   const play = (url) => {
     if (L.i !== at || !$("hs-vid")) return;
     const v = $("hs-vid"); v.src = url; v.hidden = false; $("hs-vload").remove();
+    // Start on its own (Sarah, Nov 10 2026). The tap that opened the lesson usually lets the browser play with sound;
+    // if it says no (some phones), the play button is right there, same as before.
+    try { const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {}
     const ok = () => { if (L.hsWatched) return; L.hsWatched = true; setCheck("I watched it", true); };
     v.addEventListener("ended", ok);
     v.addEventListener("timeupdate", () => { if (v.duration && v.currentTime / v.duration >= 0.9) ok(); });
   };
   if (HS_VIDEO[ex.video]) return play(HS_VIDEO[ex.video]);
-  (async () => {
-    // A video this device already has (same name, same Drive copy) skips the download.
-    const kept = await vidGet(ex.video);
-    const r = await api("/api/hs-media?video=" + encodeURIComponent(ex.video) + (kept && kept.updated ? "&have=" + encodeURIComponent(kept.updated) : ""));
-    let blob;
-    if (r.same && kept) blob = kept.blob;
-    else {
-      const bin = atob(r.video), bytes = new Uint8Array(bin.length);
-      for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
-      blob = new Blob([bytes], { type: "video/mp4" });
-      if (r.updated) vidPut(ex.video, { updated: r.updated, blob });
-    }
-    HS_VIDEO[ex.video] = URL.createObjectURL(blob);
-    play(HS_VIDEO[ex.video]);
-  })().catch((e) => {
+  hsVideoUrl(ex.video).then(play).catch((e) => {
     if (L.i !== at || !$("hs-vload")) return;
     $("hs-vload").textContent = "The video didn't load. " + e.message;
     L.hsWatched = true; setCheck("Continue without it", true); // not the rep's fault: it still counts
@@ -2439,6 +2481,9 @@ function renderHsSpot(box, ex){
 function checkHsSpot(ex){
   if (!ex.want){ record(true, {}); return hsNext(); }
   const v = ($("hs-type").value || "").trim().replace(/\s+/g, " ");
+  // An empty box isn't a wrong answer: the rep just hasn't typed yet (Sarah, Nov 10 2026: Check on an empty box
+  // counted as a miss and cost the step).
+  if (!v){ $("hs-hint").textContent = "Click inside the yellow box and type first, then tap Check."; $("hs-type").focus(); return; }
   if (L.tries.length < 10) L.tries.push(v.slice(0, 200));
   const ok = ex.want === "*" ? v.length >= 8 : v.toLowerCase() === ex.want.toLowerCase();
   if (!ok){
@@ -2453,6 +2498,8 @@ function checkHsSpot(ex){
 
 function renderHsTask(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Do it for real</span>${esc(ex.prompt)}</div></div>
+    ${ex.video ? `<div style="position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0b1530;margin-top:12px"><iframe src="${esc(ex.video)}" title="Video: ${esc(ex.prompt)}" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>
+    <p style="margin-top:8px"><button class="btn btn-ghost" id="hs-vlink" type="button">Video not showing? Open it in a new tab</button></p>` : ""}
     <div class="teach hs-task"><ol>${(ex.steps || []).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>
     ${ex.link ? `<p style="margin-top:12px"><button class="btn btn-ghost" id="hs-link" type="button">${esc(ex.linkLabel || "Open the Chrome Web Store")}</button></p>` : ""}
     ${ex.guide ? `<p style="margin-top:10px"><button class="btn btn-ghost" id="hs-guide" type="button">See every click (step-by-step guide)</button></p>` : ""}</div>
@@ -2460,6 +2507,8 @@ function renderHsTask(box, ex){
     <div class="hint" id="hs-hint"></div>
     <button class="teachskip" id="hs-skip" type="button" hidden>Skip for now</button>`;
   if (ex.link) $("hs-link").onclick = () => window.open(ex.link, "_blank", "noopener");
+  // Sarah's Scribe walkthrough plays right in the step (Nov 10 2026); the button is the fallback if the frame is blocked.
+  if (ex.video) $("hs-vlink").onclick = () => window.open(ex.video, "_blank", "noopener");
   if (ex.guide) $("hs-guide").onclick = () => window.open(ex.guide, "_blank", "noopener");
   L.taskTries = 0;
   $("hs-skip").onclick = () => { if (L.checked) return; record(false, { check: "skipped" }); hsNext(); };
@@ -2480,7 +2529,7 @@ async function checkHsTask(ex){
     return feedback(true, "Your phone app works!", `<p>${r.found ? "We found your App installed task in HubSpot. Go ahead and mark it done in the app." : "Nice. Keep the app handy for your next farm visit."}</p>`);
   }
   L.checked = true; record(true, { check: "rep's word" });
-  if (ex.check === "self") return feedback(true, "Done!", "<p>Nice. That's one less thing to type later.</p>");
+  if (ex.check === "self") return feedback(true, "Done!", `<p>${esc(ex.done || "Nice. That's one less thing to type later.")}</p>`);
   feedback(true, "You're set up!", "<p>Look for the orange HubSpot icon at the top right of Chrome. Click it any time to see the grower you're emailing.</p>");
 }
 
@@ -2863,7 +2912,7 @@ async function startCall(){
   state.callT0 = Date.now(); tick(); clearInterval(state.timer); state.timer = setInterval(tick, 1000);
   show("s-call"); caption(""); setStatus("Calling…");
   // Which voice the call used, saved with the graded call so voice problems can be traced later.
-  state.voice = "standard"; state.reconnects = 0; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
+  state.voice = "standard"; state.reconnects = 0; state.stalledAt = 0; state.dropReason = liveWanted() && !liveAvailable() ? "live not available here" : null;
   if (liveAvailable()){
     try { await startLive(); state.voice = "live"; return; }
     catch (e) { stopLive(); if (state.ended) return; liveLog("start failed: " + e.message); state.dropReason = ("live did not start: " + e.message).slice(0, 120);
@@ -2880,6 +2929,8 @@ async function startCall(){
 // The server hands out a one-time pass with his instructions locked in; the turn-by-turn call is the fallback.
 const LIVE_WS = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=";
 const LIVE_WORKLET = `class Cap extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}}registerProcessor("sc-cap",Cap);`;
+const LIVE_SPEECH_RMS = 0.03; // loudness that counts as the rep talking, for the freeze watchdog
+const LIVE_STALL_MS = 9000; // rep talked, then this long with no words or voice back: the line froze
 const LIVE_ECHO_GATE = 0.05; // loudness (0-1) the rep must beat to talk over the farmer
 const live = { on: false, ws: null, ctx: null, stream: null, node: null, nextT: 0, sources: [], muted: false, buf: [], ui: null, farmerOpen: false };
 const liveWanted = () => store.get("sc_live") !== "off";
@@ -2939,6 +2990,8 @@ function liveMic(frame){
   const playing = live.nextT > live.ctx.currentTime - 0.35;
   const rms = Math.sqrt(live.buf.reduce((n, v) => n + v * v, 0) / live.buf.length);
   const chunk = live.buf; live.buf = [];
+  // Freeze watchdog: about 1.5 s of clear talking (not over his voice) with nothing back from Gemini.
+  if (!playing && rms > LIVE_SPEECH_RMS && ++live.loud >= 15) live.repSpokeAt = Date.now();
   // Noise guard: while he's talking, a short burst (a cough, a door, a dog) shouldn't cut him off. Loud audio is
   // held back until it lasts about 0.3 seconds, which real talking does, then sent all at once so no words are lost.
   if (!playing){ liveFlushHeld(); return liveSendPcm(chunk); }
@@ -2976,7 +3029,7 @@ function stopLive(){
 function liveFallback(why){
   if (state.ended) return;
   liveLog("dropped: " + why);
-  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120);
+  state.voice = "live-to-standard"; state.dropReason = String(why).slice(0, 120); state.stalledAt = Date.now();
   try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
   stopLive();
   toast("Live voice dropped, so the call continues with standard voice. Keep going.");
@@ -3029,7 +3082,7 @@ function liveConnect(pass, reconnect){
       // Gemini is about to end this connection (its time limit): move to a fresh one now, on the same conversation.
       if (m.goAway){ liveLog("goAway " + JSON.stringify(m.goAway).slice(0, 80)); liveReconnect("time limit (goAway)"); return; }
       if (m.setupComplete){
-        ready = true; live.on = true; resolve();
+        ready = true; live.on = true; live.heardAt = Date.now(); live.loud = 0; live.repSpokeAt = 0; resolve();
         if (!reconnect){
           ws.send(JSON.stringify({ realtimeInput: { text: "[The call connects.]" } }));
           // If he hasn't picked up in 6 seconds and the rep hasn't spoken, ring once more.
@@ -3039,6 +3092,8 @@ function liveConnect(pass, reconnect){
         return;
       }
       const sc = m.serverContent; if (!sc) return;
+      // Any words or voice back from Gemini means the line is alive (the freeze watchdog below counts from here).
+      if ((sc.inputTranscription && sc.inputTranscription.text) || (sc.outputTranscription && sc.outputTranscription.text) || sc.modelTurn || sc.turnComplete){ live.heardAt = Date.now(); live.loud = 0; }
       if (sc.interrupted){ liveStopPlayback(); liveCloseTurn("farmer"); }
       if (sc.inputTranscription && sc.inputTranscription.text){ if (live.farmerOpen){ liveCloseTurn("farmer"); live.farmerOpen = false; } liveAdd("rep", sc.inputTranscription.text); }
       if (sc.outputTranscription && sc.outputTranscription.text){ const last = state.transcript[state.transcript.length - 1]; if (last && last.role === "rep" && !last.closed) liveCloseTurn("rep"); liveAdd("farmer", sc.outputTranscription.text); }
@@ -3057,7 +3112,7 @@ async function liveReconnect(why){
   const old = live.ws; live.ws = null;
   if (old){ old.onopen = old.onmessage = old.onerror = old.onclose = null; try { old.close(); } catch {} }
   liveStopPlayback(); try { liveCloseTurn("farmer"); liveCloseTurn("rep"); } catch {}
-  live.drops = (live.drops || 0) + 1; state.dropReason = String(why).slice(0, 120);
+  live.drops = (live.drops || 0) + 1; state.dropReason = String(why).slice(0, 120); state.stalledAt = Date.now();
   liveLog("dropped: " + why + " (reconnecting)");
   phase("ready"); setStatus("Reconnecting…", "you");
   let lastErr = "";
@@ -3115,6 +3170,14 @@ async function startLive(){
     const talking = live.nextT > live.ctx.currentTime + 0.05;
     if (talking && state.phase !== "farmer"){ phase("farmer"); setStatus(first() + " is talking"); }
     if (!talking && state.phase === "farmer"){ phase("you"); $("done-talk").hidden = true; setStatus(live.muted ? "You're muted." : "Your turn. Just talk.", live.muted ? "muted" : "you"); }
+    // The line can freeze without closing (Charlie, Nov 11 2026: he talked, the farmer never answered and nothing
+    // was heard). If the rep talked and nothing at all came back for 9 seconds, reconnect on the same conversation.
+    if (!talking && !live.muted && !live.reconnecting && live.repSpokeAt && live.repSpokeAt > (live.heardAt || 0) && Date.now() - live.repSpokeAt > LIVE_STALL_MS){
+      live.repSpokeAt = 0; live.loud = 0; state.stalledAt = Date.now();
+      liveLog("froze: no reply " + Math.round(LIVE_STALL_MS / 1000) + "s after the rep talked");
+      toast("The line froze, so it's reconnecting. Say your last part again.");
+      liveReconnect("froze (no reply)");
+    }
   }, 150);
   phase("you"); $("done-talk").hidden = true; setStatus("Connected. He's picking up…", "you");
 }
@@ -3141,6 +3204,7 @@ $("end-yes").onclick = async () => {
   $("end-sheet").hidden = true;
   if (state.ended) return;
   const pending = heardText(); stopListening(false);
+  const cut = !pending && cutOffEnd(); // before stopLive, which clears the reconnecting flag
   state.ended = true; stopSpeaking(); clearInterval(state.timer);
   if (live.ctx || live.ws) stopLive();
   state.transcript = state.transcript.filter((m) => m.text && m.text.trim()).map((m) => ({ role: m.role, text: m.text.trim() }));
@@ -3149,13 +3213,20 @@ $("end-yes").onclick = async () => {
   $("grading-art").innerHTML = Art.mascot("think", 110); $("grading").hidden = false;
   state.saveId = state.saveId || newId();
   const job = { rollToken: state.rollToken, transcript: state.transcript, startedAt: state.startedAt, checkpoint: state.checkpoint, saveId: state.saveId,
-    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: state.voice || null, dropReason: state.dropReason || null, reconnects: state.reconnects || 0, at: Date.now() };
+    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: state.voice || null, dropReason: state.dropReason || null, reconnects: state.reconnects || 0, cutOff: cut, at: Date.now() };
   store.set("sc_pending_call", JSON.stringify(job));
   try { renderResults(await api("/api/grade", gradeBody(job))); store.del("sc_pending_call"); }
   catch (e) { state.ended = false; state.timer = setInterval(tick, 1000); setStatus(e.message, "err"); phase("idle"); toast(e.message); }
   finally { $("grading").hidden = true; }
 };
-const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects });
+const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects, cutOff: !!j.cutOff });
+// The call ended on the farmer's words right after the line froze or dropped (in the last 90 seconds, or while it was
+// still reconnecting): the rep never got to answer, so the grader is told not to mark him down for the missing end.
+function cutOffEnd(){
+  const last = state.transcript[state.transcript.length - 1];
+  if (!last || last.role !== "farmer") return false;
+  return !!(live.reconnecting || (state.stalledAt && Date.now() - state.stalledAt < 90000));
+}
 function newId(){ try { return crypto.randomUUID(); } catch { return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12); } }
 // A call that ended but never got graded (app closed, connection dropped) stays on the phone and can be graded later.
 function pendingCall(){ try { const j = JSON.parse(store.get("sc_pending_call") || "null"); return j && j.rollToken && Array.isArray(j.transcript) && Date.now() - j.at < 3 * 864e5 ? j : null; } catch { return null; } }
