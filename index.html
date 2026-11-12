@@ -1182,7 +1182,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v5071a37997"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vcc0ed3a517"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2994,13 +2994,31 @@ function liveMic(frame){
   if (!playing && rms > LIVE_SPEECH_RMS && ++live.loud >= 15) live.repSpokeAt = Date.now();
   // Noise guard: while he's talking, a short burst (a cough, a door, a dog) shouldn't cut him off. Loud audio is
   // held back until it lasts about 0.3 seconds, which real talking does, then sent all at once so no words are lost.
-  if (!playing){ liveFlushHeld(); return liveSendPcm(chunk); }
-  if (rms < LIVE_ECHO_GATE){ live.held = []; return liveSendPcm(chunk.map(() => 0)); }
+  // Quiet talk over his voice (Seda, Nov 11 2026: a desk mic sits under the echo gate, so her first words were lost):
+  // the last ~1.2 s of quiet audio is kept, not thrown away. It goes out ahead of her words if she talks over him,
+  // or if she's still talking within 0.5 s after he stops. Otherwise it's dropped, so his echo is never sent.
+  // After he stops there's no echo, so any sound above the room's hum (half the talking level) is her.
+  if (!playing){
+    if (live.wasPlaying){ live.wasPlaying = false; live.preUntil = Date.now() + 500; }
+    if (live.pre && live.pre.length && rms > LIVE_SPEECH_RMS / 2 && Date.now() < (live.preUntil || 0)) liveFlushPre();
+    else if (live.pre && live.pre.length && Date.now() >= (live.preUntil || 0)) live.pre = [];
+    liveFlushHeld(); return liveSendPcm(chunk);
+  }
+  live.wasPlaying = true;
+  if (rms < LIVE_ECHO_GATE){ live.pre = (live.pre || []).concat(live.held || [], [chunk]).slice(-12); live.held = []; return liveSendPcm(chunk.map(() => 0)); }
   live.held = (live.held || []).concat([chunk]);
   if (live.held.length < 3) return liveSendPcm(chunk.map(() => 0));
-  liveFlushHeld();
+  liveFlushPre(); liveFlushHeld();
 }
 function liveFlushHeld(){ const h = live.held || []; live.held = []; for (const c of h) liveSendPcm(c); }
+// Sends the kept quiet audio, starting where her voice starts: leading chunks much quieter than the loudest one
+// are his echo before she spoke, and are skipped.
+function liveFlushPre(){
+  const p = live.pre || []; live.pre = [];
+  const lvl = p.map((c) => Math.sqrt(c.reduce((n, v) => n + v * v, 0) / c.length)), top = Math.max(0, ...lvl);
+  let i = 0; while (i < p.length && lvl[i] < top * 0.6) i++;
+  for (; i < p.length; i++) liveSendPcm(p[i]);
+}
 function liveSendPcm(samples){
   // On a weak signal, don't pile up old audio (he'd answer something you said seconds ago).
   if (live.ws.bufferedAmount > 64000){ if (!live.lagLogged){ live.lagLogged = true; liveLog("send backlog " + live.ws.bufferedAmount); } return; }
@@ -3022,7 +3040,7 @@ function stopLive(){
   // Always release the mic, including one that arrived after the call failed to start.
   for (const st of [live.stream, live.pendingStream]) try { st && st.getTracks().forEach((t) => t.stop()); } catch {}
   try { live.ctx && live.ctx.close(); } catch {}
-  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.lagLogged = false; live.paused = false; live.handle = null; live.reconnecting = false;
+  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.pre = []; live.wasPlaying = false; live.preUntil = 0; live.lagLogged = false; live.paused = false; live.handle = null; live.reconnecting = false;
   audioMode("playback");
 }
 // Live voice failed mid-call (signal, Gemini's time limit, phone stopped the audio): keep going with standard voice.
