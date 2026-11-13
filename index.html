@@ -1182,7 +1182,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vcc0ed3a517"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vd8544218e7"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2955,6 +2955,7 @@ function liveAdd(role, text){
     }
   }
   if (role === "rep") text = fixNames(text);
+  if (live.foreignLogged !== state.transcript && /[¿¡ñ]|\b(cuál|sería|siguiente|llamada|martes|nuestro|gracias|podemos)(?![a-z])/i.test(text)){ live.foreignLogged = state.transcript; liveLog(role + " words came through as another language: " + text.slice(0, 120)); }
   const t = state.transcript, last = t[t.length - 1];
   if (last && last.role === role && !last.closed) last.text = (last.text + text).replace(/\s+/g, " ");
   else t.push({ role, text: text.replace(/^\s+/, "") }); // keep the trailing space; the next chunk follows it
