@@ -1183,7 +1183,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v77afd87065"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vc81ca58e2d"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2991,7 +2991,8 @@ const liveAvailable = () => liveWanted() && !MIC_BLOCKED && !GAS && !!(window.We
 
 // Live voice models sometimes slip out a control note instead of a line, like ```json { "action": "wait" } ```.
 // Any farmer turn that looks like code is cut off and never shown, spoken or graded.
-const liveLooksLikeCode = (t) => /```|\{\s*"?\w+"?\s*:|^\s*json\b/i.test(t);
+// Also an HTML note like <!-- No further response from farmer needed --> (Charlie, Nov 16 2026).
+const liveLooksLikeCode = (t) => /```|\{\s*"?\w+"?\s*:|^\s*json\b|<!--|-->/i.test(t);
 function liveAdd(role, text){
   if (!text) return;
   if (role === "farmer"){
@@ -3331,6 +3332,9 @@ function renderResults({ overall, grade, game, transcript, scene, at, checkpoint
     if (game.newBest) rw.push(`<span class="pill" style="border-color:var(--ok);color:var(--ok-d)">New personal best</span>`);
     if (game.weekRank) rw.push(`<span class="pill">#${game.weekRank} this week</span>`);
     if (game.unitComplete) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50)">🏆 ${esc(game.unitName || "Unit")} complete</span>`);
+    // Score and points are different numbers (Charlie, Nov 16 2026: a 56 call showed +36). Say where the points came from.
+    if ((game.pointsBreakdown || []).length) rw.push(`<div class="sub" id="res-why" style="flex-basis:100%;text-align:center;margin:6px 0 0">Score ${overall}/100 is how the call went. Points: ${
+      game.pointsBreakdown.map(([k, p]) => `${esc(k === "Your score" ? `Score ÷ 5` : k)} +${p}`).join(" · ")}. Leaderboards count points.</div>`);
   } else if (game && !review) rw.push(`<span class="pill">Too short to earn points: calls need 4+ real answers</span>`);
   if (review && points) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50);color:var(--gold-ink)">⚡ +${points} points</span>`);
   $("res-reward").innerHTML = rw.join("");
