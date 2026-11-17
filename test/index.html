@@ -1183,7 +1183,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vc81ca58e2d"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v030c082c73"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1871,7 +1871,7 @@ function showNodeCard(n, u, i){
       const answered = n.state === "done" || k < at;
       const open = n.state === "done" || k <= at;
       const next = n.state === "current" && k === at;
-      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : q.type === "watch" ? "Watch" : q.type === "spot" ? "Click through" : q.type === "task" ? "Do it" : "Pick one";
+      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : q.type === "watch" ? "Watch" : q.type === "spot" ? "Click through" : q.type === "task" ? "Do it" : q.type === "read" ? "Read" : "Pick one";
       return `<button class="qrow ${answered ? "ok" : ""} ${next ? "next" : ""}" data-k="${k}" ${open && n.state !== "locked" ? "" : "disabled"}>
         <span class="qn">${answered ? icon("check") : k + 1}</span><span class="qt"><small>${next ? "Up next · " : answered && n.state !== "done" ? "Done · " : ""}${tag}</small>${esc(q.prompt)}</span>${next ? `<span class="qgo">${icon("back")}</span>` : ""}</button>`;
     }).join("");
@@ -2341,6 +2341,7 @@ function renderExerciseBody(){
   } else if (ex.type === "watch"){ renderHsWatch(box, ex);
   } else if (ex.type === "spot"){ renderHsSpot(box, ex);
   } else if (ex.type === "task"){ renderHsTask(box, ex);
+  } else if (ex.type === "read"){ renderRead(box, ex);
   } else {
     box.innerHTML = `${sceneCard(ex.scene)}<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Say it out loud</span>${esc(ex.prompt)}</div></div>${ex.context?`<div class="ctx">${esc(ex.context)}</div>`:""}
       <button class="mic" id="say-mic" aria-label="Tap to talk">${icon("mic")}</button><div class="hint" id="say-hint">${Recog?"Tap to talk, tap again when you're done":KEYBOARD_TIP}</div>
@@ -2547,6 +2548,26 @@ function checkHsSpot(ex){
   feedback(L.spotMiss === 0, L.spotMiss === 0 ? "Nice. That's it." : "Got it", "");
 }
 
+// A reading step (Gabe Gorman's talk tracks and templates, Nov 17 2026): his words exactly as written, an optional
+// Copy text button (copies the whole text as is) and video links. Nothing to answer; Got it moves on.
+function renderRead(box, ex){
+  const paras = String(ex.text || "").split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+  box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Read it</span>${esc(ex.prompt)}</div></div>
+    ${ex.copy ? `<p style="margin-top:12px"><button class="btn btn-ghost" id="read-copy" type="button" data-ops="Lessons: Copy text">Copy text</button></p>` : ""}
+    <div class="teach readcard" id="read-body" style="text-align:left;white-space:normal;overflow-wrap:anywhere">${paras}</div>
+    ${(ex.links || []).map(([label], k) => `<p style="margin-top:8px"><button class="btn btn-ghost" type="button" data-k="${k}" data-ops="Lessons: Open video link">${esc(label)}</button></p>`).join("")}`;
+  if (ex.copy) $("read-copy").onclick = () => copyText(String(ex.text || ""));
+  for (const b of box.querySelectorAll("button[data-k]")) b.onclick = () => window.open(ex.links[+b.dataset.k][1], "_blank", "noopener");
+  setCheck("Got it", true);
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return toast("Copied. Paste it into your text to the grower."); } catch {}
+  // Inside the Apps Script frame the clipboard can be blocked: fall back to selecting a hidden copy.
+  try { const a = document.createElement("textarea"); a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+    document.body.appendChild(a); a.select(); const ok = document.execCommand("copy"); a.remove();
+    if (ok) return toast("Copied. Paste it into your text to the grower."); } catch {}
+  toast("Copy did not work here. Press and hold the text to select and copy it.");
+}
 function renderHsTask(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Do it for real</span>${esc(ex.prompt)}</div></div>
     ${ex.video ? `<div style="position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0b1530;margin-top:12px"><iframe src="${esc(ex.video)}" title="Video: ${esc(ex.prompt)}" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>
@@ -2658,6 +2679,7 @@ $("check-btn").onclick = async () => {
   } else if (ex.type === "watch"){ if (!L.hsWatched) return; record(true, { watched: true }); hsNext();
   } else if (ex.type === "spot"){ checkHsSpot(ex);
   } else if (ex.type === "task"){ await checkHsTask(ex);
+  } else if (ex.type === "read"){ record(true, { read: true }); hsNext();
   } else {
     if (L.grading) return; // already being graded: a second tap (or the mic finishing) must not grade it twice
     L.grading = true;
