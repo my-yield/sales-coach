@@ -8,6 +8,16 @@
 <meta name="apple-mobile-web-app-title" content="Sales Coach">
 <title>My Yield Sales Coach</title>
 <meta name="robots" content="noindex">
+<script>
+// The test voice page (my-yield.github.io/sales-coach/test/) reads as a test link: "[Test] - " title and a yellow strip
+// (Bryant, Nov 18 2026). The Apps Script test link gets the same from TestLink.js. The live page is unchanged.
+if (/\/sales-coach\/test\//.test(location.pathname)) {
+  document.title = "[Test] - " + document.title;
+  document.addEventListener("DOMContentLoaded", function(){ var s = document.createElement("div"); s.setAttribute("role", "note"); s.textContent = "TEST LINK · not what reps see";
+    s.style.cssText = "background:#FFEE37;color:#14161C;font:800 11px/18px Montserrat,system-ui,sans-serif;letter-spacing:.06em;text-align:center;height:18px;position:relative;z-index:2147483647";
+    document.body.insertBefore(s, document.body.firstChild); });
+}
+</script>
 <style>
 :root{
   /* Same tokens as the demo website (~/Projects/EmpoweringFarmers/site/assets/style.css) */
@@ -853,7 +863,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
         <div class="seg" id="tough" style="margin-top:8px"></div>
         <label class="toggle" style="margin-top:12px"><span><b style="color:var(--char)">Live voice</b>: talk naturally and interrupt him, like a real call</span><input type="checkbox" id="live-pref"></label>
         <div class="err" id="setup-err" style="margin-top:12px"></div>
-        <button class="btn btn-primary" id="setup-btn">Start call</button>
+        <button class="btn btn-primary" id="setup-btn" data-ops="Practice: Start call">Start call</button>
       </div>
       <div class="card goal" id="pr-goal">
         <div class="ringwrap"><svg viewBox="0 0 36 36" width="58" height="58"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="5"/><circle id="goal-ring" cx="18" cy="18" r="15" fill="none" stroke="var(--blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/></svg><span id="goal-n">0</span></div>
@@ -898,10 +908,10 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
   </main>
 
   <nav class="tabs"><div class="wrap">
-    <button class="tab" data-tab="learn" aria-current="page"><span class="tabicon"><svg class="i"><use href="#i-book"/></svg></span>Learn</button>
-    <button class="tab" data-tab="practice"><span class="tabicon"><svg class="i"><use href="#i-phone"/></svg></span>Practice</button>
-    <button class="tab" data-tab="board"><span class="tabicon"><svg class="i"><use href="#i-trophy"/></svg></span>Leaders</button>
-    <button class="tab" data-tab="me"><span class="tabicon"><svg class="i"><use href="#i-user"/></svg></span>Profile</button>
+    <button class="tab" data-tab="learn" data-ops="Tab: Learn" aria-current="page"><span class="tabicon"><svg class="i"><use href="#i-book"/></svg></span>Learn</button>
+    <button class="tab" data-tab="practice" data-ops="Tab: Practice"><span class="tabicon"><svg class="i"><use href="#i-phone"/></svg></span>Practice</button>
+    <button class="tab" data-tab="board" data-ops="Tab: Leaders"><span class="tabicon"><svg class="i"><use href="#i-trophy"/></svg></span>Leaders</button>
+    <button class="tab" data-tab="me" data-ops="Tab: Profile"><span class="tabicon"><svg class="i"><use href="#i-user"/></svg></span>Profile</button>
     <div class="sideunits" id="side-units"></div>
   </div></nav>
 </section>
@@ -953,7 +963,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <p class="sub" style="margin-top:10px" id="brief-tough"></p>
     </div>
   </div>
-  <div class="dock"><div class="wrap"><button class="btn btn-primary" id="call-btn">Start the call</button><button class="btn btn-ghost" id="brief-cancel" type="button" style="margin-top:10px">Not now</button></div></div>
+  <div class="dock"><div class="wrap"><button class="btn btn-primary" id="call-btn" data-ops="Practice: Start call (briefing)">Start the call</button><button class="btn btn-ghost" id="brief-cancel" type="button" style="margin-top:10px">Not now</button></div></div>
 </section>
 
 <!-- CALL -->
@@ -971,10 +981,10 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
     <button class="btn btn-ok donebtn" id="done-talk" hidden>I'm done talking</button>
     <div class="controls">
       <div class="ctl"><button class="round" id="mute-btn" aria-pressed="false" aria-label="Mute"><svg class="i"><use href="#i-mic"/></svg></button><span id="mute-lbl">Mute</span></div>
-      <div class="ctl"><button class="round" id="coach-btn" aria-label="Coach me"><svg class="i"><use href="#i-spark"/></svg></button><span>Coach me</span></div>
+      <div class="ctl"><button class="round" id="coach-btn" data-ops="Practice: Coach me" aria-label="Coach me"><svg class="i"><use href="#i-spark"/></svg></button><span>Coach me</span></div>
       <div class="ctl"><button class="round" id="cc-btn" aria-label="Transcript"><svg class="i"><use href="#i-cc"/></svg></button><span>Transcript</span></div>
       <div class="ctl"><button class="round" id="kb-btn" aria-pressed="false" aria-label="Type instead"><svg class="i"><use href="#i-keys"/></svg></button><span>Type</span></div>
-      <div class="ctl"><button class="round end" id="end-btn" aria-label="End call"><svg class="i"><use href="#i-phone"/></svg></button><span>End</span></div>
+      <div class="ctl"><button class="round end" id="end-btn" data-ops="Practice: End call" aria-label="End call"><svg class="i"><use href="#i-phone"/></svg></button><span>End</span></div>
     </div>
   </div></div>
 </section>
@@ -1005,7 +1015,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
   <div id="end-art"></div>
   <h3 id="end-title">End the call and get graded?</h3>
   <p class="sub" id="end-sub">Only end when you're done. You'll get your score right after.</p>
-  <div class="row2"><button class="btn btn-ghost" id="end-no">Keep talking</button><button class="btn btn-err" id="end-yes">End &amp; grade</button></div>
+  <div class="row2"><button class="btn btn-ghost" id="end-no">Keep talking</button><button class="btn btn-err" id="end-yes" data-ops="Practice: End and grade">End &amp; grade</button></div>
   <p style="margin:14px 0 0"><button class="link" id="end-cancel">Cancel call without a score</button></p>
 </div></div>
 
@@ -1043,7 +1053,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
     <p style="text-align:center;margin:4px 0 18px"><button class="link" id="res-report" type="button">Something not right? Report a problem</button></p>
   </div>
   <div class="dock"><div class="wrap" style="display:flex;gap:10px">
-    <button class="btn btn-ghost" id="again-btn">Run it back</button>
+    <button class="btn btn-ghost" id="again-btn" data-ops="Practice: Replay">Run it back</button>
     <button class="btn btn-primary" id="res-done">Done</button>
   </div></div>
 </section>
@@ -1168,6 +1178,7 @@ const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmer
 function show(id){
   for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results"]) $(s).hidden = s !== id;
   document.documentElement.classList.toggle("incall", id === "s-call");
+  try { opsView(id === "s-home" ? state.tab || "learn" : id); if (id === "s-home") opsVisit(); } catch {}
   toTop();
 }
 // Back to the top of the page. iPhone Safari sometimes ignores one scrollTo right after the page gets shorter, so ask again next frame.
@@ -1182,7 +1193,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vd8544218e7"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vbb786b9b2e"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1210,6 +1221,55 @@ function serverErrorText(err){
 function reportError(where, err){
   try { if (GAS || RELAY) api("/api/clientlog", { msg: (where + ": " + String((err && (err.message || err)) || "")).slice(0, 280), ua: navigator.userAgent, v: APP_VERSION }).catch(() => {}); } catch {}
 }
+// ---- Ops Room usage (Bryant, Nov 16 2026) ----
+// One "opened" row per page load, and how often each part of the app is tapped (sent every 30 s and when the page
+// is hidden). Only button names are counted (data-ops labels first), never anything typed. Fire-and-forget: it never shows an error, never
+// waits, and skips sending when the Sales Coach tab link is down (so it can't bring up the Reconnect bar).
+const OPS = { view: "", counts: {}, last: {}, visited: false };
+const OPS_GROUPS = [["#ex", "Lesson: Answer or step"], ["#learn .ucard", "Learn: Open unit"], ["#learn .path", "Learn: Lesson on the path"],
+  ["#plays", "Practice: Pick a play"], ["#farmers", "Practice: Pick a farmer"], ["#tough", "Practice: Pick toughness"],
+  ["#lb", "Leaderboard: Tap a row"], ["#hs-plays", "Leaderboard: High scores play"], ["#me-hist", "Profile: Open a past call"], ["#me-badges", "Profile: Badge"], [".trackopt", "Learn: Pick a path"]];
+const OPS_VIEWS = { "s-signin": "Sign-in", "s-launch": "Launch", "s-guide": "Guide", "s-lesson": "Lesson", "s-done": "Lesson done", "s-review": "Review",
+  "s-brief": "Briefing", "s-call": "Call", "s-results": "Results", learn: "Learn", practice: "Practice", board: "Leaders", me: "Profile" };
+function opsView(name){ OPS.view = OPS_VIEWS[name] || name || ""; }
+function opsSend(route, data){
+  try {
+    if (GAS) return google.script.run.withSuccessHandler(() => {}).withFailureHandler(() => {}).api(route, data);
+    if (!RELAY) return; // the Mac preview and test harness don't log
+    let up = !!relayPeer && !!relayWin; try { up = up && !relayWin.closed; } catch { up = false; }
+    if (up) relayCall(route, data).catch(() => {});
+  } catch {}
+}
+function opsVisit(){ if (OPS.visited) return; OPS.visited = true; opsSend("/api/ops-visit", { phone: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) }); }
+function opsFlush(){
+  try {
+    const items = Object.keys(OPS.counts).slice(0, 50).map((f) => ({ f, n: OPS.counts[f], at: OPS.last[f] }));
+    if (!items.length) return;
+    for (const x of items){ delete OPS.counts[x.f]; delete OPS.last[x.f]; }
+    opsSend("/api/ops-clicks", { items });
+  } catch {}
+}
+document.addEventListener("click", (e) => {
+  try {
+    if (!(GAS || RELAY) || !OPS.visited) return;
+    const t = e.target && e.target.closest ? e.target : null;
+    if (!t || t.closest("input, textarea, select, [contenteditable]")) return;
+    const tagged = t.closest("[data-ops]");
+    let f = tagged ? tagged.dataset.ops : "";
+    if (!f){
+      const b = t.closest("button, a, [role=tab], [role=button]"); if (!b) return;
+      const g = OPS_GROUPS.find(([sel]) => b.closest(sel));
+      // Fallback: the button's own label, digits dropped so counts and names-with-numbers don't each become a feature.
+      f = g ? g[1] : (OPS.view ? OPS.view + ": " : "") + String(b.getAttribute("aria-label") || b.textContent || "").replace(/\d+/g, "#").replace(/\s+/g, " ").trim();
+      if (/:\s*$/.test(f) || !f) return;
+    }
+    f = f.slice(0, 60);
+    OPS.counts[f] = (OPS.counts[f] || 0) + 1; OPS.last[f] = new Date().toISOString();
+  } catch {}
+}, true);
+setInterval(opsFlush, 30000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") opsFlush(); });
+window.addEventListener("pagehide", opsFlush);
 // ---- When the Apps Script tab is gone (closed, reloaded, or put to sleep by the browser) ----
 // Nothing the page has is lost: a finished lesson waits on this device (sc_pending_lesson) and saves on reconnect.
 const RELAY_LOST_MSG = "Lost the connection to your Sales Coach tab. Tap Reconnect. Your progress is kept.";
@@ -1662,6 +1722,7 @@ function setTab(tab){
   state.tab = tab;
   for (const t of ["learn","practice","board","me"]) $("tab-"+t).hidden = t !== tab;
   for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-current", b.dataset.tab===tab ? "page" : "false");
+  try { opsView(tab); } catch {}
   toTop();
 }
 for (const b of document.querySelectorAll(".tab")) b.onclick = () => setTab(b.dataset.tab);
@@ -1723,7 +1784,7 @@ function renderSideUnits(){
 function renderRailBoard(){
   const box = $("rail-board"); if (!box) return;
   const me = state.me, doneN = me ? (me.lessonsDone || 0) + (me.calls || 0) : 0;
-  const head = `<div class="rbhead"><b>This week</b><button type="button" id="rb-all">VIEW ALL</button></div>`;
+  const head = `<div class="rbhead"><b>This week</b><button type="button" id="rb-all" data-ops="Leaderboard: Open">VIEW ALL</button></div>`;
   if (doneN < BOARD_UNLOCK){ const left = BOARD_UNLOCK - doneN; box.innerHTML = head + `<p class="sub" style="margin:4px 0 0">${icon("lock")} Finish ${left} more lesson${left === 1 ? "" : "s"} or call${left === 1 ? "" : "s"} to join the leaderboard.</p>`; }
   else {
     const rows = ((state.board && state.board.week) || []).slice(0, 5);
@@ -1820,7 +1881,7 @@ function showNodeCard(n, u, i){
       const answered = n.state === "done" || k < at;
       const open = n.state === "done" || k <= at;
       const next = n.state === "current" && k === at;
-      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : q.type === "watch" ? "Watch" : q.type === "spot" ? "Click through" : q.type === "task" ? "Do it" : "Pick one";
+      const tag = q.type === "say" ? "Say it" : q.type === "order" ? "Put in order" : q.type === "watch" ? "Watch" : q.type === "spot" ? "Click through" : q.type === "task" ? "Do it" : q.type === "read" ? "Read" : "Pick one";
       return `<button class="qrow ${answered ? "ok" : ""} ${next ? "next" : ""}" data-k="${k}" ${open && n.state !== "locked" ? "" : "disabled"}>
         <span class="qn">${answered ? icon("check") : k + 1}</span><span class="qt"><small>${next ? "Up next · " : answered && n.state !== "done" ? "Done · " : ""}${tag}</small>${esc(q.prompt)}</span>${next ? `<span class="qgo">${icon("back")}</span>` : ""}</button>`;
     }).join("");
@@ -1831,8 +1892,8 @@ function showNodeCard(n, u, i){
       `<div class="qlist">${rows}</div>` +
       (n.state === "locked" ? "" : n.state === "done"
         ? `<p class="sub" style="margin:8px 0 0">Tap a question to practice just from there. Practice doesn't change your stars.</p>
-           <div class="row2"><button class="btn btn-ghost" id="nc-review">Review answers</button><button class="btn btn-primary" id="nc-go">Practice again</button></div>`
-        : `<button class="btn btn-primary" id="nc-go">${at ? `Continue (question ${at + 1})` : "Start"}</button>`);
+           <div class="row2"><button class="btn btn-ghost" id="nc-review" data-ops="Lessons: Review answers">Review answers</button><button class="btn btn-primary" id="nc-go" data-ops="Lessons: Open lesson">Practice again</button></div>`
+        : `<button class="btn btn-primary" id="nc-go" data-ops="Lessons: Open lesson">${at ? `Continue (question ${at + 1})` : "Start"}</button>`);
   }
   $("node-body").innerHTML = html;
   $("node-sheet").hidden = false;
@@ -2290,6 +2351,7 @@ function renderExerciseBody(){
   } else if (ex.type === "watch"){ renderHsWatch(box, ex);
   } else if (ex.type === "spot"){ renderHsSpot(box, ex);
   } else if (ex.type === "task"){ renderHsTask(box, ex);
+  } else if (ex.type === "read"){ renderRead(box, ex);
   } else {
     box.innerHTML = `${sceneCard(ex.scene)}<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Say it out loud</span>${esc(ex.prompt)}</div></div>${ex.context?`<div class="ctx">${esc(ex.context)}</div>`:""}
       <button class="mic" id="say-mic" aria-label="Tap to talk">${icon("mic")}</button><div class="hint" id="say-hint">${Recog?"Tap to talk, tap again when you're done":KEYBOARD_TIP}</div>
@@ -2496,6 +2558,26 @@ function checkHsSpot(ex){
   feedback(L.spotMiss === 0, L.spotMiss === 0 ? "Nice. That's it." : "Got it", "");
 }
 
+// A reading step (Gabe Gorman's talk tracks and templates, Nov 17 2026): his words exactly as written, an optional
+// Copy text button (copies the whole text as is) and video links. Nothing to answer; Got it moves on.
+function renderRead(box, ex){
+  const paras = String(ex.text || "").split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+  box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Read it</span>${esc(ex.prompt)}</div></div>
+    ${ex.copy ? `<p style="margin-top:12px"><button class="btn btn-ghost" id="read-copy" type="button" data-ops="Lessons: Copy text">Copy text</button></p>` : ""}
+    <div class="teach readcard" id="read-body" style="text-align:left;white-space:normal;overflow-wrap:anywhere">${paras}</div>
+    ${(ex.links || []).map(([label], k) => `<p style="margin-top:8px"><button class="btn btn-ghost" type="button" data-k="${k}" data-ops="Lessons: Open video link">${esc(label)}</button></p>`).join("")}`;
+  if (ex.copy) $("read-copy").onclick = () => copyText(String(ex.text || ""));
+  for (const b of box.querySelectorAll("button[data-k]")) b.onclick = () => window.open(ex.links[+b.dataset.k][1], "_blank", "noopener");
+  setCheck("Got it", true);
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return toast("Copied. Paste it into your text to the grower."); } catch {}
+  // Inside the Apps Script frame the clipboard can be blocked: fall back to selecting a hidden copy.
+  try { const a = document.createElement("textarea"); a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+    document.body.appendChild(a); a.select(); const ok = document.execCommand("copy"); a.remove();
+    if (ok) return toast("Copied. Paste it into your text to the grower."); } catch {}
+  toast("Copy did not work here. Press and hold the text to select and copy it.");
+}
 function renderHsTask(box, ex){
   box.innerHTML = `<div class="coachrow">${Art.mascot("happy", 64)}<div class="speech"><span class="k">Do it for real</span>${esc(ex.prompt)}</div></div>
     ${ex.video ? `<div style="position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0b1530;margin-top:12px"><iframe src="${esc(ex.video)}" title="Video: ${esc(ex.prompt)}" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>
@@ -2607,6 +2689,7 @@ $("check-btn").onclick = async () => {
   } else if (ex.type === "watch"){ if (!L.hsWatched) return; record(true, { watched: true }); hsNext();
   } else if (ex.type === "spot"){ checkHsSpot(ex);
   } else if (ex.type === "task"){ await checkHsTask(ex);
+  } else if (ex.type === "read"){ record(true, { read: true }); hsNext();
   } else {
     if (L.grading) return; // already being graded: a second tap (or the mic finishing) must not grade it twice
     L.grading = true;
@@ -2940,7 +3023,8 @@ const liveAvailable = () => liveWanted() && !MIC_BLOCKED && !GAS && !!(window.We
 
 // Live voice models sometimes slip out a control note instead of a line, like ```json { "action": "wait" } ```.
 // Any farmer turn that looks like code is cut off and never shown, spoken or graded.
-const liveLooksLikeCode = (t) => /```|\{\s*"?\w+"?\s*:|^\s*json\b/i.test(t);
+// Also an HTML note like <!-- No further response from farmer needed --> (Charlie, Nov 16 2026).
+const liveLooksLikeCode = (t) => /```|\{\s*"?\w+"?\s*:|^\s*json\b|<!--|-->/i.test(t);
 function liveAdd(role, text){
   if (!text) return;
   if (role === "farmer"){
@@ -3280,6 +3364,9 @@ function renderResults({ overall, grade, game, transcript, scene, at, checkpoint
     if (game.newBest) rw.push(`<span class="pill" style="border-color:var(--ok);color:var(--ok-d)">New personal best</span>`);
     if (game.weekRank) rw.push(`<span class="pill">#${game.weekRank} this week</span>`);
     if (game.unitComplete) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50)">🏆 ${esc(game.unitName || "Unit")} complete</span>`);
+    // Score and points are different numbers (Charlie, Nov 16 2026: a 56 call showed +36). Say where the points came from.
+    if ((game.pointsBreakdown || []).length) rw.push(`<div class="sub" id="res-why" style="flex-basis:100%;text-align:center;margin:6px 0 0">Score ${overall}/100 is how the call went. Points: ${
+      game.pointsBreakdown.map(([k, p]) => `${esc(k === "Your score" ? `Score ÷ 5` : k)} +${p}`).join(" · ")}. Leaderboards count points.</div>`);
   } else if (game && !review) rw.push(`<span class="pill">Too short to earn points: calls need 4+ real answers</span>`);
   if (review && points) rw.push(`<span class="pill" style="border-color:var(--gold);background:var(--gold-50);color:var(--gold-ink)">⚡ +${points} points</span>`);
   $("res-reward").innerHTML = rw.join("");
