@@ -734,6 +734,20 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .hs-device button{border:0;border-radius:99px;min-height:40px;padding:6px 14px;background:transparent;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
 .hs-device button[aria-pressed="true"]{background:var(--brand,#2b3a8c);color:#fff}
 .hs-missing{display:inline-block;text-align:left;margin:8px 0 0;padding-left:20px}
+/* Ask the coach (Nov 23 2026) */
+.askchips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.askchips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;font-size:14px;line-height:1.3;color:var(--ink);text-align:left}
+.asklog{display:flex;flex-direction:column;gap:10px;padding-bottom:150px}
+.askq{align-self:flex-end;max-width:85%;background:var(--char);color:#fff;border-radius:14px 14px 4px 14px;padding:10px 12px;font-size:15px;overflow-wrap:anywhere}
+.aska{align-self:flex-start;max-width:92%;background:#fff;border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:12px;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.aska p{margin:0 0 8px}.aska p:last-child{margin:0}
+.aska .src{margin-top:10px;padding-top:8px;border-top:1px solid var(--line-2);font-size:12.5px;color:var(--ink-2)}
+.aska .src button{display:block;margin-top:6px;font-weight:700;font-size:13px;line-height:1.3;color:var(--blue);background:none;border:0;padding:0;text-align:left}
+.aska.miss{background:var(--gold-50);border-color:var(--gold)}
+.askrow{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:5;display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--bg,#F4F2ED);border-top:1px solid var(--line)}
+.askrow input{flex:1;min-width:0;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.askrow .btn{width:auto;padding:11px 16px}
+@media (min-width:900px){.askrow{position:sticky;bottom:12px;left:auto;right:auto;border:1px solid var(--line);border-radius:12px;padding:10px}.asklog{padding-bottom:20px}}
 </style>
 </head>
 <body>
@@ -905,6 +919,13 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <div class="badgegrid" id="me-badges"></div>
       <div style="margin:28px 0;display:flex;flex-direction:column;gap:10px"><button class="btn btn-ghost" id="me-report" type="button">Report a problem or idea</button><button class="btn btn-ghost" id="signout">Sign out</button></div>
     </div>
+    <div class="wrap" id="tab-ask" hidden>
+      <h3 class="section">Ask the coach</h3>
+      <p class="sub" style="margin-top:-4px">Answers come only from the coach's lessons and playbooks, with where to read more.</p>
+      <div class="askchips" id="ask-chips"></div>
+      <div id="ask-log" class="asklog" aria-live="polite"></div>
+      <div class="askrow"><button class="round" id="ask-mic" type="button" aria-label="Talk" data-ops="Ask: Mic" hidden><svg class="i"><use href="#i-mic"/></svg></button><input id="ask-q" type="text" maxlength="500" placeholder="Ask about a product, a play or a word" enterkeyhint="send" autocomplete="off"><button class="btn btn-primary" id="ask-send" type="button" data-ops="Ask: Send">Ask</button></div>
+    </div>
   </main>
 
   <nav class="tabs"><div class="wrap">
@@ -912,6 +933,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
     <button class="tab" data-tab="practice" data-ops="Tab: Practice"><span class="tabicon"><svg class="i"><use href="#i-phone"/></svg></span>Practice</button>
     <button class="tab" data-tab="board" data-ops="Tab: Leaders"><span class="tabicon"><svg class="i"><use href="#i-trophy"/></svg></span>Leaders</button>
     <button class="tab" data-tab="me" data-ops="Tab: Profile"><span class="tabicon"><svg class="i"><use href="#i-user"/></svg></span>Profile</button>
+    <button class="tab" data-tab="ask" data-ops="Tab: Ask"><span class="tabicon"><svg class="i"><use href="#i-cc"/></svg></span>Ask</button>
     <div class="sideunits" id="side-units"></div>
   </div></nav>
 </section>
@@ -1193,7 +1215,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vbb786b9b2e"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v21788e7545"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1230,7 +1252,7 @@ const OPS_GROUPS = [["#ex", "Lesson: Answer or step"], ["#learn .ucard", "Learn:
   ["#plays", "Practice: Pick a play"], ["#farmers", "Practice: Pick a farmer"], ["#tough", "Practice: Pick toughness"],
   ["#lb", "Leaderboard: Tap a row"], ["#hs-plays", "Leaderboard: High scores play"], ["#me-hist", "Profile: Open a past call"], ["#me-badges", "Profile: Badge"], [".trackopt", "Learn: Pick a path"]];
 const OPS_VIEWS = { "s-signin": "Sign-in", "s-launch": "Launch", "s-guide": "Guide", "s-lesson": "Lesson", "s-done": "Lesson done", "s-review": "Review",
-  "s-brief": "Briefing", "s-call": "Call", "s-results": "Results", learn: "Learn", practice: "Practice", board: "Leaders", me: "Profile" };
+  "s-brief": "Briefing", "s-call": "Call", "s-results": "Results", learn: "Learn", practice: "Practice", board: "Leaders", me: "Profile", ask: "Ask" };
 function opsView(name){ OPS.view = OPS_VIEWS[name] || name || ""; }
 function opsSend(route, data){
   try {
@@ -1718,9 +1740,46 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ---------------- Home ----------------
+// ---- Ask the coach (Bryant, Nov 23 2026) ----
+// A rep asks in their own words; the answer comes only from the coach's content, with links to the lesson it came from.
+const ASK_STARTERS = ["How do I explain MYPAS?", "What’s the difference between FX4I and DRYVE X?", "How do I handle ‘my dealer already treats my seed’?", "What does PSHS mean?"];
+let askBusy = false, askReady = false;
+// The question box sits right on top of the bottom tab bar, whatever its height on this phone.
+function askPlaceRow(){ try { const t = document.querySelector(".tabs"), r = document.querySelector(".askrow"); if (t && r && innerWidth < 900) r.style.bottom = Math.round(t.getBoundingClientRect().height) + "px"; else if (r) r.style.bottom = ""; } catch {} }
+function askOpen(){
+  askPlaceRow();
+  if (askReady) return; askReady = true;
+  addEventListener("resize", askPlaceRow);
+  $("ask-chips").innerHTML = ASK_STARTERS.map((q, k) => `<button type="button" data-k="${k}" data-ops="Ask: Starter question">${esc(q)}</button>`).join("");
+  for (const b of $("ask-chips").querySelectorAll("button")) b.onclick = () => askSend(ASK_STARTERS[+b.dataset.k]);
+  $("ask-send").onclick = () => askSend($("ask-q").value);
+  $("ask-q").onkeydown = (e) => { if (e.key === "Enter") askSend($("ask-q").value); };
+  if (Recog) { $("ask-mic").hidden = false; $("ask-mic").onclick = () => {
+    if (listening) { stopListening(true); return; }
+    const ok = startListening($("ask-mic"), (t) => { if (t) { $("ask-q").value = t; askSend(t); } }, (t) => { if (t) $("ask-q").value = t; }, 1500, false);
+    if (!ok) $("ask-q").focus(); }; }
+}
+function askBubble(cls, html){ const d = document.createElement("div"); d.className = cls; d.innerHTML = html; $("ask-log").appendChild(d); d.scrollIntoView({ block: "end", behavior: "smooth" }); return d; }
+// Plain text in, simple paragraphs and bullet lines out (no HTML from the model).
+const askFormat = (t) => String(t || "").split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>")}</p>`).join("");
+async function askSend(q){
+  q = String(q || "").trim(); if (!q || askBusy) return;
+  askBusy = true; $("ask-send").disabled = true; $("ask-q").value = "";
+  askBubble("askq", esc(q));
+  const wait = askBubble("aska", "<p>Looking in the coach…</p>");
+  try {
+    const r = await api("/api/ask", { q });
+    wait.className = "aska" + (r.found ? "" : " miss");
+    const src = (r.sources || []).length ? `<div class="src">From: ${r.sources.map((s, k) => `${esc(s.label)}${s.lessonId ? ` <button type="button" data-k="${k}" data-ops="Ask: Open lesson">Open lesson ›</button>` : ""}`).join("<br>")}</div>` : "";
+    wait.innerHTML = askFormat(r.answer) + src;
+    for (const b of wait.querySelectorAll(".src button")) b.onclick = async () => { const s = r.sources[+b.dataset.k]; try { await openLesson(s.lessonId); } catch (e) { toast("Finish the lessons before that one first, then open it from Learn."); } };
+  } catch (e) { wait.className = "aska miss"; wait.innerHTML = `<p>${esc(e.message)}</p>`; }
+  finally { askBusy = false; $("ask-send").disabled = false; }
+}
 function setTab(tab){
   state.tab = tab;
-  for (const t of ["learn","practice","board","me"]) $("tab-"+t).hidden = t !== tab;
+  for (const t of ["learn","practice","board","me","ask"]) $("tab-"+t).hidden = t !== tab;
+  if (tab === "ask") askOpen();
   for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-current", b.dataset.tab===tab ? "page" : "false");
   try { opsView(tab); } catch {}
   toTop();
