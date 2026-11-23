@@ -242,6 +242,11 @@ textarea.said:focus{border-color:var(--blue)}
 .mock .mk-page{text-align:center;padding:4px 10px}.mock .mk-page p{margin:4px 0;color:var(--ink-2)}
 .mock .mk-field{border:1px solid var(--line);border-radius:6px;padding:8px;margin:8px 0;text-align:left;color:var(--faint)}
 .mock .mk-btn{display:inline-block;background:var(--blue);color:#fff;border-radius:6px;padding:7px 18px;margin-top:6px;font-weight:700}
+.mock .mk-call{text-align:center;padding:2px 6px}.mock .mk-call small{display:block;color:var(--ink-2);font-size:12.5px}.mock .mk-call b{display:block;font-size:19px;margin:6px 0 2px;overflow-wrap:anywhere}.mock .mk-call div{color:var(--ink-2)}
+.mock .mk-callav{width:52px;height:52px;border-radius:50%;background:var(--stone);color:var(--ink)!important;font-weight:800;font-size:22px;line-height:52px;margin:8px auto 0}
+.mock .mk-callbtns{display:flex;justify-content:center;gap:28px;margin-top:12px}.mock .mk-callbtns span{border-radius:999px;padding:7px 16px;font-weight:700;font-size:13px;color:#fff}.mock .mk-dec{background:#B42318}.mock .mk-acc{background:#067647}
+.mock .mk-prompt{text-align:center;padding:2px 6px}.mock .mk-prompt small{display:block;color:var(--ink-2);font-size:12.5px}.mock .mk-prompt b{display:block;font-size:17px;margin:4px 0 6px}.mock .mk-prompt p{margin:2px 0;color:var(--ink-2)}
+.mock .mk-pbtns{display:flex;justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap}.mock .mk-pbtns span{border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-weight:700;font-size:13px}
 .scene .cardnote{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-2)}
 .facts{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
 .facts li{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink-2);font-weight:500}
@@ -1215,7 +1220,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v2dd659e23a"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v25305784c2"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2681,6 +2686,10 @@ function mockCard(m){
   let inner = "";
   if (m.kind === "text") {
     inner = `<div class="mk-head"><b>${esc(m.fromName || "Unknown")}</b><small>${esc(m.number || "")}</small></div><div class="mk-bubble">${esc(m.body || "")}</div>`;
+  } else if (m.kind === "call") { // an incoming call screen (Nov 23 2026: spoofed caller ID lessons)
+    inner = `<div class="mk-call"><small>Incoming call</small><div class="mk-callav" aria-hidden="true">${esc(((m.name || "?").replace(/^Maybe:\s*/, "").match(/[A-Za-z]/) || ["?"])[0].toUpperCase())}</div><b>${esc(m.name || "Unknown")}</b><div>${esc(m.number || "")}</div>${m.where ? `<small>${esc(m.where)}</small>` : ""}<div class="mk-callbtns"><span class="mk-dec">Decline</span><span class="mk-acc">Accept</span></div></div>`;
+  } else if (m.kind === "prompt") { // a sign-in approval prompt on the phone (MFA fatigue lessons)
+    inner = `<div class="mk-prompt"><small>${esc(m.app || "")}</small><b>${esc(m.title || "")}</b>${lines(m.lines)}<div class="mk-pbtns">${(m.buttons || []).map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>`;
   } else if (m.kind === "page") {
     inner = `<div class="mk-url"><span aria-hidden="true">🔒</span>${esc(m.url || "")}</div><div class="mk-page"><b>${esc(m.title || "")}</b>${lines(m.lines)}${(m.fields || []).map((f) => `<div class="mk-field">${esc(f)}</div>`).join("")}${m.button ? `<div class="mk-btn">${esc(m.button)}</div>` : ""}</div>`;
   } else {
