@@ -1215,7 +1215,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v21788e7545"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v2dd659e23a"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -1743,7 +1743,7 @@ document.addEventListener("visibilitychange", () => {
 // ---- Ask the coach (Bryant, Nov 23 2026) ----
 // A rep asks in their own words; the answer comes only from the coach's content, with links to the lesson it came from.
 const ASK_STARTERS = ["How do I explain MYPAS?", "What’s the difference between FX4I and DRYVE X?", "How do I handle ‘my dealer already treats my seed’?", "What does PSHS mean?"];
-let askBusy = false, askReady = false;
+let askBusy = false, askReady = false, askTurns = []; // the last two question/answer pairs, for follow-ups
 // The question box sits right on top of the bottom tab bar, whatever its height on this phone.
 function askPlaceRow(){ try { const t = document.querySelector(".tabs"), r = document.querySelector(".askrow"); if (t && r && innerWidth < 900) r.style.bottom = Math.round(t.getBoundingClientRect().height) + "px"; else if (r) r.style.bottom = ""; } catch {} }
 function askOpen(){
@@ -1768,7 +1768,8 @@ async function askSend(q){
   askBubble("askq", esc(q));
   const wait = askBubble("aska", "<p>Looking in the coach…</p>");
   try {
-    const r = await api("/api/ask", { q });
+    const r = await api("/api/ask", { q, history: askTurns.slice(-2) });
+    askTurns.push({ q, a: String(r.answer || "").slice(0, 600) }); askTurns = askTurns.slice(-2);
     wait.className = "aska" + (r.found ? "" : " miss");
     const src = (r.sources || []).length ? `<div class="src">From: ${r.sources.map((s, k) => `${esc(s.label)}${s.lessonId ? ` <button type="button" data-k="${k}" data-ops="Ask: Open lesson">Open lesson ›</button>` : ""}`).join("<br>")}</div>` : "";
     wait.innerHTML = askFormat(r.answer) + src;
