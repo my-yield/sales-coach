@@ -917,6 +917,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <p class="sub" style="font-size:12px;margin-top:-2px" id="app-version"></p>
       <div class="statgrid" id="me-stats"></div>
       <div id="me-track" style="margin-top:16px"></div>
+      <div id="me-cell" hidden style="margin-top:16px"></div>
       <h3 class="section">History</h3>
       <p class="sub" style="margin-top:-4px">Tap any lesson or call to see how it was graded.</p>
       <div class="card" style="padding:4px 14px" id="me-hist"></div>
@@ -990,7 +991,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <p class="sub" style="margin-top:10px" id="brief-tough"></p>
     </div>
   </div>
-  <div class="dock"><div class="wrap"><button class="btn btn-primary" id="call-btn" data-ops="Practice: Start call (briefing)">Start the call</button><button class="btn btn-ghost" id="brief-cancel" type="button" style="margin-top:10px">Not now</button></div></div>
+  <div class="dock"><div class="wrap"><p class="sub" id="phone-msg" role="status" aria-live="polite" hidden style="margin:0 0 10px"></p><button class="btn btn-primary" id="call-btn" data-ops="Practice: Start call (briefing)">Start the call</button><button class="btn btn-ghost" id="phone-btn" type="button" hidden data-ops="Practice: Call my phone (briefing)" style="margin-top:10px">Call my phone</button><button class="btn btn-ghost" id="brief-cancel" type="button" style="margin-top:10px">Not now</button></div></div>
 </section>
 
 <!-- CALL -->
@@ -1220,7 +1221,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v25305784c2"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vb948a43f9f"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2212,7 +2213,82 @@ function renderMe(){
   if (tb && state.path){ const t = state.path.track;
     tb.innerHTML = trackPicker(t ? `Your path: ${trackName(t)}${state.path.trackSource === "roster" ? " (from the team roster)" : ""}` : "Pick your path", true);
     wireTrackPicker(tb); }
+  renderMyCell(); loadPhone();
   loadHistory();
+}
+
+// ---------------- Call my phone (Nov 24 2026; test link only, behind PHONE_CALLS_ENABLED + PHONE_ALLOWLIST) ----------------
+// The farmer rings the rep's own saved cell. The server decides who may use it and which number it dials; the page
+// only ever asks for "my call". Nothing shows unless the server says this rep is allowed.
+state.phone = null; state.phoneCall = null;
+function loadPhone(){ if (state.phone){ refreshPhoneBtn(); renderMyCell(); return Promise.resolve(); } return api("/api/phone").then((r) => { state.phone = r; refreshPhoneBtn(); renderMyCell(); }).catch(() => {}); }
+function phoneMsg(t){ const m = $("phone-msg"); m.hidden = !t; m.textContent = t || ""; }
+function refreshPhoneBtn(){
+  const b = $("phone-btn"), p = state.phone;
+  b.hidden = !(p && p.allowed && p.cell);
+  if (!state.phoneCall){ b.textContent = "Call my phone"; delete b.dataset.confirm; }
+}
+function endPhoneUi(){
+  const pc = state.phoneCall; if (pc && pc.timer) clearTimeout(pc.timer);
+  state.phoneCall = null; $("call-btn").hidden = false; phoneMsg(""); refreshPhoneBtn();
+}
+$("phone-btn").onclick = async () => {
+  const b = $("phone-btn");
+  if (state.phoneCall) return hangPhone(false);
+  // Confirm step: the first tap shows the number, the second places the call.
+  if (!b.dataset.confirm){ b.dataset.confirm = "1"; b.textContent = `Tap again to call ${state.phone.cell}`; setTimeout(() => { if (!state.phoneCall) refreshPhoneBtn(); }, 8000); return; }
+  stopSpeaking(); b.disabled = true;
+  try {
+    const r = await api("/api/phone-start", { rollToken: state.rollToken });
+    state.phoneCall = { sid: r.sid, rollToken: state.rollToken, saveId: newId(), t0: Date.now() };
+    $("call-btn").hidden = true; b.textContent = "Hang up";
+    phoneMsg(`Calling ${r.calling}. Answer it and talk to ${state.farmerName}. When you hang up, your call gets graded here.`);
+    state.phoneCall.timer = setTimeout(pollPhone, 3000);
+  } catch (e) { toast(e.message); refreshPhoneBtn(); }
+  finally { b.disabled = false; }
+};
+async function pollPhone(){
+  const pc = state.phoneCall; if (!pc) return;
+  let r; try { r = await api("/api/phone-status", { sid: pc.sid }); } catch (e) { r = { status: "unknown" }; }
+  if (state.phoneCall !== pc) return;
+  if (r.status === "live") phoneMsg(`On the phone with ${state.farmerName}. Hang up when you're done; your call gets graded here.`);
+  if (r.status === "missed"){ endPhoneUi(); return toast(`The call didn't connect (${r.reason || "no answer"}).`); }
+  if (r.status === "done"){ endPhoneUi(); return r.lines ? gradePhone(pc) : toast("The call ended before anyone talked."); }
+  if (Date.now() - pc.t0 > 20 * 60e3){ endPhoneUi(); return toast("Lost track of the phone call. Check History in a few minutes."); }
+  pc.timer = setTimeout(pollPhone, 3000);
+}
+async function hangPhone(leaving){
+  const pc = state.phoneCall; if (!pc) return;
+  try { await api("/api/phone-cancel", { sid: pc.sid }); } catch (e) {}
+  if (leaving) endPhoneUi(); // leaving the briefing: hang up, nothing to grade
+}
+async function gradePhone(pc){
+  $("grading-art").innerHTML = Art.mascot("think", 110); $("grading").hidden = false; state.saveId = pc.saveId;
+  const job = { rollToken: pc.rollToken, transcript: [], phoneSession: pc.sid, checkpoint: state.checkpoint, saveId: pc.saveId,
+    farmerName: state.farmerName, callPlayName: state.callPlayName, voice: "phone", at: Date.now() };
+  store.set("sc_pending_call", JSON.stringify(job));
+  try { const r = await api("/api/grade", gradeBody(job)); store.del("sc_pending_call"); show("s-results"); renderResults(r); }
+  catch (e) { toast(e.message); }
+  finally { $("grading").hidden = true; }
+}
+function renderMyCell(){
+  const box = $("me-cell"), p = state.phone; if (!box) return;
+  box.hidden = !(p && p.allowed); if (box.hidden){ box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="card"><div style="font-weight:800">My cell</div>
+    <p class="sub" style="margin:4px 0 10px">${p.cell ? `Practice calls can ring ${esc(p.cell)}. Only you can start one, from the Pre-call briefing.` : "Add your cell to take practice calls on your phone. Only you can start one, from the Pre-call briefing."}</p>
+    <div id="cell-form"${p.cell ? " hidden" : ""}>
+      <div class="field"><label for="cell-1">Your cell</label><input id="cell-1" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="515 555 0123"></div>
+      <div class="field"><label for="cell-2">Type it again</label><input id="cell-2" type="tel" inputmode="tel" autocomplete="off"></div>
+      <button class="btn btn-primary" id="cell-save" type="button" data-ops="Profile: Save my cell">Save my cell</button></div>
+    ${p.cell ? `<div style="display:flex;gap:10px"><button class="btn btn-ghost" id="cell-change" type="button">Change</button><button class="btn btn-ghost" id="cell-remove" type="button">Remove</button></div>` : ""}
+    <div class="err" id="cell-err"></div></div>`;
+  const save = async (cell, confirm) => {
+    try { state.phone = await api("/api/phone", { cell, confirm }); renderMyCell(); refreshPhoneBtn(); if (cell) toast("Saved your cell."); }
+    catch (e) { $("cell-err").textContent = e.message; }
+  };
+  if ($("cell-save")) $("cell-save").onclick = () => save($("cell-1").value, $("cell-2").value);
+  if ($("cell-change")) $("cell-change").onclick = () => { $("cell-form").hidden = false; $("cell-1").focus(); };
+  if ($("cell-remove")) $("cell-remove").onclick = () => save("", "");
 }
 
 // ---------------- History ----------------
@@ -2849,6 +2925,7 @@ async function getBriefing(){
     $("brief-text").innerHTML = sceneCard(r.scene, true) + `<p style="margin:6px 0 0">${esc(r.briefing)}</p>`;
     $("brief-tough").textContent = `How tough: ${r.toughness}. Say "coach me" any time for a quick tip.`;
     show("s-brief"); say(r.briefing, "coach", undefined, prefetchFirstTurn);
+    loadPhone();
   } catch (e) { $("setup-err").textContent = e.message; }
 }
 $("setup-btn").onclick = () => { state.checkpoint = false; getBriefing(); };
@@ -2928,7 +3005,7 @@ function openMatchup(){
   window.scrollTo(0, 0);
 }
 
-$("brief-x").onclick = $("brief-cancel").onclick = () => { stopSpeaking(); loadHome(); };
+$("brief-x").onclick = $("brief-cancel").onclick = () => { stopSpeaking(); if (state.phoneCall) hangPhone(true); loadHome(); };
 $("call-btn").onclick = () => { stopSpeaking(); startCall(); };
 
 const isCoach = (t) => /^Coach:/i.test(t);
@@ -3391,7 +3468,7 @@ $("end-yes").onclick = async () => {
   catch (e) { state.ended = false; state.timer = setInterval(tick, 1000); setStatus(e.message, "err"); phase("idle"); toast(e.message); }
   finally { $("grading").hidden = true; }
 };
-const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects, cutOff: !!j.cutOff });
+const gradeBody = (j) => ({ rollToken: j.rollToken, transcript: j.transcript, startedAt: j.startedAt, checkpoint: j.checkpoint, saveId: j.saveId, voice: j.voice, dropReason: j.dropReason, reconnects: j.reconnects, cutOff: !!j.cutOff, phoneSession: j.phoneSession || undefined });
 // The call ended on the farmer's words right after the line froze or dropped (in the last 90 seconds, or while it was
 // still reconnecting): the rep never got to answer, so the grader is told not to mark him down for the missing end.
 function cutOffEnd(){
