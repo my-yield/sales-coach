@@ -1221,7 +1221,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "vf16607b7ea"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v7723127dee"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -3086,7 +3086,9 @@ $("kb-btn").onclick = () => openTyping(!state.typing);
 $("talk-btn").onclick = () => { if (state.busy || state.phase === "farmer") return; openTyping(false); };
 function liveResume(){
   if (!live.ctx) return;
-  live.ctx.resume().then(() => { live.paused = false; phase("you"); $("done-talk").hidden = true; setStatus("Your turn. Just talk.", "you"); }, () => liveFallback("resume failed"));
+  const track = live.stream && live.stream.getAudioTracks()[0];
+  if (track && track.readyState === "ended") liveRemic(); // the tap also lets the phone give the mic back
+  live.ctx.resume().then(() => { live.paused = false; live.micAt = Date.now(); liveLog("resumed after tap"); phase("you"); $("done-talk").hidden = true; setStatus("Your turn. Just talk.", "you"); }, () => liveFallback("resume failed"));
 }
 $("done-talk").onclick = () => {
   if (live.on && live.paused) return liveResume();
@@ -3160,6 +3162,10 @@ const LIVE_WS = "wss://generativelanguage.googleapis.com/ws/google.ai.generative
 const LIVE_WORKLET = `class Cap extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}}registerProcessor("sc-cap",Cap);`;
 const LIVE_SPEECH_RMS = 0.03; // loudness that counts as the rep talking, for the freeze watchdog
 const LIVE_STALL_MS = 9000; // rep talked, then this long with no words or voice back: the line froze
+// Mic audio stopped reaching the page for this long: the phone paused the call's audio (Jeff, Nov 16-17 2026: after
+// an iPhone interruption the mic came back but the audio stayed paused, so nothing was sent and Gemini closed the
+// line for "client inactivity" every 2 minutes, which felt like a freeze).
+const LIVE_MIC_DEAD_MS = 3000;
 const LIVE_ECHO_GATE = 0.05; // loudness (0-1) the rep must beat to talk over the farmer
 const live = { on: false, ws: null, ctx: null, stream: null, node: null, nextT: 0, sources: [], muted: false, buf: [], ui: null, farmerOpen: false };
 const liveWanted = () => store.get("sc_live") !== "off";
@@ -3206,6 +3212,7 @@ function livePlay(b64){
   live.sources.push(src); src.onended = () => { live.sources = live.sources.filter((x) => x !== src); };
 }
 function liveMic(frame){
+  live.micAt = Date.now(); // the mic and the call's audio are running (the watchdog below checks this)
   // Nothing goes out until Gemini confirms the call is set up (audio before setup stalls the connection).
   if (!live.on || !live.ws || live.ws.readyState !== 1 || live.muted || state.ended) return;
   // Downsample to 16 kHz, 16-bit, and send about every 100 ms.
@@ -3271,7 +3278,7 @@ function stopLive(){
   // Always release the mic, including one that arrived after the call failed to start.
   for (const st of [live.stream, live.pendingStream]) try { st && st.getTracks().forEach((t) => t.stop()); } catch {}
   try { live.ctx && live.ctx.close(); } catch {}
-  live.ws = live.stream = live.pendingStream = live.node = live.ctx = live.out = null; live.buf = []; live.held = []; live.pre = []; live.wasPlaying = false; live.preUntil = 0; live.lagLogged = false; live.paused = false; live.handle = null; live.reconnecting = false;
+  live.ws = live.stream = live.pendingStream = live.node = live.src = live.sink = live.ctx = live.out = null; live.buf = []; live.held = []; live.pre = []; live.wasPlaying = false; live.preUntil = 0; live.lagLogged = false; live.paused = false; live.handle = null; live.reconnecting = false; live.micAt = 0; live.micKicks = 0;
   audioMode("playback");
 }
 // Live voice failed mid-call (signal, Gemini's time limit, phone stopped the audio): keep going with standard voice.
@@ -3294,11 +3301,30 @@ async function liveRemic(){
     const s = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, voiceIsolation: true } });
     if (state.ended || !live.ctx) { s.getTracks().forEach((t) => t.stop()); return; }
     try { live.stream && live.stream.getTracks().forEach((t) => t.stop()); } catch {}
-    live.stream = s; live.ctx.createMediaStreamSource(s).connect(live.node);
-    liveLog("mic ended; got it back");
-  } catch (e) { liveFallback("mic ended"); }
+    live.stream = s; liveWatchTrack(s); liveWireMic(s);
+    liveLog("mic ended; got it back (audio " + live.ctx.state + ")");
+    // Getting the mic back isn't enough: the phone usually paused the call's audio too. Resume it, or ask for a tap.
+    live.micAt = Date.now(); live.ctx.resume().catch(() => {});
+  } catch (e) { liveFallback("mic ended"); return; }
   finally { live.remic = false; }
+  liveCheckAudio();
 }
+// Mic -> capture node -> (silent) speakers. Built fresh each time the mic comes back: after an interruption the old
+// capture node can sit there with nothing coming in, even once the audio is running again.
+function liveWireMic(stream){
+  const old = live.node, oldSrc = live.src;
+  const node = live.worklet ? new AudioWorkletNode(live.ctx, "sc-cap") : live.ctx.createScriptProcessor(4096, 1, 1);
+  if (live.worklet) node.port.onmessage = (e) => liveMic(e.data); else node.onaudioprocess = (ev) => liveMic(ev.inputBuffer.getChannelData(0).slice(0));
+  const src = live.ctx.createMediaStreamSource(stream);
+  src.connect(node); node.connect(live.sink);
+  live.node = node; live.src = src;
+  for (const n of [oldSrc, old]) try { n && n.disconnect(); } catch {}
+  if (old){ if (old.port) old.port.onmessage = null; old.onaudioprocess = null; }
+}
+// The audio is running but the mic sends nothing (the phone muted it): ask for a fresh mic.
+function liveRemicForce(){ try { live.stream && live.stream.getTracks().forEach((t) => { t.onended = null; t.stop(); }); } catch {} liveRemic(); }
+// The phone can end the mic on its own (a phone call, Siri, another app): pick it back up right away.
+function liveWatchTrack(s){ const t = s && s.getAudioTracks()[0]; if (t) t.onended = () => liveCheckAudio(); }
 function liveCheckAudio(){
   if (!live.ctx || !live.on || state.ended) return;
   const track = live.stream && live.stream.getAudioTracks()[0];
@@ -3396,26 +3422,36 @@ async function startLive(){
   setStatus("Connecting…");
   const [pass, stream] = await Promise.all([step("pass", api("/api/live", { rollToken: state.rollToken })), step("mic", micP)]);
   if (state.ended) { stream.getTracks().forEach((t) => t.stop()); return; }
-  live.stream = stream; live.pendingStream = null;
+  live.stream = stream; live.pendingStream = null; liveWatchTrack(stream);
   if (live.ctx.state !== "running") await step("audio", live.ctx.resume());
-  const src = live.ctx.createMediaStreamSource(stream);
-  const sink = live.ctx.createGain(); sink.gain.value = 0; sink.connect(live.ctx.destination);
+  live.sink = live.ctx.createGain(); live.sink.gain.value = 0; live.sink.connect(live.ctx.destination);
   try {
     await live.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([LIVE_WORKLET], { type: "text/javascript" })));
-    live.node = new AudioWorkletNode(live.ctx, "sc-cap");
-    live.node.port.onmessage = (e) => liveMic(e.data);
+    live.worklet = true;
   } catch (e) {
     // Older iPhones: the original (still supported) way to read the mic.
-    live.node = live.ctx.createScriptProcessor(4096, 1, 1);
-    live.node.onaudioprocess = (ev) => liveMic(ev.inputBuffer.getChannelData(0).slice(0));
+    live.worklet = false;
     liveLog("worklet fallback: " + (e && e.message));
   }
-  src.connect(live.node); live.node.connect(sink);
-  live.drops = 0; live.tries = 0; live.handle = null;
+  liveWireMic(stream);
+  live.drops = 0; live.tries = 0; live.handle = null; live.micAt = Date.now(); live.micKicks = 0;
   await liveConnect(pass, false);
   // Show who's talking: him while his audio is playing, you otherwise.
   live.ui = setInterval(() => {
     if (!live.ctx || state.ended || live.paused) return;
+    // No mic audio for 3 seconds: the phone paused the call's audio or took the mic. Pick both back up (and if
+    // the phone won't resume on its own, liveCheckAudio asks for a tap). Without this the call sends nothing
+    // and Gemini hangs up for inactivity.
+    if (!live.remic && live.micAt && Date.now() - live.micAt > LIVE_MIC_DEAD_MS){
+      const tr = live.stream && live.stream.getAudioTracks()[0];
+      liveLog("mic stopped: no audio for " + Math.round((Date.now() - live.micAt) / 1000) + "s (audio " + live.ctx.state + ", mic " + (tr ? tr.readyState + (tr.muted ? " muted" : "") : "none") + ")");
+      live.micAt = Date.now();
+      if (tr && tr.readyState === "ended") liveRemic();
+      else if (live.ctx.state !== "running") liveCheckAudio();
+      else { live.ctx.resume().catch(() => {}); if (++live.micKicks >= 2){ live.micKicks = 0; liveRemicForce(); } }
+      return;
+    }
+    if (live.micAt && Date.now() - live.micAt < 500) live.micKicks = 0;
     const talking = live.nextT > live.ctx.currentTime + 0.05;
     if (talking && state.phase !== "farmer"){ phase("farmer"); setStatus(first() + " is talking"); }
     if (!talking && state.phase === "farmer"){ phase("you"); $("done-talk").hidden = true; setStatus(live.muted ? "You're muted." : "Your turn. Just talk.", live.muted ? "muted" : "you"); }
