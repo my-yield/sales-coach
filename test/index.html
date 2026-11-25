@@ -72,6 +72,13 @@ svg.i{width:22px;height:22px;flex:none}
 .rc-meter{height:14px;border-radius:7px;background:var(--line);overflow:hidden;margin:10px 0} .rc-meter span{display:block;height:100%;width:0;background:var(--ok);transition:width .1s}
 .rc-item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)} .rc-item:first-child{border-top:0}
 .rc-item b{display:block} .rc-item audio{width:100%;margin-top:8px}
+.mc-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:10px 0}
+.mc-tile{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px} .mc-tile b{display:block;font-size:22px} .mc-tile small{color:var(--ink-2)}
+.mc-call{padding:12px 0;border-top:1px solid var(--line)} .mc-call:first-child{border-top:0} .mc-call .top{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.mc-call p{margin:4px 0;color:var(--ink-2)} .mc-tag{font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;background:var(--blue-50);color:var(--blue)}
+.mc-two{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media (max-width:640px){.mc-two{grid-template-columns:1fr}}
+.mc-table{width:100%;border-collapse:collapse;font-size:14px} .mc-table th,.mc-table td{text-align:left;padding:8px;border-top:1px solid var(--line);vertical-align:top}
+.mc-seg{display:flex;gap:8px;margin:10px 0} .mc-seg button{flex:1}
 .err{color:var(--err);font-weight:600;font-size:14px;min-height:20px;margin:4px 0 10px}
 
 /* Top bar */
@@ -927,6 +934,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <div class="statgrid" id="me-stats"></div>
       <div id="me-track" style="margin-top:16px"></div>
       <div id="me-cell" hidden style="margin-top:16px"></div>
+      <div id="me-mycalls" hidden style="margin-top:16px"><button class="suggest realtile" id="mc-open" type="button" data-ops="Profile: My calls"><span class="sport rico" aria-hidden="true"></span><span><small>Pilot</small><b>My calls: daily feedback</b></span><span class="go">Open ›</span></button></div>
       <h3 class="section">History</h3>
       <p class="sub" style="margin-top:-4px">Tap any lesson or call to see how it was graded.</p>
       <div class="card" style="padding:4px 14px" id="me-hist"></div>
@@ -1095,6 +1103,17 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
   </div>
 </section>
 
+<!-- MY CALLS: dealer call review pilot (test link only, behind DAVID_CALLS_ENABLED) -->
+<section class="screen" id="s-mycalls" hidden>
+  <div class="wrap lessontop briefTop"><button class="linkbtn" id="mc-x" type="button">‹ Back</button><div style="font-weight:800">My calls</div></div>
+  <div class="wrap" style="flex:1;padding-bottom:60px">
+    <div class="field" id="mc-as-row" hidden><label for="mc-as">View as</label><select id="mc-as"></select></div>
+    <div class="mc-seg"><button class="btn btn-primary" id="mc-day-btn" type="button">Day</button><button class="btn btn-ghost" id="mc-week-btn" type="button">Week</button></div>
+    <div class="field"><label for="mc-date" id="mc-date-l">Day</label><input id="mc-date" type="date"></div>
+    <div id="mc-body"><div class="empty">Loading…</div></div>
+  </div>
+</section>
+
 <section class="screen" id="s-results" hidden>
   <div class="wrap" style="padding:20px 16px 140px">
     <div class="card" style="text-align:center">
@@ -1242,7 +1261,7 @@ const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmer
   me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, hsTough:null, path:null, tab:"learn" };
 
 function show(id){
-  for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results","s-realcall"]) $(s).hidden = s !== id;
+  for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results","s-realcall","s-mycalls"]) $(s).hidden = s !== id;
   document.documentElement.classList.toggle("incall", id === "s-call");
   try { opsView(id === "s-home" ? state.tab || "learn" : id); if (id === "s-home") opsVisit(); } catch {}
   toTop();
@@ -1259,7 +1278,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v1346218bad"; // stamped by appsscript/build.mjs
+const APP_VERSION = "vd6e7864099"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2251,7 +2270,7 @@ function renderMe(){
   if (tb && state.path){ const t = state.path.track;
     tb.innerHTML = trackPicker(t ? `Your path: ${trackName(t)}${state.path.trackSource === "roster" ? " (from the team roster)" : ""}` : "Pick your path", true);
     wireTrackPicker(tb); }
-  renderMyCell(); loadPhone();
+  renderMyCell(); loadPhone(); probeMyCalls();
   loadHistory();
 }
 
@@ -2452,6 +2471,81 @@ async function loadRealCallList(){
       box.appendChild(row);
     }
   } catch (e) { box.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+// ---------------- My calls: dealer call review (David Powell pilot, Nov 25 2026; test link only) ----------------
+// A rep's real HubSpot calls: daily feedback and the Friday overview. Grading spends Gemini only on "Grade this day" or
+// "Build this week's overview". Shown only when the server says this person is in the pilot.
+const mc = { view: "day", busy: false };
+async function probeMyCalls(){
+  if (mc.allowed === undefined){ try { const r = await api("/api/mycalls-cfg"); mc.allowed = !!r.allowed; mc.viewAs = r.viewAs; } catch { mc.allowed = false; } }
+  if ($("me-mycalls")) $("me-mycalls").hidden = !mc.allowed;
+  if (mc.allowed) $("mc-open").querySelector(".rico").innerHTML = icon("phone");
+}
+$("mc-open").onclick = () => { show("s-mycalls"); mc.view = "day"; mcSetup(); mcLoad(); };
+$("mc-x").onclick = () => { if (mc.busy) return toast("Grading is still running. Wait for it to finish."); setTab("me"); loadHome(); };
+$("mc-day-btn").onclick = () => { mc.view = "day"; mcSetup(); mcLoad(); };
+$("mc-week-btn").onclick = () => { mc.view = "week"; mcSetup(); mcLoad(); };
+$("mc-date").onchange = () => mcLoad();
+$("mc-as").onchange = () => mcLoad();
+function mcSetup(){
+  $("mc-day-btn").className = "btn " + (mc.view === "day" ? "btn-primary" : "btn-ghost"); $("mc-week-btn").className = "btn " + (mc.view === "week" ? "btn-primary" : "btn-ghost");
+  $("mc-date-l").textContent = mc.view === "day" ? "Day" : "Week of";
+  if (mc.viewAs && !$("mc-as").options.length){ $("mc-as").innerHTML = mc.viewAs.map((e) => `<option value="${esc(e)}">${esc(e)}</option>`).join(""); $("mc-as-row").hidden = false; }
+}
+const mcMin = (s) => s < 60 ? s + "s" : Math.floor(s / 60) + "m " + String(s % 60).padStart(2, "0") + "s";
+const mcTile = (v, l) => `<div class="mc-tile"><b>${v}</b><small>${esc(l)}</small></div>`;
+function mcStats(st){
+  const days = Object.entries(st.byDay || {}).map(([d, n]) => `${esc(new Date(d + "T12:00").toLocaleDateString("en-US", { weekday: "short" }))} ${n}`).join(" · ");
+  return `<div class="mc-tiles">${mcTile(st.outbound, "Outbound calls")}${mcTile(st.connectedPct + "%", "Connected (" + st.connected + ")")}${mcTile(st.voicemails, "Voicemails")}${mcTile(st.emails == null ? "–" : st.emails, "Emails")}${mcTile(st.texts == null ? "–" : st.texts, "Texts")}${mcTile(st.followUps.length, "Follow-ups set")}${mcTile(st.declines.length, "Clear declines")}</div>`
+    + (days ? `<p class="sub">Outbound by day: ${days}</p>` : "")
+    + (st.followUps.length ? `<p class="sub"><b>Follow-ups:</b> ${st.followUps.map((f) => esc(f.who) + (f.when ? " (" + esc(f.when) + ")" : "")).join(", ")}</p>` : "")
+    + (st.declines.length ? `<p class="sub"><b>Declines:</b> ${st.declines.map(esc).join(", ")}</p>` : "");
+}
+const mcChecks = (checks) => checks.length ? `<h3 class="section" style="margin-top:18px">Logging checks</h3><div class="card"><ul class="list">${checks.map((c) => `<li>${esc(c.text)}${c.who && c.who.length ? ` <span class="sub">(${c.who.map(esc).join(", ")})</span>` : ""}</li>`).join("")}</ul></div>` : `<p class="sub">Logging looks clean.</p>`;
+async function mcLoad(){
+  const as = $("mc-as").value || undefined, date = $("mc-date").value || undefined, box = $("mc-body");
+  box.innerHTML = `<div class="empty">Loading your HubSpot calls…</div>`;
+  try {
+    if (mc.view === "day"){
+      const r = await api("/api/mycalls", { day: date, as }); mc.day = r; if (!date) $("mc-date").value = r.day;
+      const cards = r.calls.filter((c) => c.review || c.gradable).map((c) => { const v = c.review;
+        return `<div class="mc-call"><div class="top"><span>${esc(c.contact || c.company || "Unknown contact")}${c.company && c.contact ? ` <span class="sub">· ${esc(c.company)}</span>` : ""}</span><span>${v ? v.score + "/100" : `<span class="mc-tag">not graded</span>`}</span></div>
+          <p>${esc(c.time)} · ${mcMin(c.sec)} · ${esc(c.logged || "no outcome logged")}${v ? " · " + esc(v.outcome) : ""}</p>
+          ${v ? `<p>${esc(v.summary)}</p><p><b>Next time:</b> ${esc(v.coaching_line)}</p>${(v.did_well || []).length ? `<p><b>Worked:</b> ${v.did_well.map(esc).join("; ")}</p>` : ""}<p><b>Fix first:</b> ${esc(v.fix_first)}</p>` : ""}</div>`; }).join("");
+      const others = r.calls.length - r.calls.filter((c) => c.review || c.gradable).length;
+      box.innerHTML = `${mcStats(r.stats)}
+        ${r.toGrade ? `<button class="btn btn-primary" id="mc-grade" type="button" data-ops="My calls: Grade this day">Grade this day (${r.toGrade} call${r.toGrade > 1 ? "s" : ""} of 30 s or more)</button><p class="sub" id="mc-prog"></p>` : ""}
+        <h3 class="section" style="margin-top:18px">Calls of 30 seconds or more</h3><div class="card" style="padding:4px 14px">${cards || `<div class="empty">None this day.</div>`}</div>
+        ${others ? `<p class="sub">${others} shorter or unrecorded call${others > 1 ? "s" : ""} count in the numbers above but aren't graded.</p>` : ""}
+        ${mcChecks(r.checks)}${r.tasksReadable ? "" : `<p class="sub">Tasks couldn't be read, so the callback check is off.</p>`}`;
+      if ($("mc-grade")) $("mc-grade").onclick = () => mcGradeDay(r, as);
+    } else {
+      const r = await api("/api/mycalls-week", { weekOf: date, as }); mcWeek(r, as);
+    }
+  } catch (e) { box.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+async function mcGradeDay(r, as){
+  if (mc.busy) return; mc.busy = true; $("mc-grade").disabled = true;
+  const todo = r.calls.filter((c) => c.gradable && !c.review); let n = 0, failed = 0;
+  for (const c of todo){ $("mc-prog").textContent = `Grading ${++n} of ${todo.length}…`; try { await api("/api/mycalls-grade", { id: c.id, as }); } catch (e) { failed++; } }
+  mc.busy = false; if (failed) toast(`${failed} call${failed > 1 ? "s" : ""} couldn't be graded.`); mcLoad();
+}
+function mcWeek(r, as){
+  if (!$("mc-date").value) $("mc-date").value = r.week;
+  const o = r.overview, box = $("mc-body"), gaps = r.checks.map((c) => c.text);
+  box.innerHTML = `<p class="sub">Week of ${esc(new Date(r.week + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }))} · ${r.graded} of ${r.gradable} calls graded${o ? " · overview built " + esc(when(o.builtAt)) : ""}</p>
+    ${mcStats(r.stats)}
+    <button class="btn ${o ? "btn-ghost" : "btn-primary"}" id="mc-build" type="button" data-ops="My calls: Build week">${o ? "Rebuild" : "Build"} this week's overview</button>
+    <h3 class="section" style="margin-top:18px">Key pipeline observations</h3>
+    <div class="card" style="padding:4px 14px">${r.observations.map((x) => `<div class="mc-call"><div class="top"><span>${esc(x.who)}${x.company && x.company !== x.who ? ` <span class="sub">· ${esc(x.company)}</span>` : ""}</span><span class="sub">${x.calls} call${x.calls > 1 ? "s" : ""}</span></div><p>${esc(x.line)}</p></div>`).join("") || `<div class="empty">No calls this week.</div>`}</div>
+    <div class="mc-two" style="margin-top:18px">
+      <div class="card"><div style="font-weight:800">What's working</div><ul class="list">${o ? o.working.map((x) => `<li>${esc(x)}</li>`).join("") : `<li class="sub">Build the overview to see this.</li>`}</ul></div>
+      <div class="card"><div style="font-weight:800">What to improve</div><ul class="list">${(o ? o.improve : []).map((x) => `<li>${esc(x)}</li>`).join("")}${gaps.map((x) => `<li>Logging: ${esc(x)}</li>`).join("")}${!o && !gaps.length ? `<li class="sub">Build the overview to see this.</li>` : ""}</ul></div>
+    </div>
+    <h3 class="section" style="margin-top:18px">Recurring requests</h3>
+    ${o && o.requests.length ? `<div class="card" style="overflow-x:auto"><table class="mc-table"><tr><th>Request</th><th>Who keeps asking</th><th>What I need to get</th></tr>${o.requests.map((q) => `<tr><td>${esc(q.request)}</td><td>${q.who.map(esc).join(", ")}</td><td>${esc(q.need)}</td></tr>`).join("")}</table></div>` : `<p class="sub">${o ? "No request came up more than once." : "Build the overview to see this."}</p>`}`;
+  $("mc-build").onclick = async () => { const b = $("mc-build"); b.disabled = true; b.textContent = "Building…"; try { mcWeek(await api("/api/mycalls-week", { weekOf: r.week, as, build: true }), as); } catch (e) { toast(e.message); b.disabled = false; b.textContent = "Build this week's overview"; } };
 }
 
 // ---------------- History ----------------
