@@ -64,6 +64,14 @@ svg.i{width:22px;height:22px;flex:none}
 .field label{display:block;font-weight:700;font-size:14px;margin-bottom:6px;color:var(--ink-2)}
 .field input{width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);outline:none}
 .field input:focus{border-color:var(--blue)}
+.field select{width:100%;padding:12px 14px;border-radius:6px;border:1.5px solid #CFCAC0;background:#fff;min-height:50px;font:inherit}
+.rc-disc{border:2px solid var(--gold);background:var(--gold-50);border-radius:10px;padding:12px 14px;margin:12px 0}
+.rc-disc b{display:block;font-size:17px;margin:4px 0}
+.rc-check{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-size:15px} .rc-check input{width:22px;height:22px;flex:none;margin-top:2px}
+.rc-timer{font-size:48px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.rc-meter{height:14px;border-radius:7px;background:var(--line);overflow:hidden;margin:10px 0} .rc-meter span{display:block;height:100%;width:0;background:var(--ok);transition:width .1s}
+.rc-item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)} .rc-item:first-child{border-top:0}
+.rc-item b{display:block} .rc-item audio{width:100%;margin-top:8px}
 .err{color:var(--err);font-weight:600;font-size:14px;min-height:20px;margin:4px 0 10px}
 
 /* Top bar */
@@ -863,6 +871,7 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
       <div id="pr-pick">
         <button class="suggest" id="pr-suggest" type="button" hidden></button>
         <button class="suggest realtile" id="pr-real" type="button" hidden><span class="sport rico" aria-hidden="true"></span><span><small>Practice a real visit</small><b>One of your own accounts</b></span><span class="go">Pick ›</span></button>
+        <button class="suggest realtile" id="pr-realcall" type="button" hidden data-ops="Practice: Record a real call"><span class="sport rico" aria-hidden="true"></span><span><small>Record a real call</small><b>Grade a real cold call</b></span><span class="go">Open ›</span></button>
         <div class="realbar" id="pr-realbar" hidden></div>
         <div class="playtiles" id="plays"></div>
       </div>
@@ -1057,6 +1066,35 @@ main.home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 <div class="grading" id="grading" hidden><div id="grading-art"></div><b>Grading your call…</b><span class="sub">This takes a few seconds.</span></div>
 
 <!-- RESULTS -->
+<!-- RECORD A REAL CALL (test link only, behind REAL_CALLS_ENABLED) -->
+<section class="screen" id="s-realcall" hidden>
+  <div class="wrap lessontop briefTop"><button class="linkbtn" id="rc-x" type="button">‹ Back</button><div style="font-weight:800">Record a real call</div></div>
+  <div class="wrap" style="flex:1;padding-bottom:60px">
+    <div class="card" id="rc-setup" style="margin-top:8px">
+      <p class="sub" style="margin:0 0 12px">Open this on your laptop. Call the grower from your iPhone with the phone <b>at your ear, not on speaker</b>. The laptop records <b>your side only</b>, then the coach grades it.</p>
+      <div class="field" id="rc-mystate-row" hidden><label for="rc-mystate">Your state</label><select id="rc-mystate"></select></div>
+      <div class="field"><label for="rc-grower">Grower's name</label><input id="rc-grower" maxlength="80" autocomplete="off" placeholder="First and last name"></div>
+      <div class="field"><label for="rc-state">Grower's state</label><select id="rc-state"></select></div>
+      <div class="rc-disc" id="rc-disc" hidden><small>Say this first, before anything else:</small><b id="rc-line"></b><span class="sub">If he says no, tap "He said no" and the recording is deleted right away.</span></div>
+      <label class="rc-check"><input type="checkbox" id="rc-ok"><span>My phone is at my ear, not on speaker. This records my side only.</span></label>
+      <div class="err" id="rc-err"></div>
+      <button class="btn btn-primary" id="rc-start" type="button" data-ops="Real call: Start">Start recording</button>
+    </div>
+    <div class="card" id="rc-rec" hidden style="margin-top:8px">
+      <div class="kicker" id="rc-who"></div>
+      <div class="rc-timer" id="rc-timer">0:00</div>
+      <div class="rc-meter" aria-hidden="true"><span id="rc-level"></span></div>
+      <p class="sub" id="rc-status" role="status" aria-live="polite" style="text-align:center"></p>
+      <div class="rc-disc" id="rc-disc2" hidden><small>Say this first:</small><b id="rc-line2"></b></div>
+      <button class="btn btn-primary" id="rc-stop" type="button" data-ops="Real call: Stop">Stop and grade</button>
+      <button class="btn btn-ghost" id="rc-no" type="button" hidden style="margin-top:10px" data-ops="Real call: He said no">He said no: delete the recording</button>
+    </div>
+    <h3 class="section" id="rc-list-h" style="margin-top:22px">Real calls</h3>
+    <p class="sub" id="rc-list-sub">Graded real calls don't count toward points.</p>
+    <div class="card" style="padding:4px 14px" id="rc-list"></div>
+  </div>
+</section>
+
 <section class="screen" id="s-results" hidden>
   <div class="wrap" style="padding:20px 16px 140px">
     <div class="card" style="text-align:center">
@@ -1204,7 +1242,7 @@ const state = { token: store.get("sc_token"), name: store.get("sc_name"), farmer
   me:null, board:null, boardTab:"week", boardKind:"points", high:{}, hsPlay:null, hsTough:null, path:null, tab:"learn" };
 
 function show(id){
-  for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results"]) $(s).hidden = s !== id;
+  for (const s of ["s-signin","s-launch","s-guide","s-home","s-lesson","s-done","s-review","s-brief","s-call","s-results","s-realcall"]) $(s).hidden = s !== id;
   document.documentElement.classList.toggle("incall", id === "s-call");
   try { opsView(id === "s-home" ? state.tab || "learn" : id); if (id === "s-home") opsVisit(); } catch {}
   toTop();
@@ -1221,7 +1259,7 @@ function toTop(){
 // - on the voice page (?relay=1, opened from Apps Script so the mic works): messages to the Apps Script tab, which runs them
 const GAS = typeof google !== "undefined" && !!(google.script && google.script.run);
 const RELAY = !GAS && /[?&]relay=1/.test(location.search);
-const APP_VERSION = "v7723127dee"; // stamped by appsscript/build.mjs
+const APP_VERSION = "v1346218bad"; // stamped by appsscript/build.mjs
 // The version in the address makes phones load a fresh copy instead of GitHub's 10-minute cache.
 const VOICE_PAGE = "https://my-yield.github.io/sales-coach/test/?relay=1&v=" + APP_VERSION;
 const VOICE_ORIGIN = "https://my-yield.github.io";
@@ -2111,7 +2149,7 @@ function renderPractice({ farmers, toughness, plays }){
     $("pr-suggest").innerHTML = `<span class="sport">${face(f, 44)}</span><span><small>Suggested next call</small><b>${esc(pick.p.short)} · ${esc(f.label)}</b></span><span class="go">Start ›</span>`;
     $("pr-suggest").onclick = () => { state.visit = null; state.callPlay = pick.p.id; state.farmerId = f.id; state.toughness = "typical"; state.checkpoint = false; openMatchup(); getBriefing(); };
   } else $("pr-suggest").hidden = true;
-  probeRealVisits();
+  probeRealVisits(); probeRealCalls();
   if (state.prView === "match") openMatchup(); else showPick();
   const s = state.me, pct = Math.min(1, s.weekCalls / s.weeklyGoal);
   $("goal-ring").setAttribute("stroke-dasharray", `${pct*94.2} 100`);
@@ -2289,6 +2327,131 @@ function renderMyCell(){
   if ($("cell-save")) $("cell-save").onclick = () => save($("cell-1").value, $("cell-2").value);
   if ($("cell-change")) $("cell-change").onclick = () => { $("cell-form").hidden = false; $("cell-1").focus(); };
   if ($("cell-remove")) $("cell-remove").onclick = () => save("", "");
+}
+
+// ---------------- Record a real call (Nov 25 2026; test link only, behind REAL_CALLS_ENABLED + allowlist) ----------------
+// The laptop records the rep's own side of a real cold call (phone at the ear), uploads it in 10-second pieces as it
+// goes, then the server transcribes and grades it. Shown only when the server says this person may use it.
+const rc = { cfg: null, rec: null, stream: null, ctx: null, queue: [], seq: 0, uploading: false, t0: 0, timer: null, id: null, need: false, failed: "" };
+async function probeRealCalls(){
+  if (rc.cfg === null){ try { rc.cfg = await api("/api/realcall"); } catch { rc.cfg = { allowed: false }; } }
+  const show_ = !!(rc.cfg && (rc.cfg.allowed || rc.cfg.viewer));
+  $("pr-realcall").hidden = !show_;
+  if (show_) $("pr-realcall").querySelector(".rico").innerHTML = icon("mic");
+}
+const rcAllParty = () => (rc.cfg && rc.cfg.allParty) || [];
+function rcNeed(){ const g = $("rc-state").value, r = (rc.cfg && rc.cfg.repState) || $("rc-mystate").value; return !g || rcAllParty().includes(g) || !r || rcAllParty().includes(r); }
+function rcRefresh(){ const need = rcNeed(); $("rc-disc").hidden = !need; $("rc-line").textContent = need ? "\u201c" + rc.cfg.line + "\u201d" : ""; }
+function openRealCalls(){
+  show("s-realcall");
+  const c = rc.cfg || {}, opts = (c.states || []).map((s) => `<option value="${s}">${s}</option>`).join("");
+  $("rc-setup").hidden = !c.allowed; $("rc-rec").hidden = true; $("rc-err").textContent = "";
+  if (c.allowed){
+    $("rc-state").innerHTML = `<option value="">Not sure</option>` + opts;
+    $("rc-mystate").innerHTML = `<option value="">Pick your state</option>` + opts;
+    $("rc-mystate-row").hidden = !!c.repState;
+    $("rc-grower").value = ""; $("rc-ok").checked = false; rcRefresh();
+  }
+  loadRealCallList();
+}
+$("pr-realcall").onclick = () => openRealCalls();
+$("rc-x").onclick = () => { if (rc.rec) return toast("Stop the recording first."); loadHome(); };
+$("rc-state").onchange = $("rc-mystate").onchange = rcRefresh;
+function rcPickMime(){ for (const m of ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"]) if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m; return ""; }
+const rcB64 = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(blob); });
+// Uploads pieces one at a time, in order. A failed piece is tried 3 times; the recording keeps going meanwhile.
+async function rcPump(){
+  if (rc.uploading) return; rc.uploading = true;
+  try {
+    while (rc.queue.length && rc.id){
+      const { blob, seq } = rc.queue[0], mime = blob.type || rc.mime;
+      const data = await rcB64(blob); let done = false, err = null;
+      for (let t = 0; t < 3 && !done && rc.id; t++){ try { await api("/api/realcall-chunk", { id: rc.id, seq, mime, data }); done = true; } catch (e) { err = e; await new Promise((r) => setTimeout(r, 1500 * (t + 1))); } }
+      if (!done){ rc.failed = (err && err.message) || "upload failed"; break; }
+      rc.queue.shift();
+    }
+  } finally { rc.uploading = false; }
+}
+function rcStopMedia(){
+  clearInterval(rc.timer); rc.timer = null;
+  try { rc.stream && rc.stream.getTracks().forEach((t) => t.stop()); } catch {} try { rc.ctx && rc.ctx.close(); } catch {}
+  rc.stream = rc.ctx = null;
+}
+$("rc-start").onclick = async () => {
+  const c = rc.cfg; $("rc-err").textContent = "";
+  try {
+    if (!c.repState){ if (!$("rc-mystate").value) throw new Error("Pick your own state first."); rc.cfg = { ...c, ...(await api("/api/realcall", { repState: $("rc-mystate").value })) }; }
+    if (!$("rc-grower").value.trim()) throw new Error("Type the grower's name first.");
+    if (!$("rc-ok").checked) throw new Error("Check the box: phone at your ear, not on speaker.");
+    if (!window.MediaRecorder) throw new Error("This browser can't record. Use Chrome or Safari on your laptop.");
+    const st = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    const r = await api("/api/realcall-start", { grower: $("rc-grower").value.trim(), state: $("rc-state").value });
+    rc.id = r.id; rc.need = !!r.disclosure; rc.seq = 0; rc.queue = []; rc.failed = ""; rc.stream = st; rc.mime = rcPickMime();
+    rc.rec = new MediaRecorder(st, rc.mime ? { mimeType: rc.mime, audioBitsPerSecond: 32000 } : undefined);
+    rc.rec.ondataavailable = (e) => { if (e.data && e.data.size && rc.id){ rc.queue.push({ blob: e.data, seq: rc.seq++ }); rcPump(); } };
+    rc.rec.start(10000);
+    // Level meter, so the rep can see the laptop hears them.
+    try { rc.ctx = new (window.AudioContext || window.webkitAudioContext)(); const an = rc.ctx.createAnalyser(); an.fftSize = 512; rc.ctx.createMediaStreamSource(st).connect(an); rc.an = an; } catch { rc.an = null; }
+    rc.t0 = Date.now(); const buf = new Uint8Array(512);
+    rc.timer = setInterval(() => {
+      const s = Math.floor((Date.now() - rc.t0) / 1000); $("rc-timer").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      if (rc.an){ rc.an.getByteTimeDomainData(buf); let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v - 128)); $("rc-level").style.width = Math.min(100, m * 1.6) + "%"; }
+      if (rc.failed) $("rc-status").textContent = "Upload trouble (" + rc.failed + "). Keep talking; it will try again at the end.";
+      if (s >= ((rc.cfg && rc.cfg.maxSec) || 1200)){ toast("That's the 20-minute limit, so the recording stopped."); $("rc-stop").click(); }
+    }, 200);
+    $("rc-setup").hidden = true; $("rc-rec").hidden = false; $("rc-who").textContent = "Recording · " + $("rc-grower").value.trim();
+    $("rc-status").textContent = "Recording your side. Call him from your iPhone now.";
+    $("rc-disc2").hidden = !rc.need; $("rc-line2").textContent = rc.need ? "\u201c" + rc.cfg.line + "\u201d" : ""; $("rc-no").hidden = !rc.need;
+  } catch (e) { rcStopMedia(); rc.rec = null; rc.id = null; $("rc-err").textContent = /denied|not allowed/i.test(e.message) ? "The coach needs your laptop's microphone. Click Allow when the browser asks." : e.message; }
+};
+const rcStopped = () => new Promise((res) => { if (!rc.rec || rc.rec.state === "inactive") return res(); rc.rec.onstop = () => res(); rc.rec.stop(); });
+$("rc-no").onclick = async () => {
+  const id = rc.id; rc.id = null; rc.queue = [];
+  await rcStopped(); rc.rec = null; rcStopMedia();
+  try { await api("/api/realcall-abort", { id }); toast("Deleted. Nothing was saved or graded."); } catch (e) { toast(e.message); }
+  openRealCalls();
+};
+$("rc-stop").onclick = async () => {
+  if (!rc.rec) return;
+  const seconds = Math.round((Date.now() - rc.t0) / 1000);
+  $("rc-stop").disabled = true; $("rc-status").textContent = "Finishing the upload…";
+  await rcStopped(); rc.rec = null; rcStopMedia();
+  rc.failed = ""; while (rc.queue.length && !rc.failed){ await rcPump(); if (rc.queue.length && !rc.failed) await new Promise((r) => setTimeout(r, 300)); }
+  if (rc.failed){ $("rc-stop").disabled = false; $("rc-status").textContent = "Couldn't upload the recording (" + rc.failed + "). Tap Stop and grade to try again."; rc.rec = { state: "inactive" }; return; }
+  $("grading-art").innerHTML = Art.mascot("think", 110); $("grading").hidden = false;
+  try {
+    const r = await api("/api/realcall-finish", { id: rc.id, seconds });
+    state.farmerName = $("rc-grower").value.trim() || "the grower"; state.callPlayName = "Real call";
+    renderResults({ overall: r.overall, grade: r.grade, transcript: r.transcript }, true);
+    $("res-farmer").textContent = "Real call with " + state.farmerName; rc.id = null;
+  } catch (e) { toast(e.message); $("rc-status").textContent = e.message; }
+  finally { $("grading").hidden = true; $("rc-stop").disabled = false; }
+};
+async function loadRealCallList(){
+  const box = $("rc-list"); box.innerHTML = `<div class="empty">Loading…</div>`;
+  try {
+    const r = await api("/api/realcalls");
+    $("rc-list-h").textContent = r.leader ? "Real calls (everyone's)" : "Your real calls";
+    box.innerHTML = r.items.length ? "" : `<div class="empty">No real calls yet.</div>`;
+    for (const it of r.items){
+      const row = document.createElement("div"); row.className = "rc-item";
+      row.innerHTML = `<div style="flex:1"><b>${esc(it.grower)}${it.state ? " · " + esc(it.state) : ""}</b><span class="sub">${it.rep ? esc(it.rep) + " · " : ""}${when(it.at)} · ${Math.round(it.seconds / 60)} min · score ${it.overall}</span><div class="rc-audio"></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-ghost" type="button" data-act="view">Grade</button><button class="btn btn-ghost" type="button" data-act="play">Play</button></div>`;
+      row.querySelector('[data-act="view"]').onclick = async () => {
+        try { const v = await api("/api/realcall-view", { id: it.id }); state.farmerName = v.grower; state.callPlayName = "Real call"; renderResults({ overall: v.overall, grade: v.grade, transcript: v.transcript, at: v.at }, true); $("res-farmer").textContent = "Real call with " + v.grower + (v.rep ? " · " + v.rep : ""); } catch (e) { toast(e.message); }
+      };
+      row.querySelector('[data-act="play"]').onclick = async (ev) => {
+        const b = ev.currentTarget; b.disabled = true; b.textContent = "Loading…";
+        try {
+          const parts = []; let n = 1, mime = "audio/webm";
+          for (let i = 0; i < n; i++){ const p = await api("/api/realcall-audio", { id: it.id, part: i }); n = p.parts; mime = p.mime; parts.push(Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0))); }
+          const a = document.createElement("audio"); a.controls = true; a.src = URL.createObjectURL(new Blob(parts, { type: mime }));
+          row.querySelector(".rc-audio").replaceChildren(a); a.play().catch(() => {}); b.hidden = true;
+        } catch (e) { toast(e.message); b.disabled = false; b.textContent = "Play"; }
+      };
+      box.appendChild(row);
+    }
+  } catch (e) { box.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
 
 // ---------------- History ----------------
